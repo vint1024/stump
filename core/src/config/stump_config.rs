@@ -33,6 +33,8 @@ pub mod env_keys {
 	pub const SESSION_TTL_KEY: &str = "SESSION_TTL";
 	pub const SESSION_EXPIRY_INTERVAL_KEY: &str = "SESSION_EXPIRY_CLEANUP_INTERVAL";
 	pub const MAX_SCANNER_CONCURRENCY_KEY: &str = "STUMP_MAX_SCANNER_CONCURRENCY";
+	pub const DB_MAX_CONNECTIONS_KEY: &str = "STUMP_DB_MAX_CONNECTIONS";
+	pub const DB_MIN_CONNECTIONS_KEY: &str = "STUMP_DB_MIN_CONNECTIONS";
 	pub const MAX_THUMBNAIL_CONCURRENCY_KEY: &str = "STUMP_MAX_THUMBNAIL_CONCURRENCY";
 	pub const MAX_IMAGE_UPLOAD_SIZE_KEY: &str = "STUMP_MAX_IMAGE_UPLOAD_SIZE";
 	pub const ENABLE_UPLOAD_KEY: &str = "STUMP_ENABLE_UPLOAD";
@@ -52,7 +54,9 @@ pub mod defaults {
 	pub const DEFAULT_ACCESS_TOKEN_TTL: i64 = 3600 * 24; // 1 days
 	pub const DEFAULT_REFRESH_TOKEN_TTL: i64 = 3600 * 24 * 30; // 30 days
 	pub const DEFAULT_SESSION_EXPIRY_CLEANUP_INTERVAL: u64 = 60 * 60 * 24; // 24 hours
-	pub const DEFAULT_MAX_SCANNER_CONCURRENCY: usize = 200;
+	pub const DEFAULT_MAX_SCANNER_CONCURRENCY: usize = 50; // I've kept it in line with DB connections by default
+	pub const DEFAULT_DB_MAX_CONNECTIONS: u32 = 50;
+	pub const DEFAULT_DB_MIN_CONNECTIONS: u32 = 5;
 	pub const DEFAULT_MAX_THUMBNAIL_CONCURRENCY: usize = 10;
 	pub const DEFAULT_MAX_IMAGE_UPLOAD_SIZE: usize = 20 * 1024 * 1024; // 20 MB
 	pub const DEFAULT_ENABLE_UPLOAD: bool = false;
@@ -198,6 +202,18 @@ pub struct StumpConfig {
 	#[default_value(DEFAULT_MAX_SCANNER_CONCURRENCY)]
 	#[env_key(MAX_SCANNER_CONCURRENCY_KEY)]
 	pub max_scanner_concurrency: usize,
+
+	/// The maximum number of database connections in the pool. Increasing this allows more
+	/// concurrent database operations but uses more memory.
+	#[default_value(DEFAULT_DB_MAX_CONNECTIONS)]
+	#[env_key(DB_MAX_CONNECTIONS_KEY)]
+	pub db_max_connections: u32,
+
+	/// The minimum number of database connections to keep warm in the pool. Keeping a baseline
+	/// of connections ready improves response time for database operations.
+	#[default_value(DEFAULT_DB_MIN_CONNECTIONS)]
+	#[env_key(DB_MIN_CONNECTIONS_KEY)]
+	pub db_min_connections: u32,
 
 	/// The maximum number of concurrent files which may be processed by a thumbnail generator. This is used
 	/// to limit/increase the number of images that are processed at once. Image generation can be
@@ -436,6 +452,8 @@ mod tests {
 			pdf_cache_pages: None,
 			pdf_prerender_range: None,
 			pdf_high_quality: None,
+			db_max_connections: None,
+			db_min_connections: None,
 		};
 		partial_config.apply_to_config(&mut config);
 
@@ -482,7 +500,9 @@ mod tests {
 				pdf_render_format: Some(DEFAULT_PDF_RENDER_FORMAT.to_string()),
 				pdf_cache_pages: Some(DEFAULT_PDF_CACHE_PAGES),
 				pdf_prerender_range: Some(DEFAULT_PDF_PRERENDER_RANGE),
-				pdf_high_quality: Some(DEFAULT_PDF_HIGH_QUALITY)
+				pdf_high_quality: Some(DEFAULT_PDF_HIGH_QUALITY),
+				db_max_connections: Some(DEFAULT_DB_MAX_CONNECTIONS),
+				db_min_connections: Some(DEFAULT_DB_MIN_CONNECTIONS),
 			}
 		);
 
@@ -545,6 +565,8 @@ mod tests {
 						pdf_cache_pages: DEFAULT_PDF_CACHE_PAGES,
 						pdf_prerender_range: DEFAULT_PDF_PRERENDER_RANGE,
 						pdf_high_quality: DEFAULT_PDF_HIGH_QUALITY,
+						db_max_connections: DEFAULT_DB_MAX_CONNECTIONS,
+						db_min_connections: DEFAULT_DB_MIN_CONNECTIONS,
 					}
 				);
 			},

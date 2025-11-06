@@ -408,7 +408,9 @@ impl JobExt for LibraryScanJob {
 						(built_series.len() + failure_logs.len()) as i32;
 					logs.extend(failure_logs);
 
-					let chunks = built_series.chunks(200);
+					let max_concurrency = ctx.config.max_scanner_concurrency;
+
+					let chunks = built_series.chunks(max_concurrency);
 					let chunk_count = chunks.len();
 					tracing::trace!(chunk_count, "Batch inserting new series");
 
@@ -418,9 +420,7 @@ impl JobExt for LibraryScanJob {
 							(idx + 1) as i32,
 							chunk_count as i32,
 						));
-						match safely_insert_series(chunk.to_vec(), ctx.conn.as_ref())
-							.await
-						{
+						match safely_insert_series(chunk.to_vec(), ctx).await {
 							Ok(created_series) => {
 								output.created_series += created_series.len() as u64;
 								ctx.send_core_event(CoreEvent::CreatedManySeries(

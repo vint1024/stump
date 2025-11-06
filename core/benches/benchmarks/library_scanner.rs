@@ -16,7 +16,7 @@ use sea_orm::prelude::*;
 use sea_orm::{ActiveValue::Set, DatabaseConnection};
 use stump_core::{
 	config::StumpConfig,
-	database::connect_at,
+	database::{connect_at, ConnectionPoolMonitor},
 	filesystem::scanner::LibraryScanJob,
 	job::{Executor, WorkerCtx, WrappedJob},
 };
@@ -238,6 +238,7 @@ async fn setup_test(
 		core_event_tx: broadcast::channel(1024).0,
 		commands_rx: async_channel::unbounded().1,
 		status_tx: async_channel::unbounded().0,
+		pool_monitor: Arc::new(ConnectionPoolMonitor::new(100)),
 	};
 	Ok(Setup {
 		test_ctx: TestCtx {

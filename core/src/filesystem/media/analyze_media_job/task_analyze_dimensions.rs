@@ -37,6 +37,8 @@ pub(crate) async fn execute(
 	ctx: &WorkerCtx,
 	output: &mut AnalyzeMediaOutput,
 ) -> Result<(), JobError> {
+	let _guard = ctx.pool_monitor.acquire_slot().await;
+
 	// Get media by id from the database
 	let media_item = media::Entity::find()
 		.select_only()

@@ -47,6 +47,8 @@ impl JobExt for SessionCleanupJob {
 		let mut output = Self::Output::default();
 		let mut logs = vec![];
 
+		let _guard = ctx.pool_monitor.acquire_slot().await;
+
 		let affected_rows = session::Entity::delete_many()
 			.filter(
 				session::Column::ExpiryTime.lt(DateTimeWithTimeZone::from(Utc::now())),

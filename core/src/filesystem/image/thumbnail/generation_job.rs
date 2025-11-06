@@ -127,6 +127,8 @@ impl JobExt for ThumbnailGenerationJob {
 		&mut self,
 		ctx: &WorkerCtx,
 	) -> Result<WorkingState<Self::Output, Self::Task>, JobError> {
+		let _guard = ctx.pool_monitor.acquire_slot().await;
+
 		let media_ids = match &self.params.variant {
 			ThumbnailGenerationJobVariant::SingleLibrary(id) => {
 				let books = media::Entity::find()
@@ -171,6 +173,8 @@ impl JobExt for ThumbnailGenerationJob {
 	) -> Result<JobTaskOutput<Self>, JobError> {
 		let mut output = Self::Output::default();
 		let mut logs = vec![];
+
+		let _guard = ctx.pool_monitor.acquire_slot().await;
 
 		match task {
 			ThumbnailGenerationTask::GenerateBatch(media_ids) => {

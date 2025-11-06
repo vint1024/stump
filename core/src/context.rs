@@ -9,7 +9,7 @@ use tokio::sync::{
 
 use crate::{
 	config::StumpConfig,
-	database,
+	database::{self, ConnectionPoolMonitor},
 	event::CoreEvent,
 	filesystem::scanner::LibraryWatcher,
 	job::{Executor, JobController, JobControllerCommand},
@@ -28,6 +28,7 @@ pub struct Ctx {
 	pub job_controller: Arc<JobController>,
 	pub event_channel: Arc<EventChannel>,
 	pub library_watcher: Arc<LibraryWatcher>,
+	pub pool_monitor: Arc<ConnectionPoolMonitor>,
 }
 
 impl Ctx {
@@ -55,6 +56,9 @@ impl Ctx {
 		);
 		let event_channel = Arc::new(channel::<CoreEvent>(1024));
 
+		let pool_monitor =
+			Arc::new(ConnectionPoolMonitor::new(config.db_max_connections));
+
 		let job_controller =
 			JobController::new(conn.clone(), config.clone(), event_channel.0.clone());
 		let library_watcher =
@@ -66,6 +70,7 @@ impl Ctx {
 			job_controller,
 			event_channel,
 			library_watcher,
+			pool_monitor,
 		}
 	}
 
@@ -75,6 +80,8 @@ impl Ctx {
 
 		let event_channel = Arc::new(channel::<CoreEvent>(1024));
 		let conn = Arc::new(mock_db.into_connection());
+		let pool_monitor =
+			Arc::new(ConnectionPoolMonitor::new(config.db_max_connections));
 
 		// Create job manager
 		let job_controller =
@@ -88,6 +95,7 @@ impl Ctx {
 			job_controller,
 			event_channel,
 			library_watcher,
+			pool_monitor,
 		}
 	}
 

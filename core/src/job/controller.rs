@@ -8,7 +8,7 @@ use tokio::sync::{
 };
 
 use super::{Executor, JobManager, JobManagerResult, WorkerSend, WorkerSendExt};
-use crate::{config::StumpConfig, event::CoreEvent};
+use crate::{config::StumpConfig, database::ConnectionPoolMonitor, event::CoreEvent};
 
 /// Input for commands that require an acknowledgement when they are completed
 /// (e.g. cancel, pause, resume)
@@ -56,9 +56,19 @@ impl JobController {
 		core_event_tx: broadcast::Sender<CoreEvent>,
 	) -> Arc<Self> {
 		let (commands_tx, commands_rx) = mpsc::unbounded_channel();
+		let pool_monitor =
+			Arc::new(ConnectionPoolMonitor::new(config.db_max_connections));
+
 		let this = Arc::new(Self {
 			commands_tx: commands_tx.clone(),
-			manager: JobManager::new(conn, config, commands_tx, core_event_tx).arced(),
+			manager: JobManager::new(
+				conn,
+				config,
+				commands_tx,
+				core_event_tx,
+				pool_monitor,
+			)
+			.arced(),
 		});
 
 		let this_cpy = this.clone();

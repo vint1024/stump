@@ -9,6 +9,7 @@ use tokio::sync::{broadcast, mpsc, oneshot};
 
 use crate::{
 	config::StumpConfig,
+	database::ConnectionPoolMonitor,
 	event::{self, CoreEvent},
 	job::{JobError, JobStatus},
 };
@@ -73,6 +74,8 @@ pub struct WorkerCtx {
 	/// A sender for the [`WorkerCtx`] to send status events to the loop which
 	/// is managing the corresponding worker
 	pub status_tx: async_channel::Sender<WorkerStatusEvent>,
+	/// Connection pool monitor for scanner backpressure
+	pub pool_monitor: Arc<ConnectionPoolMonitor>,
 }
 
 impl WorkerCtx {
@@ -229,6 +232,7 @@ impl Worker {
 		config: Arc<StumpConfig>,
 		core_event_tx: broadcast::Sender<CoreEvent>,
 		job_controller_tx: mpsc::UnboundedSender<JobControllerCommand>,
+		pool_monitor: Arc<ConnectionPoolMonitor>,
 	) -> Result<(Self, WorkerCtx, async_channel::Receiver<WorkerStatusEvent>), JobError>
 	{
 		let (commands_tx, commands_rx) = async_channel::unbounded::<WorkerCommand>();
@@ -242,6 +246,7 @@ impl Worker {
 			commands_rx,
 			job_controller_tx,
 			status_tx,
+			pool_monitor,
 		};
 
 		Ok((Self { commands_tx }, worker_ctx, status_rx))
@@ -259,6 +264,7 @@ impl Worker {
 		config: Arc<StumpConfig>,
 		core_event_tx: broadcast::Sender<CoreEvent>,
 		job_controller_tx: mpsc::UnboundedSender<JobControllerCommand>,
+		pool_monitor: Arc<ConnectionPoolMonitor>,
 	) -> Result<Arc<Self>, JobError> {
 		let job_id = job.id().to_string();
 		let (worker, worker_ctx, status_rx) = Worker::new(
@@ -267,6 +273,7 @@ impl Worker {
 			config,
 			core_event_tx,
 			job_controller_tx,
+			pool_monitor,
 		)?;
 		let worker = worker.arced();
 

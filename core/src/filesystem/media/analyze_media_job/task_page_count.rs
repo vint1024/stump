@@ -27,6 +27,8 @@ pub(crate) async fn execute(
 	ctx: &WorkerCtx,
 	output: &mut AnalyzeMediaOutput,
 ) -> Result<(), JobError> {
+	let _guard = ctx.pool_monitor.acquire_slot().await;
+
 	let (media_ident, metadata) = media::Entity::find()
 		.select_only()
 		.columns(vec![media::Column::Id, media::Column::Path])

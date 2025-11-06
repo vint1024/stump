@@ -125,6 +125,8 @@ impl JobExt for AnalyzeMediaJob {
 	) -> Result<WorkingState<Self::Output, Self::Task>, JobError> {
 		let output = Self::Output::default();
 
+		let _guard = ctx.pool_monitor.acquire_slot().await;
+
 		// We match over the job variant to build a list of tasks to process
 		let tasks = match &self.variant {
 			// Single item is easy

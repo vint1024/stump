@@ -12,7 +12,10 @@ use sea_orm::{
 use tokio::sync::{broadcast, mpsc, RwLock};
 
 use super::{error::JobManagerError, Executor, JobControllerCommand, Worker};
-use crate::{config::StumpConfig, event::CoreEvent, job::JobStatus};
+use crate::{
+	config::StumpConfig, database::ConnectionPoolMonitor, event::CoreEvent,
+	job::JobStatus,
+};
 
 pub type JobManagerResult<T> = Result<T, JobManagerError>;
 
@@ -30,6 +33,8 @@ pub struct JobManager {
 	conn: Arc<DatabaseConnection>,
 	/// A pointer to the core config
 	config: Arc<StumpConfig>,
+	/// Connection pool monitor for scanner backpressure
+	pool_monitor: Arc<ConnectionPoolMonitor>,
 }
 
 impl JobManager {
@@ -39,6 +44,7 @@ impl JobManager {
 		config: Arc<StumpConfig>,
 		job_controller_tx: mpsc::UnboundedSender<JobControllerCommand>,
 		core_event_tx: broadcast::Sender<CoreEvent>,
+		pool_monitor: Arc<ConnectionPoolMonitor>,
 	) -> Self {
 		Self {
 			queue: RwLock::new(VecDeque::new()),
@@ -47,6 +53,7 @@ impl JobManager {
 			core_event_tx,
 			conn,
 			config,
+			pool_monitor,
 		}
 	}
 
@@ -136,6 +143,7 @@ impl JobManager {
 				self.config.clone(),
 				self.get_event_tx(),
 				self.job_controller_tx.clone(),
+				self.pool_monitor.clone(),
 			)
 			.await?;
 			workers.insert(job_id, worker);

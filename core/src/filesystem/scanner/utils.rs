@@ -445,11 +445,13 @@ pub(crate) async fn safely_build_series(
 
 pub(crate) async fn safely_insert_series(
 	series: Vec<BuiltSeries>,
-	conn: &DatabaseConnection,
+	ctx: &WorkerCtx,
 ) -> Result<Vec<series::Model>, JobError> {
 	let mut output = Vec::with_capacity(series.len());
 
-	let txn = conn.begin().await?;
+	let _guard = ctx.pool_monitor.acquire_slot().await;
+
+	let txn = ctx.conn.begin().await?;
 
 	for BuiltSeries { series, metadata } in series {
 		let created_series = series.insert(&txn).await?;
@@ -469,6 +471,7 @@ pub(crate) async fn safely_insert_series(
 
 	txn.commit().await?;
 	tracing::debug!(series_count = output.len(), "Inserted series into database");
+
 	Ok(output)
 }
 
