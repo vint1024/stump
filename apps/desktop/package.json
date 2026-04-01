@@ -20,9 +20,6 @@
 		"nuke": "yarn exec rimraf node_modules"
 	},
 	"dependencies": {
-		"@stump/browser": "*",
-		"@stump/client": "*",
-		"@stump/sdk": "*",
 		"@tanstack/react-query": "^5.87.1",
 		"@tauri-apps/plugin-os": "=2.0.0",
 		"@tauri-apps/plugin-store": "=2.0.0",
