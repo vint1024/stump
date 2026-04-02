@@ -7,7 +7,7 @@ import { useAppStore } from '@stump/browser/stores'
 import { DesktopAppContext, useDesktopAppContext } from '@stump/client'
 import { LocaleProvider } from '@stump/i18n'
 import { QueryClient, QueryClientContext } from '@tanstack/react-query'
-import { createStore, Store } from '@tauri-apps/plugin-store'
+import { Store } from '@tauri-apps/plugin-store'
 import { useEffect, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
@@ -96,11 +96,12 @@ function App() {
 }
 
 export default function AppEntry() {
-	const [store, setStore] = useState<Store>()
+	const [store, setStore] = useState<Store | undefined>()
 
 	useEffect(() => {
 		const init = async () => {
-			setStore(await createStore('settings.json'))
+			const loadedStore = await Store.load('settings.json')
+			setStore(loadedStore)
 		}
 
 		if (!store) {
