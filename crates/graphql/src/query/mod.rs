@@ -13,6 +13,7 @@ mod epub;
 mod filesystem;
 mod job;
 mod library;
+mod list;
 mod log;
 pub(crate) mod media;
 mod media_metadata_overview;
