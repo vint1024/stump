@@ -125,7 +125,7 @@ export default function MediaMetadataEditor({ mediaId, data }: Props) {
 		() => [
 			columnHelper.accessor('label', {
 				header: ({ table }) => (
-					<div className="flex h-full items-center pl-4 font-bold leading-6 text-foreground/90">
+					<div className="pl-4 font-bold leading-6 flex h-full items-center text-foreground/90">
 						<Label className="flex items-center">
 							<CheckBox
 								variant="primary"
@@ -138,7 +138,7 @@ export default function MediaMetadataEditor({ mediaId, data }: Props) {
 					</div>
 				),
 				cell: (info) => (
-					<div className="flex items-center gap-1.5">
+					<div className="gap-1.5 flex items-center">
 						<Text variant="muted" className="text-sm font-medium">
 							{info.getValue()}
 						</Text>

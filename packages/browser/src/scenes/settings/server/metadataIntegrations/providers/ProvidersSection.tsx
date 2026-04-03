@@ -24,7 +24,7 @@ function ProviderCards() {
 
 	if (providers.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-edge p-8">
+			<div className="rounded-lg p-8 flex flex-col items-center justify-center border border-dashed border-edge">
 				<Text size="sm" variant="muted">
 					{t('settingsScene.server/metadataIntegrations.noProviders')}
 				</Text>
@@ -33,7 +33,7 @@ function ProviderCards() {
 	}
 
 	return (
-		<div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2">
+		<div className="gap-4 md:grid-cols-1 lg:grid-cols-2 grid grid-cols-1">
 			{providers.map((provider) => (
 				<ExistingProviderCard key={provider.id} data={provider} />
 			))}
@@ -45,7 +45,7 @@ export default function ProvidersSection() {
 	const { t } = useLocaleContext()
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="gap-4 flex flex-col">
 			<div className="flex items-end justify-between">
 				<div>
 					<Heading size="sm">

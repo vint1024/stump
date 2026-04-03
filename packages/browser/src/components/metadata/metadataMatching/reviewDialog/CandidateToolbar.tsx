@@ -20,8 +20,8 @@ export function CandidateToolbar() {
 		.replace('{{total}}', candidates.length.toString())
 
 	return (
-		<div className="flex items-center justify-between px-1">
-			<div className="flex items-center gap-2">
+		<div className="px-1 flex items-center justify-between">
+			<div className="gap-2 flex items-center">
 				<Button
 					size="icon"
 					variant="ghost"
@@ -44,7 +44,7 @@ export function CandidateToolbar() {
 			</div>
 
 			{candidate && (
-				<div className="flex items-center gap-3">
+				<div className="gap-3 flex items-center">
 					<Text size="xs" variant="muted">
 						{t(getKey('provider'))}:{' '}
 						<span className="font-medium text-foreground">{upperFirst(candidate.provider)}</span>

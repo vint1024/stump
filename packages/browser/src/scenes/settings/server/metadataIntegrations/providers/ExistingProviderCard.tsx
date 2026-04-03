@@ -38,21 +38,21 @@ export function ExistingProviderCard({ data }: Props) {
 		: false
 
 	return (
-		<Card key={provider.id} className="flex flex-col gap-4 p-4">
-			<div className="flex items-center justify-between gap-1">
-				<div className="flex items-center gap-4">
+		<Card key={provider.id} className="gap-4 p-4 flex flex-col">
+			<div className="gap-1 flex items-center justify-between">
+				<div className="gap-4 flex items-center">
 					<ProviderLogo provider={provider.providerType} className="h-8 w-8" />
 					<Text className="font-medium">
 						{PROVIDER_LABELS[provider.providerType] ?? provider.providerType}
 					</Text>
 				</div>
 
-				<div className="flex items-center gap-2">
+				<div className="gap-2 flex items-center">
 					{canEdit && <EditProviderDialog provider={provider} />}
 
 					{expiresSoon && (
 						<ToolTip content={t(getKey('providerTokenExpiresSoon'))} align="end" size="xs">
-							<div className="flex h-7 w-7 items-center justify-center rounded-full border border-fill-danger/10 bg-fill-danger-secondary">
+							<div className="h-7 w-7 flex items-center justify-center rounded-full border border-fill-danger/10 bg-fill-danger-secondary">
 								<BadgeAlert className="text-primary h-4 w-4" strokeWidth={1} />
 							</div>
 						</ToolTip>
@@ -60,7 +60,7 @@ export function ExistingProviderCard({ data }: Props) {
 
 					{provider.enabled && (
 						<ToolTip content={t(getKey('providerEnabled'))} align="end" size="xs">
-							<div className="flex h-7 w-7 items-center justify-center rounded-full border border-fill-success/10 bg-fill-success-secondary">
+							<div className="h-7 w-7 flex items-center justify-center rounded-full border border-fill-success/10 bg-fill-success-secondary">
 								<BadgeCheck className="text-primary h-4 w-4" strokeWidth={1} />
 							</div>
 						</ToolTip>
@@ -68,7 +68,7 @@ export function ExistingProviderCard({ data }: Props) {
 
 					{!provider.enabled && (
 						<ToolTip content={t(getKey('providerDisabled'))} align="end" size="xs">
-							<div className="flex h-7 w-7 items-center justify-center rounded-full border border-fill-info/10 bg-fill-info-secondary">
+							<div className="h-7 w-7 flex items-center justify-center rounded-full border border-fill-info/10 bg-fill-info-secondary">
 								<BadgeX className="text-primary h-4 w-4" strokeWidth={1} />
 							</div>
 						</ToolTip>
@@ -76,7 +76,7 @@ export function ExistingProviderCard({ data }: Props) {
 				</div>
 			</div>
 
-			<div className="flex items-center justify-between gap-1">
+			<div className="gap-1 flex items-center justify-between">
 				<Text size="xs" variant="muted">
 					Added {intlFormat(new Date(provider.createdAt))}
 				</Text>

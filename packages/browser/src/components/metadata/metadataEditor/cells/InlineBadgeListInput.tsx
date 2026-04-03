@@ -26,7 +26,7 @@ export default function InlineBadgeListInput({ values, onChange, className, bind
 				<Button
 					variant="danger"
 					size="icon"
-					className="absolute -right-2 -top-2 z-10 h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100"
+					className="-right-2 -top-2 h-4 w-4 absolute z-10 opacity-0 transition-opacity group-hover:opacity-100"
 					aria-label="Remove item"
 					onClick={() => onRemove(index)}
 				>
@@ -37,7 +37,7 @@ export default function InlineBadgeListInput({ values, onChange, className, bind
 	}
 
 	return (
-		<div className={cn('flex h-full flex-wrap items-center gap-1', className)}>
+		<div className={cn('gap-1 flex h-full flex-wrap items-center', className)}>
 			{values.map(renderBadge)}
 			<AddFieldsDialog binding={binding} onSave={onAppendValues} />
 		</div>

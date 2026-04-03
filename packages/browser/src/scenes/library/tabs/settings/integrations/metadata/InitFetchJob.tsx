@@ -41,7 +41,7 @@ export default function InitFetchJob() {
 	const handleFetch = () => mutate({ id: library.id })
 
 	return (
-		<div className="flex flex-col gap-6">
+		<div className="gap-6 flex flex-col">
 			<div>
 				<Heading size="sm">{t(getKey('heading'))}</Heading>
 				<Text size="sm" variant="muted">

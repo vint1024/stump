@@ -89,7 +89,7 @@ export default function JobScheduler() {
 	// TODO:(ux): Show alert if not config (and not dismissed) OR show always if unsaved changes
 	// that would be a bit more work tho soooo not now
 	return (
-		<div className="my-2 flex flex-col gap-4">
+		<div className="my-2 gap-4 flex flex-col">
 			<Alert variant="info" id="scheduler-requires-restart" dismissible>
 				<AlertCircleIcon className="h-4 w-4" />
 				<AlertTitle>{t(getKey('restartRequiredTitle'))}</AlertTitle>
@@ -97,7 +97,7 @@ export default function JobScheduler() {
 			</Alert>
 
 			{scheduledJobs.length > 0 && (
-				<div className="flex flex-col gap-3">
+				<div className="gap-3 flex flex-col">
 					{scheduledJobs.map((job) => (
 						<ScheduledJobRow
 							key={job.id}

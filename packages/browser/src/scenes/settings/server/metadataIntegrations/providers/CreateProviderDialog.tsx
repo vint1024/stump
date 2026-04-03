@@ -104,7 +104,7 @@ export function CreateProviderDialog() {
 
 					<Form form={form} onSubmit={handleSubmit} id="create-provider-form" className="py-2">
 						{step === 0 && (
-							<div className="grid grid-cols-2 gap-4">
+							<div className="gap-4 grid grid-cols-2">
 								{PROVIDERS.map((provider) => (
 									<ProviderSelectionCard
 										key={provider}

@@ -4,19 +4,19 @@ import isEqual from 'lodash/isEqual'
 import omit from 'lodash/omit'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { Controller, useForm, useFormState, useWatch } from 'react-hook-form'
-import { FocusEvent, Platform, Pressable, View } from 'react-native'
-import Dialog from 'react-native-dialog'
+import { Alert, FocusEvent, Platform, Pressable, View } from 'react-native'
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable'
 import Reanimated, { SharedValue, useAnimatedStyle } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { match, P } from 'ts-pattern'
 import { z } from 'zod'
 
+import { useTranslate } from '~/lib/hooks'
 import { cn } from '~/lib/utils'
 import { usePreferencesStore, useSavedServers } from '~/stores'
 import { SavedServerWithConfig } from '~/stores/savedServer'
 
-import { BottomSheet, Button, Heading, Label, Switch, Tabs, Text } from '../ui'
+import { Button, Heading, Input, Label, Switch, Tabs, Text } from '../ui'
 
 type Props = {
 	editingServer?: SavedServerWithConfig | null
@@ -31,6 +31,7 @@ export default function AddOrEditServerForm({
 	onClose,
 	onInputFocused,
 }: Props) {
+	const { t } = useTranslate()
 	const { savedServers, stumpEnabled } = useSavedServers()
 
 	const { control, handleSubmit, ...form } = useForm<AddOrEditServerSchema>({
@@ -38,10 +39,13 @@ export default function AddOrEditServerForm({
 		resolver: zodResolver(
 			createSchema(
 				savedServers.map(({ name }) => name).filter((name) => name !== editingServer?.name),
+				t,
 			),
 		),
 	})
 	const { errors } = useFormState({ control })
+
+	const headerSchema = createHeaderSchema(t)
 
 	const maskURLs = usePreferencesStore((state) => state.maskURLs)
 
@@ -64,19 +68,18 @@ export default function AddOrEditServerForm({
 		if (!isValid) {
 			form.setError('url', {
 				type: 'manual',
-				message: 'Failed to connect to server',
+				message: t(getKey('failedToConnect')),
 			})
 		} else {
 			form.clearErrors('url')
 			setDidConnect(true)
 		}
-	}, [kind, url, form, setDidConnect])
+	}, [kind, url, form, setDidConnect, t])
 
 	const [isAddingHeader, setIsAddingHeader] = useState(false)
 
 	const [newHeaderKey, setNewHeaderKey] = useState('')
 	const [newHeaderValue, setNewHeaderValue] = useState('')
-	const [newHeaderError, setNewHeaderError] = useState('')
 
 	const addNewHeader = useCallback(() => {
 		const key = newHeaderKey.trim()
@@ -90,14 +93,16 @@ export default function AddOrEditServerForm({
 			setIsAddingHeader(false)
 		} else {
 			console.error(result.error.errors)
-			setNewHeaderError(result.error.errors[0]?.message || 'Invalid header')
+			Alert.alert(
+				t('common.error'),
+				result.error.errors[0]?.message || t(getKey('customHeaders.invalidHeader')),
+			)
 		}
-	}, [newHeaderKey, newHeaderValue, form])
+	}, [newHeaderKey, newHeaderValue, form, t, headerSchema])
 
 	const onCancelAddHeader = () => {
 		setNewHeaderKey('')
 		setNewHeaderValue('')
-		setNewHeaderError('')
 		setIsAddingHeader(false)
 	}
 
@@ -126,10 +131,8 @@ export default function AddOrEditServerForm({
 	const renderAuthMode = () => {
 		if (authMode === 'default') {
 			return (
-				<View className="squircle rounded-lg border border-dashed border-edge p-3">
-					<Text className="text-foreground-muted">
-						You will be prompted to login when accessing content as needed
-					</Text>
+				<View className="squircle rounded-lg p-3 border border-dashed border-edge">
+					<Text className="text-foreground-muted">{t(getKey('auth.default.description'))}</Text>
 				</View>
 			)
 		} else if (authMode === 'basic') {
@@ -138,8 +141,8 @@ export default function AddOrEditServerForm({
 					<Controller
 						control={control}
 						render={({ field: { onChange, onBlur, value } }) => (
-							<BottomSheet.Input
-								label="Username"
+							<Input
+								label={t('common.username')}
 								autoCorrect={false}
 								autoCapitalize="none"
 								placeholder="oromei"
@@ -156,8 +159,8 @@ export default function AddOrEditServerForm({
 					<Controller
 						control={control}
 						render={({ field: { onChange, onBlur, value } }) => (
-							<BottomSheet.Input
-								label="Password"
+							<Input
+								label={t('common.password')}
 								autoCorrect={false}
 								autoCapitalize="none"
 								placeholder="*************"
@@ -178,11 +181,11 @@ export default function AddOrEditServerForm({
 				<Controller
 					control={control}
 					render={({ field: { onChange, onBlur, value } }) => (
-						<BottomSheet.Input
+						<Input
 							label="Token"
 							autoCorrect={false}
 							autoCapitalize="none"
-							placeholder="Bearer token"
+							placeholder={t(getKey('auth.token.placeholder'))}
 							onBlur={onBlur}
 							onChangeText={onChange}
 							value={value}
@@ -227,12 +230,12 @@ export default function AddOrEditServerForm({
 
 	return (
 		<View
-			className="w-full gap-4"
+			className="gap-4 w-full"
 			style={{ paddingBottom: Platform.OS === 'android' ? 32 : insets.bottom }}
 		>
-			<View className="flex-row items-center justify-between pb-2">
+			<View className="pb-2 flex-row items-center justify-between">
 				<Pressable onPress={onClose}>
-					<Text className="text-foreground-muted">Cancel</Text>
+					<Text className="text-foreground-muted">{t('common.cancel')}</Text>
 				</Pressable>
 
 				<Button
@@ -241,23 +244,21 @@ export default function AddOrEditServerForm({
 					onPress={handleSubmit(onSubmit)}
 					disabled={editingServer ? !isUpdateReady : false}
 				>
-					<Text>Save</Text>
+					<Text>{t('common.save')}</Text>
 				</Button>
 			</View>
 
 			<View>
 				<Heading size="lg" className="font-bold leading-6">
-					{editingServer ? 'Edit Server' : 'Add Server'}
+					{editingServer ? t(getKey('editServer.title')) : t(getKey('addServer.title'))}
 				</Heading>
 				<Text className="text-foreground-muted">
-					{editingServer
-						? 'Make changes to the server configuration'
-						: 'Configure a new server to access your content'}
+					{t(getKey(editingServer ? 'editServer.subtitle' : 'addServer.subtitle'))}
 				</Text>
 			</View>
 
 			<View className="w-full flex-row items-center justify-between">
-				<Text className="flex-1 text-base font-medium text-foreground-muted">Kind</Text>
+				<Text className="text-base font-medium text-foreground-muted">{t(getKey('kind'))}</Text>
 
 				<Tabs
 					value={broadKind}
@@ -277,7 +278,9 @@ export default function AddOrEditServerForm({
 
 			{broadKind === 'opds' && (
 				<View className="w-full flex-row items-center justify-between">
-					<Text className="flex-1 text-base font-medium text-foreground-muted">OPDS Version</Text>
+					<Text className="text-base font-medium text-foreground-muted">
+						OPDS {t('common.version')}
+					</Text>
 
 					<Tabs
 						value={opdsVersion}
@@ -305,11 +308,11 @@ export default function AddOrEditServerForm({
 					required: true,
 				}}
 				render={({ field: { onChange, onBlur, value } }) => (
-					<BottomSheet.Input
-						label="Name"
+					<Input
+						label={t('common.name')}
 						autoCorrect={false}
 						autoCapitalize="none"
-						placeholder="My Server"
+						placeholder={t(getKey('serverNamePlaceholder'))}
 						onBlur={onBlur}
 						onChangeText={onChange}
 						value={value}
@@ -325,8 +328,8 @@ export default function AddOrEditServerForm({
 					required: true,
 				}}
 				render={({ field: { onChange, onBlur, value } }) => (
-					<BottomSheet.Input
-						label={kind === 'stump' ? 'URL' : 'Catalog URL'}
+					<Input
+						label={t(kind === 'stump' ? 'common.url' : getKey('catalogUrl'))}
 						autoCorrect={false}
 						autoCapitalize="none"
 						placeholder={`https://stump.my-domain.cloud${kind !== 'stump' ? `/opds/${opdsVersion === 'v1' ? 'v1.2' : 'v2.0'}/catalog` : ''}`}
@@ -352,15 +355,17 @@ export default function AddOrEditServerForm({
 					disabled={!url}
 					onPress={checkConnection}
 				>
-					<Text>{didConnect ? 'Connected' : 'Check connection'}</Text>
+					<Text>{t(getKey(didConnect ? 'didConnect' : 'checkConnection'))}</Text>
 				</Button>
 			</View>
 
-			<View className="w-full gap-2">
-				<Text className="flex-1 text-base font-medium text-foreground-muted">Custom Headers</Text>
+			<View className="gap-2 w-full">
+				<Text className="text-base font-medium text-foreground-muted">
+					{t(getKey('customHeaders.label'))}
+				</Text>
 
 				{formValues.customHeaders?.length && (
-					<View className="squircle w-full overflow-hidden rounded-lg border border-edge">
+					<View className="squircle rounded-lg w-full overflow-hidden border border-edge">
 						{formValues.customHeaders.map((header, index) => (
 							<Swipeable
 								key={index}
@@ -372,7 +377,7 @@ export default function AddOrEditServerForm({
 							>
 								<View
 									className={cn(
-										'w-full flex-row items-center justify-between gap-2 p-3 tablet:p-4',
+										'gap-2 p-3 tablet:p-4 w-full flex-row items-center justify-between',
 										{
 											'border-b border-edge': index !== (formValues.customHeaders?.length || 0) - 1,
 										},
@@ -386,32 +391,42 @@ export default function AddOrEditServerForm({
 					</View>
 				)}
 
-				<Button roundness="xl" variant="outline" onPress={() => setIsAddingHeader(true)}>
-					<Text>Add header</Text>
-				</Button>
+				{isAddingHeader ? (
+					<View className="squircle gap-2 rounded-2xl p-3 border border-edge">
+						<Input
+							label={t('common.name')}
+							autoCorrect={false}
+							autoCapitalize="none"
+							placeholder="X-Biz-Baz"
+							onChangeText={setNewHeaderKey}
+						/>
+						<Input
+							label={t('common.value')}
+							autoCorrect={false}
+							autoCapitalize="none"
+							placeholder={t('common.value').toLowerCase()}
+							onChangeText={setNewHeaderValue}
+						/>
+						<View className="gap-4 flex-row justify-end">
+							<Button variant="outline" size="sm" onPress={onCancelAddHeader}>
+								<Text>{t('common.cancel')}</Text>
+							</Button>
+							<Button variant="brand" size="sm" onPress={addNewHeader}>
+								<Text>{t('common.save')}</Text>
+							</Button>
+						</View>
+					</View>
+				) : (
+					<Button roundness="xl" variant="outline" onPress={() => setIsAddingHeader(true)}>
+						<Text>{t(getKey('customHeaders.addHeader'))}</Text>
+					</Button>
+				)}
 			</View>
 
-			<Dialog.Container visible={isAddingHeader}>
-				<Dialog.Title>Add custom header</Dialog.Title>
-				{newHeaderError && (
-					<Dialog.Description
-						style={{
-							color: 'red',
-						}}
-					>
-						{newHeaderError}
-					</Dialog.Description>
-				)}
-
-				<Dialog.Input placeholder="Key" onChangeText={setNewHeaderKey} autoCapitalize="none" />
-				<Dialog.Input placeholder="Value" onChangeText={setNewHeaderValue} autoCapitalize="none" />
-
-				<Dialog.Button label="Cancel" onPress={onCancelAddHeader} />
-				<Dialog.Button label="Ok" onPress={addNewHeader} />
-			</Dialog.Container>
-
 			<View className="w-full flex-row items-center justify-between">
-				<Text className="flex-1 text-base font-medium text-foreground-muted">Auth</Text>
+				<Text className="text-base font-medium text-foreground-muted">
+					{t(getKey('auth.label'))}
+				</Text>
 
 				<Controller
 					control={control}
@@ -419,15 +434,15 @@ export default function AddOrEditServerForm({
 						<Tabs value={value} onValueChange={onChange}>
 							<Tabs.List className="flex-row">
 								<Tabs.Trigger value="default">
-									<Text>Login</Text>
+									<Text>{t(getKey('auth.default.label'))}</Text>
 								</Tabs.Trigger>
 
 								<Tabs.Trigger value="basic">
-									<Text>Basic</Text>
+									<Text>{t(getKey('auth.basic'))}</Text>
 								</Tabs.Trigger>
 
 								<Tabs.Trigger value="token">
-									<Text>Token</Text>
+									<Text>{t(getKey('auth.token.label'))}</Text>
 								</Tabs.Trigger>
 							</Tabs.List>
 						</Tabs>
@@ -438,9 +453,9 @@ export default function AddOrEditServerForm({
 
 			{renderAuthMode()}
 
-			<View className="w-full gap-6">
-				<Text className="flex-1 text-base font-medium text-foreground-muted">Options</Text>
-				<View className="w-full flex-row items-center justify-between gap-6">
+			<View className="gap-6 w-full">
+				<Text className="text-base font-medium text-foreground-muted">{t('common.options')}</Text>
+				<View className="gap-6 w-full flex-row items-center justify-between">
 					<Label
 						nativeID="defaultServer"
 						onPress={() => {
@@ -448,7 +463,7 @@ export default function AddOrEditServerForm({
 						}}
 						disabled={kind !== 'stump'}
 					>
-						Set as default server
+						{t(getKey('setAsDefaultServer'))}
 					</Label>
 
 					<Switch
@@ -460,7 +475,7 @@ export default function AddOrEditServerForm({
 				</View>
 
 				{kind === 'stump' && (
-					<View className="w-full flex-row items-center justify-between gap-6">
+					<View className="gap-6 w-full flex-row items-center justify-between">
 						<Label
 							nativeID="stumpOPDS"
 							onPress={() => {
@@ -468,7 +483,7 @@ export default function AddOrEditServerForm({
 							}}
 							disabled={kind !== 'stump'}
 						>
-							Enable OPDS
+							{t(getKey('enableOPDS'))}
 						</Label>
 
 						<Switch
@@ -489,6 +504,7 @@ function RenderHeaderAction(
 	drag: SharedValue<number>,
 	onDelete: () => void,
 ) {
+	const { t } = useTranslate()
 	const styleAnimation = useAnimatedStyle(() => {
 		return {
 			transform: [{ translateX: drag.value + 50 }],
@@ -498,10 +514,12 @@ function RenderHeaderAction(
 	return (
 		<Reanimated.View style={styleAnimation}>
 			<Pressable
-				className="h-full w-14 items-center justify-center bg-fill-danger"
+				className="w-14 h-full items-center justify-center bg-fill-danger"
 				onPress={onDelete}
 			>
-				{({ pressed }) => <Text className={cn({ 'opacity-80': pressed })}>Delete</Text>}
+				{({ pressed }) => (
+					<Text className={cn({ 'opacity-80': pressed })}>{t('common.delete')}</Text>
+				)}
 			</Pressable>
 		</Reanimated.View>
 	)
@@ -568,23 +586,24 @@ const getDefaultValues = (stumpEnabled: boolean, editingServer?: SavedServerWith
 	} as AddOrEditServerSchema
 }
 
-const headerSchema = z
-	.object({
-		key: z.string().nonempty(),
-		value: z.string().nonempty(),
-	})
-	.refine((value) => value.key.toLowerCase() !== 'authorization', {
-		message: 'Cannot set Authorization header',
-	})
+const createHeaderSchema = (t: (key: string) => string) =>
+	z
+		.object({
+			key: z.string().nonempty(),
+			value: z.string().nonempty(),
+		})
+		.refine((value) => value.key.toLowerCase() !== 'authorization', {
+			message: t(getKey('validations.cannotSetAuthorizationHeader')),
+		})
 
-const createSchema = (names: string[]) =>
+const createSchema = (names: string[], t: (key: string) => string) =>
 	z.object({
 		name: z
 			.string()
 			.nonempty()
 			.min(1)
 			.refine((value) => !names.includes(value), {
-				message: 'Name already exists',
+				message: t(getKey('validations.nameAlreadyExists')),
 			}),
 		url: z.string().url(),
 		kind: z
@@ -598,7 +617,7 @@ const createSchema = (names: string[]) =>
 		token: z.string().optional(),
 		basicUser: z.string().optional(),
 		basicPassword: z.string().optional(),
-		customHeaders: z.array(headerSchema).optional(),
+		customHeaders: z.array(createHeaderSchema(t)).optional(),
 	})
 export type AddOrEditServerSchema = z.infer<ReturnType<typeof createSchema>>
 
@@ -639,3 +658,6 @@ export const transformFormData = (data: AddOrEditServerSchema) => {
 		config,
 	}
 }
+
+const LOCALE_BASE = 'addOrEditServer'
+const getKey = (key: string) => `${LOCALE_BASE}.${key}`

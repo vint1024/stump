@@ -54,7 +54,7 @@
 		},
 		"emailBook": {
 			"heading": "E-Mail das Buch",
-			"description": "Sende dieses Buch zu einem Gerät oder einer E-mail-Adresse",
+			"description": "Sende dieses Buch zu einem Gerät oder einer E-Mail-Adresse",
 			"form": {
 				"email": {
 					"label": "E-Mail",
@@ -260,7 +260,11 @@
 					"label": "Serienreiter verbergen",
 					"description": "Verberge den Serienreiter in der Bibliotheksnavigation"
 				},
-				"configuration": {
+				"skipBookOverview": {
+					"label": "Buchübersicht überspringen",
+					"description": "Öffne den Reader direkt bei der Auswahl von Büchern in dieser Bibliotheken"
+				},
+				"options": {
 					"series": {
 						"label": "Serien",
 						"description": "Serienreiter standardmäßig anzeigen"
@@ -464,8 +468,8 @@
 					"description": "Die Details zu dieser Bibliothek, einschließlich Name, Pfad und Beschreibung"
 				},
 				{
-					"label": "Scannt",
-					"heading": "Scannt",
+					"label": "Scannen",
+					"heading": "Scannen",
 					"description": "Einstellungen in Bezug, wie Stump diese Bibliothek scannt"
 				},
 				{
@@ -543,7 +547,7 @@
 			"configuration": {
 				"general": "Allgemein",
 				"reading": "Lesen",
-				"scanning": "Wird gescannt",
+				"scanning": "Scannen",
 				"thumbnails": "Vorschaubilder",
 				"ignore-rules": "Dateien ignorieren",
 				"analysis": "Analyse",
@@ -696,7 +700,21 @@
 						"label": "Bibliothek bereinigen",
 						"text": "Bist du sicher, dass du diese Bibliothek bereinigen möchtest?"
 					},
-					"emptyText": "Es gab nichts zu reinigen"
+					"emptyText": "Es gab nichts zu reinigen",
+					"missingEntitiesTable": {
+						"columns": {
+							"id": "ID",
+							"path": "Pfad",
+							"type": "Typ"
+						},
+						"types": {
+							"BOOK": "Buch",
+							"SERIES": "Serien",
+							"LIBRARY": "Bibliothek"
+						},
+						"emptyHeading": "Nichts fehlt für diese Bibliothek",
+						"emptySubtitle": "Alle in der Datenbank gespeicherten Dateien wurden auf der Festplatte gefunden"
+					}
 				},
 				"deleteLibrary": {
 					"heading": "Bibliothek löschen",
@@ -924,7 +942,11 @@
 									"characters": "Charaktere",
 									"teams": "Teams",
 									"genres": "Genre",
-									"coverArtists": "Cover-Künstler"
+									"coverArtists": "Cover-Künstler",
+									"ageRating": "Altersfreigabe",
+									"year": "Jahr",
+									"month": "Monat",
+									"day": "Tag"
 								}
 							},
 							"series": {
@@ -946,7 +968,8 @@
 									"status": "Status",
 									"volume": "Band",
 									"metaType": "Typ",
-									"ageRating": "Altersfreigabe"
+									"ageRating": "Altersfreigabe",
+									"year": "Startjahr"
 								}
 							},
 							"library": {
@@ -1253,20 +1276,15 @@
 						"updateFailed": "Beim Aktualisieren deines Profils ist ein Fehler aufgetreten. Bitte versuche es noch einmal."
 					},
 					"avatarPicker": {
-						"heading": "Wähle dein Avatar-Bild",
-						"subtitle": "Stump unterstützt benutzerdefinierte Avatare, die durch die Angabe einer Bild URL gesetzt werden können. Hochladen von Bildern wird nicht unterstützt, um die Datenmenge auf dem Server zu reduzieren.",
-						"preview": "Eine Vorschaue wird erscheinen, sobald du eine URL eingegeben hast.",
-						"labels": {
-							"imageUrl": "Bild URL",
-							"customAvatar": "Benutzerdefinierter Avatar"
-						},
-						"buttons": {
-							"confirm": "Bild bestätigen",
-							"cancel": "Abbrechen",
-							"edit": "Bearbeiten",
-							"changeImage": "Bild ändern",
-							"removeImage": "Bild entfernen"
-						}
+						"label": "Avatar",
+						"heading": "Avatar hochladen",
+						"subtitle": "Du kannst jedes Bild hochladen, um dieses als Avatar für soziale Funktionen in Stump zu verwenden",
+						"dropzone": "Bild hier ablegen oder zum Auswählen klicken",
+						"changeImage": "Bild ändern",
+						"removeImage": "Bild entfernen",
+						"removeSelection": "Hochgeladenes Bild entfernen",
+						"uploadFailed": "Avatar konnte nicht hochgeladen werden",
+						"removeFailed": "Avatar konnte nicht entfernt werden"
 					},
 					"buttons": {
 						"confirm": "Änderungen speichern"
@@ -1691,9 +1709,38 @@
 						]
 					}
 				},
+				"helpfulLinks": {
+					"title": "Hilfreiche Links",
+					"description": "Links zu Ressourcen, die bei der Verwaltung Ihrer Stump Serverinstanz hilfreich sein könnten",
+					"links": {
+						"documentation": "Dokumentation",
+						"changelog": "Änderungsprotokoll"
+					}
+				},
 				"serverPublicUrl": {
 					"label": "Öffentliche URL",
 					"description": "Die URL, über die von außen auf den Server zugegriffen werden kann, sofern verfügbar. Dies aktiviert Einladungslinks und andere Funktionen"
+				},
+				"customEmojis": {
+					"title": "Benutzerdefinierte Emojis",
+					"description": "Verwalte und lade benutzerdefinierte Bild-Emojis für deinen Server hoch",
+					"dropzone": "Ein Bild hier ablegen oder zum Auswählen klicken",
+					"input": {
+						"label": "Emoji-Name",
+						"placeholder": "z.B. party_papagei"
+					},
+					"deleteModal": {
+						"title": "Emoji löschen",
+						"description": "Bist du sicher dieses Emoji löschen zu wollen?"
+					},
+					"noCustomEmojis": "Bisher wurden keine benutzerdefinierten Emojis hinzugefügt",
+					"invalidName": "Bitte gebe einen gültigen Namen für dein Emoji ein",
+					"uploadError": "Emoji konnte nicht hochgeladen werden",
+					"uploadSuccess": "Emoji hochgeladen",
+					"renameSuccess": "Emoji umbenannt",
+					"renameError": "Emoji konnte nicht umbenannt werden",
+					"deleteSuccess": "Emoji gelöscht",
+					"deleteError": "Emoji konnte nicht gelöscht werden"
 				}
 			}
 		},
@@ -2074,6 +2121,16 @@
 				"submit": {
 					"create": "Mailserver hinzufügen",
 					"update": "E-Mail aktualisieren"
+				},
+				"testEmailer": {
+					"button": "Test-E-Mail verschicken",
+					"recipientLabel": "Testempfänger",
+					"recipientDescription": "Eine E-Mail-Adresse an die, die Test-E-Mail gesendet werden soll",
+					"success": "Test-E-Mail erfolgreich gesendet",
+					"error": {
+						"title": "Das Versenden der Test-E-Mail ist fehlgeschlagen",
+						"description": "Überprüfe deine SMTP-Einstellungen und versuche es erneut"
+					}
 				}
 			},
 			"createEmailer": {
@@ -2209,6 +2266,7 @@
 	"common": {
 		"add": "Hinzufügen",
 		"cancel": "Abbrechen",
+		"clear": "Löschen",
 		"confirm": "Bestätigen",
 		"delete": "Löschen",
 		"enter": "Enter",
@@ -2221,6 +2279,7 @@
 		"update": "Aktualisieren",
 		"upload": "Hochladen",
 		"uploading": "Wird hochgeladen",
+		"uploadingEllipsis": "Wird hochgeladen...",
 		"unimplemented": "Diese Funktionalität ist noch nicht implementiert! Schaue später wieder vorbei",
 		"limitedFunctionality": "Das ist noch nicht vollständig implementiert und es fehlen noch ein paar Funktionen! Schaue später wieder vorbei",
 		"logIn": "Anmelden",
@@ -2233,7 +2292,12 @@
 		"notUsedYet": "Noch nicht verwendet",
 		"never": "Nie",
 		"scan": "Scannen",
-		"somethingWentWrong": "Etwas ist falsch gelaufen"
+		"somethingWentWrong": "Etwas ist falsch gelaufen",
+		"fileUpload": {
+			"someRejected": "Einige Dateien wurden abgelehnt. Bitte überprüfe die Dateitypen und versuche es erneut",
+			"tooManyFiles": "Du hast zu viele Dateien ausgewählt",
+			"noValidFiles": "Es wurden keine gültigen Dateien ausgewählt"
+		}
 	},
 	"userPermissions": {
 		"ACCESS_API_KEYS": {
@@ -2359,6 +2423,10 @@
 		"WRITE_BACK_METADATA": {
 			"label": "Metadaten zurückschreiben",
 			"description": "Erlaubt dem Benutzer Metadatenänderungen zurück auf die Quelldateien zu schreiben"
+		},
+		"EDIT_THUMBNAILS": {
+			"label": "Vorschaubilder bearbeiten",
+			"description": "Erlaubt dem Benutzer Vorschaubilder für Bücher und Serien zu bearbeiten"
 		}
 	}
 }

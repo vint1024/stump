@@ -152,7 +152,7 @@ const columnHelper = createColumnHelper<PendingMatchRow>()
 function ReviewButton({ records, startIndex }: { records: MatchRecord[]; startIndex: number }) {
 	const open = useMatchReviewStore((s) => s.open)
 	return (
-		<div className="inline-flex items-end md:w-2">
+		<div className="md:w-2 inline-flex items-end">
 			<Button
 				size="icon"
 				variant="ghost"
@@ -254,7 +254,7 @@ export function PendingMatchesTable() {
 
 	if (rows.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-edge p-8">
+			<div className="rounded-lg p-8 flex flex-col items-center justify-center border border-dashed border-edge">
 				<Text size="sm" variant="muted">
 					{t(getKey('nothingToReview'))}
 				</Text>
@@ -263,8 +263,8 @@ export function PendingMatchesTable() {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex items-center gap-2">
+		<div className="gap-4 flex flex-col">
+			<div className="gap-2 flex items-center">
 				<Button
 					variant="secondary"
 					size="sm"

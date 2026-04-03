@@ -15,8 +15,8 @@ export function ReviewDialogFooter() {
 	// TODO: I can't decide if I like or hate those icons
 	return (
 		<Dialog.Footer className="flex items-center justify-between">
-			<div className="flex items-center gap-4">
-				<div className="flex items-center gap-1">
+			<div className="gap-4 flex items-center">
+				<div className="gap-1 flex items-center">
 					<Button
 						size="icon"
 						variant="ghost"
@@ -51,7 +51,7 @@ export function ReviewDialogFooter() {
 				/>
 			</div>
 
-			<div className="flex items-center gap-2">
+			<div className="gap-2 flex items-center">
 				<Button variant="danger" size="sm" onClick={reject} disabled={isPending || !hasCandidate}>
 					<X className="mr-1.5 h-3.5 w-3.5" />
 					{t(getKey('reject'))}

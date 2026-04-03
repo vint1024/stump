@@ -28,7 +28,7 @@ export function FieldValue({ value, highlight, compareWith }: Props) {
 			highlight && Array.isArray(compareWith) ? new Set(compareWith.map(String)) : null
 
 		return (
-			<div className="flex flex-wrap gap-1">
+			<div className="gap-1 flex flex-wrap">
 				{value.map((item, i) => {
 					const isNew = currentSet != null && !currentSet.has(String(item))
 					return (

@@ -1880,6 +1880,19 @@ export type MetadataRetryConfigInput = {
   statuses: Array<MetadataFetchStatus>;
 };
 
+export type MissingEntity = {
+  __typename?: 'MissingEntity';
+  id: Scalars['String']['output'];
+  path: Scalars['String']['output'];
+  type: MissingEntityType;
+};
+
+export enum MissingEntityType {
+  Book = 'BOOK',
+  Library = 'LIBRARY',
+  Series = 'SERIES'
+}
+
 export type Mutation = {
   __typename?: 'Mutation';
   /** Accept the top-ranked candidate for all pending metadata matches */
@@ -3048,6 +3061,12 @@ export type PagedProgressInput = {
   page: Scalars['Int']['input'];
 };
 
+export type PaginatedAuthorResponse = {
+  __typename?: 'PaginatedAuthorResponse';
+  nodes: Array<Author>;
+  pageInfo: PaginationInfo;
+};
+
 export type PaginatedDirectoryListingResponse = {
   __typename?: 'PaginatedDirectoryListingResponse';
   nodes: Array<DirectoryListing>;
@@ -3075,6 +3094,12 @@ export type PaginatedLogResponse = {
 export type PaginatedMediaResponse = {
   __typename?: 'PaginatedMediaResponse';
   nodes: Array<Media>;
+  pageInfo: PaginationInfo;
+};
+
+export type PaginatedMissingEntityResponse = {
+  __typename?: 'PaginatedMissingEntityResponse';
+  nodes: Array<MissingEntity>;
   pageInfo: PaginationInfo;
 };
 
@@ -3173,6 +3198,12 @@ export type Query = {
   annotationsByMediaId: Array<MediaAnnotation>;
   apiKeyById: Apikey;
   apiKeys: Array<Apikey>;
+  /** Get a single author by name (case-insensitive exact match) */
+  authorByName?: Maybe<Author>;
+  /** Get a single author series by name (case-insensitive exact match) */
+  authorSeriesByName?: Maybe<AuthorSeries>;
+  /** Get a paginated list of authors with optional search filter */
+  authors: PaginatedAuthorResponse;
   /** Get a club book by ID */
   bookClubBook: BookClubBook;
   bookClubById: BookClub;
@@ -3214,6 +3245,7 @@ export type Query = {
   /** Returns the available alphabet for all libraries in the server */
   librariesAlphabet: Scalars['JSONObject']['output'];
   libraryById?: Maybe<Library>;
+  libraryMissingEntities: PaginatedMissingEntityResponse;
   listDirectory: PaginatedDirectoryListingResponse;
   /**
    * Get information about the Stump log file, located at STUMP_CONFIG_DIR/Stump.log, or
@@ -3289,6 +3321,25 @@ export type QueryAnnotationsByMediaIdArgs = {
 
 export type QueryApiKeyByIdArgs = {
   id: Scalars['Int']['input'];
+};
+
+
+export type QueryAuthorByNameArgs = {
+  libraryId?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+};
+
+
+export type QueryAuthorSeriesByNameArgs = {
+  libraryId?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+};
+
+
+export type QueryAuthorsArgs = {
+  libraryId?: InputMaybe<Scalars['String']['input']>;
+  pagination?: Pagination;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -3399,6 +3450,12 @@ export type QueryLibrariesArgs = {
 
 export type QueryLibraryByIdArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryLibraryMissingEntitiesArgs = {
+  libraryId: Scalars['ID']['input'];
+  pagination?: Pagination;
 };
 
 
@@ -4188,10 +4245,10 @@ export type StumpConfig = {
   bookCompletionDedupTimeoutSecs: Scalars['Int']['output'];
   /** The client directory. */
   clientDir: Scalars['String']['output'];
+  /** Whether or not to include ANSI color codes in log files. */
+  colorfulLogs: Scalars['Boolean']['output'];
   /** The configuration root for the Stump application, contains thumbnails, cache, and logs. */
   configDir: Scalars['String']['output'];
-  /** An optional custom path for the templates directory. */
-  customTemplatesDir?: Maybe<Scalars['String']['output']>;
   /** An optional custom path for the database. */
   dbPath?: Maybe<Scalars['String']['output']>;
   /** Indicates if the KoReader sync feature should be enabled. */
@@ -6002,6 +6059,14 @@ export type CleanLibraryMutationVariables = Exact<{
 
 
 export type CleanLibraryMutation = { __typename?: 'Mutation', cleanLibrary: { __typename?: 'CleanLibraryResponse', deletedMediaCount: number, deletedSeriesCount: number, isEmpty: boolean } };
+
+export type LibraryMissingEntitiesQueryVariables = Exact<{
+  libraryId: Scalars['ID']['input'];
+  pagination: Pagination;
+}>;
+
+
+export type LibraryMissingEntitiesQuery = { __typename?: 'Query', libraryMissingEntities: { __typename?: 'PaginatedMissingEntityResponse', nodes: Array<{ __typename?: 'MissingEntity', id: string, path: string, type: MissingEntityType }>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', totalPages: number, currentPage: number, pageSize: number, pageOffset: number, zeroBased: boolean, totalItems: number } } };
 
 export type AnalyzeLibraryMediaMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -11708,6 +11773,29 @@ export const CleanLibraryDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<CleanLibraryMutation, CleanLibraryMutationVariables>;
+export const LibraryMissingEntitiesDocument = new TypedDocumentString(`
+    query LibraryMissingEntities($libraryId: ID!, $pagination: Pagination!) {
+  libraryMissingEntities(libraryId: $libraryId, pagination: $pagination) {
+    nodes {
+      id
+      path
+      type
+    }
+    pageInfo {
+      __typename
+      ... on OffsetPaginationInfo {
+        totalPages
+        currentPage
+        pageSize
+        pageOffset
+        pageOffset
+        zeroBased
+        totalItems
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<LibraryMissingEntitiesQuery, LibraryMissingEntitiesQueryVariables>;
 export const AnalyzeLibraryMediaDocument = new TypedDocumentString(`
     mutation AnalyzeLibraryMedia($id: ID!) {
   analyzeLibrary(id: $id)

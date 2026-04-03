@@ -48,13 +48,13 @@ export function MatchFieldRow({ comparison }: Props) {
 	return (
 		<div
 			className={cn(
-				'group/edit grid grid-cols-[140px_1fr_1fr_40px_1fr_32px] items-center bg-background py-2 pl-2.5',
+				'group/edit py-2 pl-2.5 grid grid-cols-[140px_1fr_1fr_40px_1fr_32px] items-center bg-background',
 				{
 					'opacity-40': disabled,
 				},
 			)}
 		>
-			<div className="flex items-center gap-1">
+			<div className="gap-1 flex items-center">
 				<Text size="sm" className="font-medium">
 					{t(`metadataEditor.labels.${binding}`)}
 				</Text>

@@ -19,7 +19,7 @@ export default function InlineNumberInput({
 	className,
 }: Props) {
 	return (
-		<div className={cn(`group flex items-center gap-2`, className)}>
+		<div className={cn(`group gap-2 flex items-center`, className)}>
 			<Input
 				type="number"
 				step={isDecimal ? 'any' : 1}

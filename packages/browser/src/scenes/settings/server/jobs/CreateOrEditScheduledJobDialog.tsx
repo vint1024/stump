@@ -167,7 +167,7 @@ export function CreateOrEditScheduledJobDialog({
 				</Dialog.Header>
 
 				<Form id={formId} form={form} onSubmit={handleSubmit}>
-					<div className="flex flex-col gap-4">
+					<div className="gap-4 flex flex-col">
 						<Input
 							variant="primary"
 							label={t(getKey('fields.name.label'))}
@@ -176,7 +176,7 @@ export function CreateOrEditScheduledJobDialog({
 							{...form.register('name')}
 						/>
 
-						<div className="flex flex-col gap-2 md:flex-row md:items-end">
+						<div className="gap-2 md:flex-row md:items-end flex flex-col">
 							<Input
 								variant="primary"
 								label={t(getKey('fields.schedule.label'))}
@@ -204,7 +204,7 @@ export function CreateOrEditScheduledJobDialog({
 						</div>
 
 						{!isEditing && (
-							<div className="flex flex-col gap-1.5">
+							<div className="gap-1.5 flex flex-col">
 								<Label>{t(getKey('fields.kind.label'))}</Label>
 								<NativeSelect
 									value={watchKind}

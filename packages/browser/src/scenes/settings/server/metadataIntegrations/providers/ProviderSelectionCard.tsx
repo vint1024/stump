@@ -26,7 +26,7 @@ export default function ProviderSelectionCard({ provider, onSelect }: Props) {
 			key={provider}
 			type="button"
 			className={cn(
-				'flex flex-row items-center gap-2 rounded-lg border border-edge p-4 transition-colors',
+				'gap-2 rounded-lg p-4 flex flex-row items-center border border-edge transition-colors',
 				'hover:border-brand-400 hover:bg-background-surface',
 				isSelected && 'border-brand-500 bg-background-surface',
 			)}

@@ -1773,6 +1773,18 @@ input MetadataRetryConfigInput {
 	statuses: [MetadataFetchStatus!]!
 }
 
+type MissingEntity {
+	id: String!
+	path: String!
+	type: MissingEntityType!
+}
+
+enum MissingEntityType {
+	BOOK
+	SERIES
+	LIBRARY
+}
+
 type Mutation {
 	createBookClub(input: CreateBookClubInput!): BookClub!
 	updateBookClub(id: ID!, input: UpdateBookClubInput!): BookClub!
@@ -2232,6 +2244,11 @@ type PaginatedMediaResponse {
 	pageInfo: PaginationInfo!
 }
 
+type PaginatedMissingEntityResponse {
+	nodes: [MissingEntity!]!
+	pageInfo: PaginationInfo!
+}
+
 type PaginatedReadingListResponse {
 	nodes: [ReadingList!]!
 	pageInfo: PaginationInfo!
@@ -2376,6 +2393,7 @@ type Query {
 	librariesAlphabet: JSONObject!
 	numberOfLibraries: Int!
 	lastVisitedLibrary: Library
+	libraryMissingEntities(libraryId: ID!, pagination: Pagination! = {offset: {page: 1, pageSize: 20, zeroBased: false}}): PaginatedMissingEntityResponse!
 	series(filter: SeriesFilterInput! = {name: null, path: null, libraryId: null, metadata: null, library: null, _and: null, _not: null, _or: null}, orderBy: [SeriesOrderBy!]! = [{series: {field: NAME, direction: ASC}}], pagination: Pagination! = {offset: {page: 1, pageSize: 20, zeroBased: false}}): PaginatedSeriesResponse!
 	seriesById(id: ID!): Series
 	"Returns the available alphabet for all series in the server"
@@ -3058,12 +3076,12 @@ type StumpConfig {
 	verbosity: Int!
 	"Whether or not to pretty print logs."
 	prettyLogs: Boolean!
+	"Whether or not to include ANSI color codes in log files."
+	colorfulLogs: Boolean!
 	"An optional custom path for the database."
 	dbPath: String
 	"The client directory."
 	clientDir: String!
-	"An optional custom path for the templates directory."
-	customTemplatesDir: String
 	"The configuration root for the Stump application, contains thumbnails, cache, and logs."
 	configDir: String!
 	"A list of origins for CORS."

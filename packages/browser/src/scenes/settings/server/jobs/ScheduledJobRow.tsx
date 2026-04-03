@@ -48,9 +48,9 @@ export function ScheduledJobRow({ job, libraries, onEdit, onDelete }: Props) {
 	}, [data, libraries, t])
 
 	return (
-		<Card className="group/scheduled-job flex items-center justify-between gap-4 p-4">
-			<div className="flex min-w-0 flex-col gap-2">
-				<div className="flex items-center gap-2">
+		<Card className="group/scheduled-job gap-4 p-4 flex items-center justify-between">
+			<div className="min-w-0 gap-2 flex flex-col">
+				<div className="gap-2 flex items-center">
 					<Text size="sm" className="font-medium">
 						{data.name}
 					</Text>
@@ -61,7 +61,7 @@ export function ScheduledJobRow({ job, libraries, onEdit, onDelete }: Props) {
 
 					{data.enabled && (
 						<ToolTip content={t(getKey('row.enabled'))} align="end" size="xs">
-							<div className="flex h-7 w-7 items-center justify-center rounded-full border border-fill-success/10 bg-fill-success-secondary">
+							<div className="h-7 w-7 flex items-center justify-center rounded-full border border-fill-success/10 bg-fill-success-secondary">
 								<BadgeCheck className="text-primary h-4 w-4" strokeWidth={1} />
 							</div>
 						</ToolTip>
@@ -69,7 +69,7 @@ export function ScheduledJobRow({ job, libraries, onEdit, onDelete }: Props) {
 
 					{!data.enabled && (
 						<ToolTip content={t(getKey('row.disabled'))} align="end" size="xs">
-							<div className="flex h-7 w-7 items-center justify-center rounded-full border border-fill-info/10 bg-fill-info-secondary">
+							<div className="h-7 w-7 flex items-center justify-center rounded-full border border-fill-info/10 bg-fill-info-secondary">
 								<BadgeX className="text-primary h-4 w-4" strokeWidth={1} />
 							</div>
 						</ToolTip>
@@ -96,12 +96,12 @@ export function ScheduledJobRow({ job, libraries, onEdit, onDelete }: Props) {
 				)}
 			</div>
 
-			<div className="flex flex-shrink-0 items-center gap-1">
+			<div className="gap-1 flex flex-shrink-0 items-center">
 				<ToolTip content={t(getKey('row.delete'))} align="end" size="xs">
 					<Button
 						onClick={onDelete}
 						size="icon"
-						className="hover h-7 w-7 rounded-full border border-edge border-fill-danger/10 bg-fill-danger-secondary p-0 hover:bg-fill-danger-hover/20"
+						className="hover h-7 w-7 p-0 rounded-full border border-edge border-fill-danger/10 bg-fill-danger-secondary hover:bg-fill-danger-hover/20"
 					>
 						<Trash2 className="text-primary h-4 w-4" strokeWidth={1} />
 					</Button>
@@ -111,7 +111,7 @@ export function ScheduledJobRow({ job, libraries, onEdit, onDelete }: Props) {
 					<Button
 						onClick={onEdit}
 						size="icon"
-						className="h-7 w-7 rounded-full border border-edge bg-background-surface p-0"
+						className="h-7 w-7 p-0 rounded-full border border-edge bg-background-surface"
 					>
 						<Cog className="text-primary h-4 w-4" strokeWidth={1} />
 					</Button>

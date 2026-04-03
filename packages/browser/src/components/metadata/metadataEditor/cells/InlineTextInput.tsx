@@ -21,7 +21,7 @@ export default function InlineTextInput({
 	const Component = isLong ? TextArea : Input
 
 	return (
-		<div className={cn('group flex items-center gap-2', className)}>
+		<div className={cn('group gap-2 flex items-center', className)}>
 			{/* @ts-expect-error: Union of Input/TextArea props */}
 			<Component
 				value={value ?? ''}

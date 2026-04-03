@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Build web application/upload artifact
         uses: ./.github/actions/build-web
@@ -24,14 +24,14 @@ jobs:
     needs: build-webapp
     strategy:
       matrix:
-        # Note: macos-13 is intel-based, macos-latest is M1-based
         # See https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-        os: [ubuntu-22.04, macos-13, macos-latest, windows-latest]
+        # Note: macos-15-intel is x86_64, available until Aug 2027. See https://github.com/actions/runner-images/issues/13045
+        os: [ubuntu-22.04, macos-15-intel, macos-latest, windows-latest]
         include:
           - os: ubuntu-22.04
             artifact_name: linux-artifact
             artifact_filename: stump_server
-          - os: macos-13
+          - os: macos-15-intel
             artifact_name: macos-intel-artifact
             artifact_filename: stump_server
           - os: macos-latest
@@ -43,13 +43,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Build stump server
         uses: ./.github/actions/build-server
 
       - name: Copy bundled web app
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: webapp
           path: ./staging/client
@@ -72,28 +72,28 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Download artifact (Linux)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-artifact
           path: StumpServer-linux
 
       - name: Download artifact (macOS Intel)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-intel-artifact
           path: StumpServer-macos-intel
 
       - name: Download artifact (macOS ARM)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-arm-artifact
           path: StumpServer-macos-arm
 
       - name: Download artifact (Windows)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-artifact
           path: StumpServer-windows

@@ -9,7 +9,7 @@ export default function PendingMatchesSection() {
 	const { t } = useLocaleContext()
 
 	return (
-		<div className="flex flex-col gap-y-4">
+		<div className="gap-y-4 flex flex-col">
 			<div>
 				<Heading size="sm">{t('metadataMatching.section.heading')}</Heading>
 				<Text size="sm" variant="muted" className="mt-1">

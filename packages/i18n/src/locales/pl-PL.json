@@ -260,7 +260,11 @@
 					"label": "Ukryj zakładkę serii",
 					"description": "Ukryj zakładkę serii w nawigacji biblioteki"
 				},
-				"configuration": {
+				"skipBookOverview": {
+					"label": "Pomiń przegląd książki",
+					"description": "Przejdź od razu do czytnika, gdy wybierasz książkę z tej biblioteki"
+				},
+				"options": {
 					"series": {
 						"label": "Serie",
 						"description": "Domyślnie pokaż zakładkę serii"
@@ -696,7 +700,21 @@
 						"label": "Wyczyść bibliotekę",
 						"text": "Czy na pewno chcesz wyczyścić tę bibliotekę?"
 					},
-					"emptyText": "Nie było nic do wyczyszczenia"
+					"emptyText": "Nie było nic do wyczyszczenia",
+					"missingEntitiesTable": {
+						"columns": {
+							"id": "ID",
+							"path": "Ścieżka",
+							"type": "Typ"
+						},
+						"types": {
+							"BOOK": "Książka",
+							"SERIES": "Seria",
+							"LIBRARY": "Biblioteka"
+						},
+						"emptyHeading": "Nic nie brakuje w tej bibliotece",
+						"emptySubtitle": "Wszystkie pliki przywołane w bazie danych zostały zlokalizowane na dysku"
+					}
 				},
 				"deleteLibrary": {
 					"heading": "Usuń bibliotekę",
@@ -924,7 +942,11 @@
 									"characters": "Postaci",
 									"teams": "Zespoły",
 									"genres": "Gatunek",
-									"coverArtists": "Artysta okładki"
+									"coverArtists": "Artysta okładki",
+									"ageRating": "Klasyfikacja wiekowa",
+									"year": "Rok",
+									"month": "Miesiąc",
+									"day": "Dzień"
 								}
 							},
 							"series": {
@@ -946,7 +968,8 @@
 									"status": "Status",
 									"volume": "Tom",
 									"metaType": "Typ",
-									"ageRating": "Klasyfikacja wiekowa"
+									"ageRating": "Klasyfikacja wiekowa",
+									"year": "Rok rozpoczęcia"
 								}
 							},
 							"library": {
@@ -1253,20 +1276,15 @@
 						"updateFailed": "Podczas aktualizacji profilu wystąpił błąd serwera. Spróbuj ponownie."
 					},
 					"avatarPicker": {
-						"heading": "Ustaw swój awatar",
-						"subtitle": "Stump wspiera niestandardowe awatary które można ustawić poprzez podanie odnośnika do obrazu. Przesyłanie obrazów jest nieobsługiwane w celu zmniejszenia ilości danych przechowywanych na serwerze.",
-						"preview": "Podgląd pojawi się tutaj po wprowadzeniu odnośnika.",
-						"labels": {
-							"imageUrl": "Adres obrazka",
-							"customAvatar": "Własny awatar"
-						},
-						"buttons": {
-							"confirm": "Potwierdź obraz",
-							"cancel": "Anuluj",
-							"edit": "Edytuj",
-							"changeImage": "Zmień obraz",
-							"removeImage": "Usuń obraz"
-						}
+						"label": "Awatar",
+						"heading": "Prześlij awatar",
+						"subtitle": "Możesz przesłać dowolny obraz do użycia jako awatar dla funkcji społecznościowych w Stump",
+						"dropzone": "Upuść obraz lub kliknij aby wybrać",
+						"changeImage": "Zmień obraz",
+						"removeImage": "Usuń obraz",
+						"removeSelection": "Usuń przesłany obraz",
+						"uploadFailed": "Nie udało się przesłać awatara",
+						"removeFailed": "Nie udało się usunąć awatara"
 					},
 					"buttons": {
 						"confirm": "Zapisz zmiany"
@@ -1691,9 +1709,38 @@
 						]
 					}
 				},
+				"helpfulLinks": {
+					"title": "Przydatne odnośniki",
+					"description": "Odnośniki do zasobów, które mogą okazać się pomocne w zarządzaniu Twoim serwerem Stump",
+					"links": {
+						"documentation": "Dokumentacja",
+						"changelog": "Historia zmian"
+					}
+				},
 				"serverPublicUrl": {
 					"label": "Adres publiczny",
 					"description": "Adres, pod którym serwer dostępny jest spoza Twojej sieci. Zezwala to na odnośniki z zaproszeniami i inne funkcje"
+				},
+				"customEmojis": {
+					"title": "Niestandardowe emotikony",
+					"description": "Przesyłaj i zarządzaj niestandardowymi obrazami emotikon dla Twojego serwera",
+					"dropzone": "Upuść obraz lub kliknij aby wybrać",
+					"input": {
+						"label": "Nazwa emotikony",
+						"placeholder": "np. imprezowa_papuga"
+					},
+					"deleteModal": {
+						"title": "Usuń emotikonę",
+						"description": "Czy na pewno chcesz usunąć tę emotikonę?"
+					},
+					"noCustomEmojis": "Nie dodano jeszcze żadnych niestandardowych emotikon",
+					"invalidName": "Wprowadź poprawną nazwę dla emotikony",
+					"uploadError": "Nie udało się przesłać emotikony",
+					"uploadSuccess": "Przesłano emotikonę",
+					"renameSuccess": "Zmieniono nazwę emotikony",
+					"renameError": "Nie udało się zmienić nazwy emotikony",
+					"deleteSuccess": "Usunięto emotikonę",
+					"deleteError": "Nie udało się usunąć emotikony"
 				}
 			}
 		},
@@ -2074,6 +2121,16 @@
 				"submit": {
 					"create": "Utwórz nową wysyłkę",
 					"update": "Aktualizuj wysyłkę"
+				},
+				"testEmailer": {
+					"button": "Wyślij wiadomość testową",
+					"recipientLabel": "Testowy odbiorca",
+					"recipientDescription": "Adres pocztowy odbierający wiadomość testową",
+					"success": "Wiadomość testowa została wysłana poprawnie",
+					"error": {
+						"title": "Nie udało się wysłać wiadomości testowej",
+						"description": "Sprawdź ustawienia SMTP i spróbuj ponownie"
+					}
 				}
 			},
 			"createEmailer": {
@@ -2209,6 +2266,7 @@
 	"common": {
 		"add": "Dodaj",
 		"cancel": "Anuluj",
+		"clear": "Wyczyść",
 		"confirm": "Potwierdź",
 		"delete": "Usuń",
 		"enter": "Enter",
@@ -2221,6 +2279,7 @@
 		"update": "Aktualizuj",
 		"upload": "Prześlij",
 		"uploading": "Przesyłanie",
+		"uploadingEllipsis": "Przesyłanie...",
 		"unimplemented": "Ta funkcjonalność nie jest jeszcze zaimplementowana! Sprawdź ponownie później",
 		"limitedFunctionality": "Funkcjonalność ta nie jest jeszcze w pełni zaimplementowana. Sprawdź później",
 		"logIn": "Zaloguj się",
@@ -2233,7 +2292,12 @@
 		"notUsedYet": "Jeszcze nieużywane",
 		"never": "Nigdy",
 		"scan": "Skanuj",
-		"somethingWentWrong": "Coś poszło nie tak"
+		"somethingWentWrong": "Coś poszło nie tak",
+		"fileUpload": {
+			"someRejected": "Niektóre pliki zostały odrzucone. Sprawdź typy plików i spróbuj ponownie",
+			"tooManyFiles": "Wybrano zbyt dużą ilość plików",
+			"noValidFiles": "Nie wybrano żadnych poprawnych plików"
+		}
 	},
 	"userPermissions": {
 		"ACCESS_API_KEYS": {
@@ -2359,6 +2423,10 @@
 		"WRITE_BACK_METADATA": {
 			"label": "Zapisywanie metadanych",
 			"description": "Pozwala użytkownikowi na zapisywanie zmienionych metadanych z powrotem do plików źródłowych"
+		},
+		"EDIT_THUMBNAILS": {
+			"label": "Edycja miniatur",
+			"description": "Pozwala użytkownikowi na edycję miniatur książek i serii"
 		}
 	}
 }

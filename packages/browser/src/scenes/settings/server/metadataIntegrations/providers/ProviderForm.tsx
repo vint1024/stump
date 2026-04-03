@@ -54,7 +54,7 @@ export default function ProviderForm() {
 				fullWidth
 			/>
 
-			<div className="flex flex-col gap-2">
+			<div className="gap-2 flex flex-col">
 				<Label>{t(getKey('apiTokenExpiresAt.label'))}</Label>
 				<DatePicker
 					minDate={startOfDay(new Date())}
@@ -66,10 +66,10 @@ export default function ProviderForm() {
 				</Text>
 			</div>
 
-			<div className="divide-y divide-edge rounded-lg border border-edge">
-				<div className="flex flex-col gap-2">
-					<Label className="flex items-center justify-between p-3">
-						<div className="flex flex-col gap-1">
+			<div className="rounded-lg divide-y divide-edge border border-edge">
+				<div className="gap-2 flex flex-col">
+					<Label className="p-3 flex items-center justify-between">
+						<div className="gap-1 flex flex-col">
 							<span>{t(getKey('enableProvider.label'))}</span>
 							<p className="text-sm text-foreground-muted">
 								{t(getKey('enableProvider.description'))}
@@ -85,9 +85,9 @@ export default function ProviderForm() {
 					</Label>
 				</div>
 
-				<div className="flex flex-col gap-2">
-					<Label className="flex items-center justify-between p-3">
-						<div className="flex flex-col gap-1">
+				<div className="gap-2 flex flex-col">
+					<Label className="p-3 flex items-center justify-between">
+						<div className="gap-1 flex flex-col">
 							<span>{t(getKey('autoApplyConfig.enabled.label'))}</span>
 							<p className="text-sm text-foreground-muted">
 								{t(getKey('autoApplyConfig.enabled.description'))}
@@ -104,8 +104,8 @@ export default function ProviderForm() {
 				</div>
 			</div>
 
-			<div className="flex flex-col gap-4 pl-1">
-				<div className="flex flex-col gap-2">
+			<div className="gap-4 pl-1 flex flex-col">
+				<div className="gap-2 flex flex-col">
 					<Input
 						label={t(getKey('autoApplyConfig.threshold.label'))}
 						description={t(getKey('autoApplyConfig.threshold.description'))}
@@ -133,7 +133,7 @@ export default function ProviderForm() {
 					</Alert>
 				</div>
 
-				<div className="flex flex-col gap-2">
+				<div className="gap-2 flex flex-col">
 					<Label className={cn({ 'pointer-events-none opacity-50': !autoApplyEnabled })}>
 						{t(getKey('autoApplyConfig.strategy.label'))}
 					</Label>
