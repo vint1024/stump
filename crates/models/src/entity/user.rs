@@ -244,10 +244,14 @@ pub enum Relation {
 	Review,
 	#[sea_orm(has_many = "super::session::Entity")]
 	Session,
-	#[sea_orm(has_many = "super::smart_list_access_rule::Entity")]
-	SmartListAccessRule,
+	#[sea_orm(has_many = "super::smart_list_user::Entity")]
+	SmartListUser,
 	#[sea_orm(has_many = "super::smart_list::Entity")]
 	SmartList,
+	#[sea_orm(has_many = "super::list_user::Entity")]
+	ListUser,
+	#[sea_orm(has_many = "super::list::Entity")]
+	List,
 	#[sea_orm(has_many = "super::user_login_activity::Entity")]
 	UserLoginActivity,
 	#[sea_orm(
@@ -344,15 +348,27 @@ impl Related<super::session::Entity> for Entity {
 	}
 }
 
-impl Related<super::smart_list_access_rule::Entity> for Entity {
+impl Related<super::smart_list_user::Entity> for Entity {
 	fn to() -> RelationDef {
-		Relation::SmartListAccessRule.def()
+		Relation::SmartListUser.def()
 	}
 }
 
 impl Related<super::smart_list::Entity> for Entity {
 	fn to() -> RelationDef {
 		Relation::SmartList.def()
+	}
+}
+
+impl Related<super::list_user::Entity> for Entity {
+	fn to() -> RelationDef {
+		Relation::ListUser.def()
+	}
+}
+
+impl Related<super::list::Entity> for Entity {
+	fn to() -> RelationDef {
+		Relation::List.def()
 	}
 }
 

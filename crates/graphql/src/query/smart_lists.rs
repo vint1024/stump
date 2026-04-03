@@ -15,7 +15,7 @@ use models::{
 		media, series,
 		smart_list::{self},
 	},
-	shared::enums::UserPermission,
+	shared::{enums::UserPermission, shared_access::SharedAccessEntityDao},
 };
 use sea_orm::{QuerySelect, TransactionTrait};
 use std::collections::HashSet;
@@ -67,7 +67,9 @@ impl SmartListsQuery {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
-		let smart_list = smart_list::Entity::find_by_id(user, id).one(conn).await?;
+		let smart_list = smart_list::Entity::find_by_id_for_user(user, id)
+			.one(conn)
+			.await?;
 
 		Ok(smart_list.map(SmartList::from))
 	}
@@ -82,7 +84,7 @@ impl SmartListsQuery {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 		let txn = conn.begin().await?;
 
-		let smart_list = smart_list::Entity::find_by_id(user, id)
+		let smart_list = smart_list::Entity::find_by_id_for_user(user, id)
 			.one(&txn)
 			.await?
 			.ok_or("Smart list not found".to_string())?;
@@ -132,7 +134,7 @@ impl SmartListsQuery {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 		let txn = conn.begin().await?;
 
-		let smart_list = smart_list::Entity::find_by_id(user, id)
+		let smart_list = smart_list::Entity::find_by_id_for_user(user, id)
 			.one(&txn)
 			.await?
 			.ok_or("Smart list not found".to_string())?;

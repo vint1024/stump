@@ -7,7 +7,7 @@ use crate::{
 use async_graphql::{Context, Object, Result, ID};
 use models::{
 	entity::{smart_list, smart_list_view},
-	shared::enums::UserPermission,
+	shared::{enums::UserPermission, shared_access::SharedAccessEntityDao},
 };
 use sea_orm::{prelude::*, ActiveModelTrait, Set, TransactionTrait};
 
@@ -27,7 +27,7 @@ impl SmartListViewMutation {
 		let txn = conn.begin().await?;
 
 		// Ensure the user has access to the smart list
-		let _ = smart_list::Entity::find_by_id(user, input.list_id.clone())
+		let _ = smart_list::Entity::find_by_id_for_user(user, input.list_id.clone())
 			.one(&txn)
 			.await?
 			.ok_or("Smart list not found".to_string())?;

@@ -3,6 +3,8 @@ use sea_orm::{prelude::*, Condition, FromQueryResult, QueryOrder};
 
 use super::{reading_list_rule, user::AuthUser};
 
+// TODO(lists): delete this until ready to support reading lists properly and then impl inside super::list
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, SimpleObject)]
 #[graphql(name = "ReadingListModel")]
 #[sea_orm(table_name = "reading_lists")]

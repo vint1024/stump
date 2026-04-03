@@ -9,7 +9,7 @@ use crate::{
 use async_graphql::{ComplexObject, Context, Result, SimpleObject};
 use models::{
 	entity::{media, series, smart_list, smart_list_view},
-	shared::image::ImageRef,
+	shared::{image::ImageRef, shared_access::SharedAccessEntityDao},
 };
 use sea_orm::{QuerySelect, TransactionTrait};
 use std::collections::HashSet;
@@ -75,7 +75,7 @@ impl SmartList {
 		let txn = conn.begin().await?;
 
 		let smart_list =
-			smart_list::Entity::find_by_id(user, self.model.id.clone().into())
+			smart_list::Entity::find_by_id_for_user(user, self.model.id.clone().into())
 				.one(&txn)
 				.await?
 				.ok_or("Smart list not found".to_string())?;
@@ -108,7 +108,7 @@ impl SmartList {
 		let txn = conn.begin().await?;
 
 		let smart_list =
-			smart_list::Entity::find_by_id(user, self.model.id.clone().into())
+			smart_list::Entity::find_by_id_for_user(user, self.model.id.clone().into())
 				.one(&txn)
 				.await?
 				.ok_or("Smart list not found".to_string())?;
@@ -140,7 +140,7 @@ impl SmartList {
 		let txn = conn.begin().await?;
 
 		let smart_list =
-			smart_list::Entity::find_by_id(user, self.model.id.clone().into())
+			smart_list::Entity::find_by_id_for_user(user, self.model.id.clone().into())
 				.one(&txn)
 				.await?
 				.ok_or("Smart list not found".to_string())?;

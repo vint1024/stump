@@ -1,19 +1,14 @@
-use async_graphql::{Enum, SimpleObject, ID};
+use async_graphql::{Enum, SimpleObject};
 use filter_gen::Ordering;
-use sea_orm::{
-	prelude::*, Condition, DeriveActiveEnum, EnumIter, QueryOrder, QuerySelect,
-	QueryTrait,
-};
+use sea_orm::{prelude::*, DeriveActiveEnum, EnumIter, QueryOrder};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
-use super::smart_list_access_rule;
-use crate::{
-	entity::{smart_list_access_rule::SmartListAccessRole, user::AuthUser},
-	shared::{
-		enums::EntityVisibility,
-		ordering::{OrderBy, OrderDirection},
-	},
+use super::smart_list_user;
+use crate::shared::{
+	enums::EntityVisibility,
+	ordering::{OrderBy, OrderDirection},
+	shared_access::{AccessColumns, EntityColumns, SharedAccessEntity},
 };
 
 /// The different filter joiners that can be used in smart lists
@@ -102,8 +97,8 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-	#[sea_orm(has_many = "super::smart_list_access_rule::Entity")]
-	SmartListAccessRule,
+	#[sea_orm(has_many = "super::smart_list_user::Entity")]
+	SmartListUser,
 	#[sea_orm(has_many = "super::smart_list_view::Entity")]
 	SmartListView,
 	#[sea_orm(
@@ -116,9 +111,9 @@ pub enum Relation {
 	User,
 }
 
-impl Related<super::smart_list_access_rule::Entity> for Entity {
+impl Related<super::smart_list_user::Entity> for Entity {
 	fn to() -> RelationDef {
-		Relation::SmartListAccessRule.def()
+		Relation::SmartListUser.def()
 	}
 }
 
@@ -136,177 +131,24 @@ impl Related<super::user::Entity> for Entity {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-fn get_access_condition_base_subquery(
-	user: &AuthUser,
-) -> Select<smart_list_access_rule::Entity> {
-	smart_list_access_rule::Entity::find()
-		.select_only()
-		.column(Column::Id)
-		.inner_join(Entity)
-		.filter(smart_list_access_rule::Column::UserId.eq(user.id.clone()))
-}
+impl SharedAccessEntity for Entity {
+	type AccessEntity = smart_list_user::Entity;
 
-fn get_access_condition_base_rule(
-	user: &AuthUser,
-	role: SmartListAccessRole,
-) -> Condition {
-	// A common condition that asserts there is an entry for the user that has a role
-	// greater than or equal to the minimum role:
-	// 1 for reader, 2 for collaborator, 3 for co-creator
-	let select = get_access_condition_base_subquery(user)
-		.filter(smart_list_access_rule::Column::Role.gte(role as i32));
-
-	Condition::all().add(Column::Id.in_subquery(select.into_query()))
-}
-
-fn get_access_condition_for_user_public(
-	user: &AuthUser,
-	base_rule: Condition,
-) -> Condition {
-	let select = get_access_condition_base_subquery(user);
-	Condition::all()
-		.add(Column::Visibility.eq(EntityVisibility::Public))
-		// This asserts the reader rule is present OR there is no rule for the user
-		.add(
-			Condition::any()
-				.add(base_rule)
-				.add(Column::Id.not_in_subquery(select.into_query())),
-		)
-}
-
-fn get_access_rule(user: &AuthUser, base_rule: Condition) -> Condition {
-	Condition::any()
-		// creator always has access
-		.add(Column::CreatorId.eq(user.id.clone()))
-		// condition where visibility is PUBLIC
-		.add(get_access_condition_for_user_public(
-			user,
-			base_rule.clone(),
-		))
-		// condition where visibility is SHARED
-		.add(
-			Condition::all()
-				.add(Column::Visibility.eq(EntityVisibility::Shared))
-				.add(base_rule),
-		)
-		// condition where visibility is PRIVATE
-		.add(
-			Condition::all()
-				.add(Column::Visibility.eq(EntityVisibility::Private))
-				.add(Column::CreatorId.eq(user.id.clone())),
-		)
-}
-
-pub fn get_access_condition_for_user(
-	user: &AuthUser,
-	query_all: bool,
-	query_mine: bool,
-) -> Option<Condition> {
-	if !query_all && !query_mine {
-		let base_rule = get_access_condition_base_rule(user, SmartListAccessRole::Reader);
-		Some(get_access_rule(user, base_rule))
-	} else if query_mine {
-		Some(Condition::all().add(Column::CreatorId.eq(user.id.clone())))
-	} else {
-		None
-	}
-}
-
-fn get_search_condition(search: Option<String>) -> Option<Condition> {
-	search.and_then(|s| {
-		if s.is_empty() {
-			None
-		} else {
-			Some(
-				Condition::any()
-					.add(Column::Name.contains(&s))
-					.add(Column::Description.contains(s)),
-			)
+	fn access_columns() -> AccessColumns<smart_list_user::Entity> {
+		AccessColumns {
+			entity_id: smart_list_user::Column::SmartListId,
+			user_id: smart_list_user::Column::UserId,
+			role: smart_list_user::Column::Role,
 		}
-	})
-}
-
-impl Entity {
-	pub fn find_for_user(
-		user: &AuthUser,
-		query_all: bool,
-		query_mine: bool,
-		search: Option<String>,
-	) -> Select<Self> {
-		Entity::find().filter(
-			Condition::all()
-				.add_option(get_search_condition(search))
-				.add_option(get_access_condition_for_user(user, query_all, query_mine)),
-		)
 	}
 
-	pub fn find_by_id(user: &AuthUser, id: ID) -> Select<Self> {
-		Entity::find().filter(
-			Condition::all()
-				.add_option(get_access_condition_for_user(user, false, false))
-				.add(Column::Id.eq(id.to_string())),
-		)
-	}
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use crate::tests::common::*;
-	use pretty_assertions::assert_eq;
-
-	#[test]
-	fn test_access_rules_base_rule() {
-		let user = get_default_user();
-
-		let condition =
-			get_access_condition_base_rule(&user, SmartListAccessRole::Reader);
-
-		let sql = condition_to_string(&condition);
-		assert_eq!(
-			sql,
-			r#"SELECT  WHERE "smart_lists"."id" IN (SELECT "smart_lists"."id" "#
-				.to_string() + r#"FROM "smart_list_access_rules" INNER JOIN "smart_lists" ON "#
-				+ r#""smart_list_access_rules"."smart_list_id" = "smart_lists"."id" WHERE "#
-				+ r#""smart_list_access_rules"."user_id" = '42' AND "#
-				+ r#""smart_list_access_rules"."role" >= 1"#
-				+ r#")"#
-		);
-	}
-
-	#[test]
-	fn test_access_rules_public() {
-		let user = get_default_user();
-		let condition = get_access_condition_for_user_public(&user, Condition::all());
-
-		let sql = condition_to_string(&condition);
-		assert_eq!(
-			sql,
-			r#"SELECT  WHERE "smart_lists"."visibility" = 'PUBLIC' AND (TRUE OR "smart_lists"."id" NOT IN (SELECT "smart_lists"."id" "#
-				.to_string() + r#"FROM "smart_list_access_rules" INNER JOIN "smart_lists" ON "#
-				+ r#""smart_list_access_rules"."smart_list_id" = "smart_lists"."id" WHERE "#
-				+ r#""smart_list_access_rules"."user_id" = '42')"#
-				+ r#")"#
-		);
-	}
-
-	#[test]
-	fn test_access_rule() {
-		let user = get_default_user();
-		let condition = get_access_rule(&user, Condition::all());
-
-		let sql = condition_to_string(&condition);
-		assert_eq!(
-			sql,
-			r#"SELECT  WHERE "#.to_string()
-				+ r#""smart_lists"."creator_id" = '42' OR ("#
-				+ r#""smart_lists"."visibility" = 'PUBLIC' AND (TRUE OR "smart_lists"."id" NOT IN (SELECT "smart_lists"."id" "#
-				+ r#"FROM "smart_list_access_rules" INNER JOIN "smart_lists" ON "#
-				+ r#""smart_list_access_rules"."smart_list_id" = "smart_lists"."id" WHERE "#
-				+ r#""smart_list_access_rules"."user_id" = '42')"#
-				+ r#")) OR "#
-				+ r#"("smart_lists"."visibility" = 'SHARED' AND TRUE) OR "#
-				+ r#"("smart_lists"."visibility" = 'PRIVATE' AND "smart_lists"."creator_id" = '42')"#
-		);
+	fn entity_columns() -> EntityColumns<Self> {
+		EntityColumns {
+			id: Column::Id,
+			visibility: Column::Visibility,
+			creator_id: Column::CreatorId,
+			name: Column::Name,
+			description: Column::Description,
+		}
 	}
 }

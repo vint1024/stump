@@ -2,7 +2,9 @@ use super::smart_list;
 use async_graphql::{SimpleObject, ID};
 use sea_orm::{prelude::*, Condition};
 
-use crate::entity::user::AuthUser;
+use crate::{
+	entity::user::AuthUser, shared::shared_access::get_access_condition_for_user,
+};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, SimpleObject)]
 #[sea_orm(table_name = "smart_list_views")]
@@ -57,8 +59,8 @@ impl Entity {
 	pub fn find_by_user(user: &AuthUser) -> Select<Self> {
 		Self::find()
 			.inner_join(smart_list::Entity)
-			.filter(Condition::all().add_option(
-				super::smart_list::get_access_condition_for_user(user, false, false),
-			))
+			.filter(Condition::all().add_option(get_access_condition_for_user::<
+				smart_list::Entity,
+			>(user, false, false)))
 	}
 }

@@ -361,6 +361,7 @@ dependencies = [
  "static_assertions_next",
  "tempfile",
  "thiserror 2.0.17",
+ "uuid 1.18.1",
 ]
 
 [[package]]

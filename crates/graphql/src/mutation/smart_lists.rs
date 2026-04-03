@@ -5,7 +5,10 @@ use crate::{
 	object::smart_lists::SmartList,
 };
 use async_graphql::{Context, Object, Result, ID};
-use models::{entity::smart_list, shared::enums::UserPermission};
+use models::{
+	entity::smart_list,
+	shared::{enums::UserPermission, shared_access::SharedAccessEntityDao},
+};
 use sea_orm::{prelude::*, Set, TransactionTrait};
 
 #[derive(Default)]
@@ -41,7 +44,7 @@ impl SmartListMutation {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 		let txn = conn.begin().await?;
 
-		let _ = smart_list::Entity::find_by_id(user, id.clone())
+		let _ = smart_list::Entity::find_by_id_for_user(user, id.clone())
 			.one(&txn)
 			.await?
 			.ok_or("Smart list not found".to_string())?;
@@ -60,7 +63,7 @@ impl SmartListMutation {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 		let txn = conn.begin().await?;
 
-		let smart_list = smart_list::Entity::find_by_id(user, id.clone())
+		let smart_list = smart_list::Entity::find_by_id_for_user(user, id.clone())
 			.one(&txn)
 			.await?
 			.ok_or("Smart list not found".to_string())?;
