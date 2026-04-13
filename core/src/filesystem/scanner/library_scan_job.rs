@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 // Also perhaps experiment with https://docs.rs/tokio-uring/latest/tokio_uring/index.html
 
 use crate::{
+	database::SQLITE_BIND_LIMIT,
 	event::{self, CreatedOrUpdatedManyMedia},
 	filesystem::{
 		image::{
@@ -373,31 +374,35 @@ impl JobLifecycle for LibraryScanJob {
 				if !recovered_series.is_empty() {
 					ctx.report_progress(JobProgress::msg("Recovering series"));
 
-					let affected_rows = series::Entity::update_many()
-						.col_expr(
-							series::Column::Status,
-							Expr::value(FileStatus::Ready.to_string()),
-						)
-						.filter(series::Column::Id.is_in(recovered_series))
-						.exec(ctx.conn())
-						.await
-						.map_or_else(
-							|error| {
-								tracing::error!(error = ?error, "Failed to recover series");
-								logs.push(JobExecuteLog::error(format!(
-									"Failed to recover series: {:?}",
-									error.to_string()
-								)));
-								0
-							},
-							|result| {
-								output.updated_series = result.rows_affected;
-								result.rows_affected
-							},
-						);
+					let mut total_affected = 0u64;
+					for chunk in recovered_series.chunks(SQLITE_BIND_LIMIT) {
+						let chunk_affected_rows = series::Entity::update_many()
+							.col_expr(
+								series::Column::Status,
+								Expr::value(FileStatus::Ready.to_string()),
+							)
+							.filter(series::Column::Id.is_in(chunk.to_vec()))
+							.exec(ctx.conn())
+							.await
+							.map_or_else(
+								|error| {
+									tracing::error!(error = ?error, "Failed to recover series");
+									logs.push(JobExecuteLog::error(format!(
+										"Failed to recover series: {:?}",
+										error.to_string()
+									)));
+									0
+								},
+								|result| {
+									output.updated_series = result.rows_affected;
+									result.rows_affected
+								},
+							);
+						total_affected += chunk_affected_rows;
+					}
 
 					ctx.report_progress(JobProgress::subtask_position(
-						if affected_rows > 0 {
+						if total_affected > 0 {
 							current_subtask_index += 1;
 							current_subtask_index
 						} else {
@@ -414,31 +419,33 @@ impl JobLifecycle for LibraryScanJob {
 						.map(|e| e.to_string_lossy().to_string())
 						.collect::<Vec<String>>();
 
-					let affected_rows = series::Entity::update_many()
-						.col_expr(
-							series::Column::Status,
-							Expr::value(FileStatus::Missing.to_string()),
-						)
-						.filter(series::Column::Path.is_in(missing_series_str))
-						.exec(ctx.conn())
-						.await
-						.map_or_else(
-							|error| {
-								tracing::error!(error = ?error, "Failed to update missing series");
-								logs.push(JobExecuteLog::error(format!(
-									"Failed to update missing series: {:?}",
-									error.to_string()
-								)));
-								0
-							},
-							|result| {
-								output.updated_series = result.rows_affected;
-								result.rows_affected
-							},
-						);
+					let mut total_affected = 0u64;
+					for chunk in missing_series_str.chunks(SQLITE_BIND_LIMIT) {
+						let chunk_affected_rows = series::Entity::update_many()
+							.col_expr(
+								series::Column::Status,
+								Expr::value(FileStatus::Missing.to_string()),
+							)
+							.filter(series::Column::Path.is_in(chunk.to_vec()))
+							.exec(ctx.conn())
+							.await
+							.map_or_else(
+								|error| {
+									tracing::error!(error = ?error, "Failed to update missing series");
+									logs.push(JobExecuteLog::error(format!(
+										"Failed to update missing series: {:?}",
+										error.to_string()
+									)));
+									0
+								},
+								|result| result.rows_affected,
+							);
+						total_affected += chunk_affected_rows;
+					}
+					output.updated_series = total_affected;
 
 					ctx.report_progress(JobProgress::subtask_position(
-						if affected_rows > 0 {
+						if total_affected > 0 {
 							{
 								current_subtask_index += 1;
 								current_subtask_index

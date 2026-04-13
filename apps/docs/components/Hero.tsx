@@ -109,14 +109,14 @@ export default function Hero() {
 									initial="hidden"
 									animate="visible"
 									variants={wordVariants}
-									className="last:mr-0 mr-[0.25em] inline-block"
+									className="last:mr-0 text-4xl sm:text-6xl mr-[0.25em] inline-block"
 								>
 									{word}
 								</motion.span>
 							))}
 						</h1>
 
-						<motion.p
+						<motion.div
 							initial="hidden"
 							animate="visible"
 							variants={descriptionVariants}
@@ -124,7 +124,7 @@ export default function Hero() {
 						>
 							Designed to be fast, beautiful, and simple. Curate your digital libraries and stream
 							your media to any device.
-						</motion.p>
+						</motion.div>
 					</div>
 
 					<div className="space-x-2 md:mt-8 md:justify-start flex justify-center">

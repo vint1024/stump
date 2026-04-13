@@ -6,11 +6,13 @@ export default function MobileApp() {
 		<div className="bg-white w-full dark:bg-[#0E0E0E]">
 			<div className="max-w-7xl gap-16 px-6 py-10 lg:gap-20 lg:px-8 lg:py-24 mx-auto flex min-h-screen flex-col items-center">
 				<div className="max-w-2xl md:text-center lg:mx-0 lg:max-w-xl lg:pt-8 mx-auto shrink-0">
-					<h2 className="text-2xl font-bold tracking-tight text-black sm:text-4xl dark:text-neutral-100">
-						Mobile app in early alpha
-					</h2>
+					<div className="text-2xl sm:text-4xl">
+						<h2 className="font-bold tracking-tight text-black dark:text-neutral-100">
+							Mobile app in early alpha
+						</h2>
+					</div>
 
-					<p className="text-neutral-650 mt-5 max-w-md text-base sm:text-lg md:max-w-3xl md:text-xl dark:text-neutral-400 mx-auto">
+					<p className="text-neutral-650 mt-5! max-w-md text-base sm:text-lg md:max-w-3xl md:text-xl dark:text-neutral-400 mx-auto">
 						An app for both iOS and Android is in the works, with a more tailored mobile-first
 						experience
 					</p>

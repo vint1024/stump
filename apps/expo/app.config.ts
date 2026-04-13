@@ -8,11 +8,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		name: 'Stump',
 		slug: 'stump',
 		version: '0.0.0',
-		orientation: 'portrait',
+		orientation: 'default',
 		icon: './assets/images/icon.png',
 		scheme: 'stump',
 		userInterfaceStyle: 'automatic',
-		newArchEnabled: true,
 		assetBundlePatterns: ['**/*'],
 		ios: {
 			supportsTablet: true,
@@ -157,8 +156,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 				{
 					android: {
 						usesCleartextTraffic: true,
-						compileSdkVersion: 35,
-						targetSdkVersion: 35,
+						compileSdkVersion: 36,
+						targetSdkVersion: 36,
 						// Note: I've needed this since expo@^54.0.13
 						gradleProperties: {
 							'org.gradle.jvmargs':

@@ -7,7 +7,7 @@
 	},
 	"authScene": {
 		"claimHeading": "Inicjalizuj serwer",
-		"claimText": "Ten serwer Stump nie został zainicjalizowany. Użyj formularza poniżej aby stworzyć konto. Gdy będzie już ono stworzone, uzyskasz pełen dostęp do wszystkich funkcji serwera.",
+		"claimText": "Ten serwer Stump nie został zainicjowany. Użyj formularza poniżej, aby stworzyć konto. Gdy będzie już ono stworzone, uzyskasz pełen dostęp do wszystkich funkcji serwera.",
 		"form": {
 			"validation": {
 				"missingUsername": "Nazwa użytkownika jest wymagana",
@@ -308,10 +308,10 @@
 				},
 				"resizeMethod": {
 					"label": "Metoda skalowania",
-					"configuration": {
-						"scaleEvenlyByFactor": "Skalowane równomiernie",
+					"options": {
+						"scaleEvenlyByFactor": "Skalowanie równomierne",
 						"exact": "Dokładny wymiar",
-						"scaleDimension": "Skalowane automatycznie",
+						"scaleDimension": "Skalowanie automatyczne",
 						"none": "Żadne"
 					}
 				},
@@ -331,7 +331,7 @@
 					}
 				},
 				"scaleDimension": {
-					"label": "Skalowane automatycznie",
+					"label": "Skalowanie automatyczne",
 					"description": "Ustaw szerokość lub wysokość miniatury, a druga wartość zostanie wyskalowana automatycznie tak, aby zachować oryginalny współczynnik kształtu",
 					"dimension": {
 						"label": "Wymiar",
@@ -366,11 +366,11 @@
 					"addButton": "Dodaj regułę",
 					"ignoreParents": {
 						"title": "Pomijaj wszystkie katalogi nadrzędne",
-						"label": "Wzorce pomijania"
+						"label": "Ignoruj nadrzędne"
 					},
 					"ignoreSubdirs": {
-						"title": "Pomijaj wszystkie podkatalogi",
-						"label": "Pomijaj podkatalogi"
+						"title": "Ignoruj wszystkie podkatalogi",
+						"label": "Ignoruj podrzędne"
 					}
 				},
 				"invalidGlob": "Nieprawidłowy wzorzec",
@@ -505,7 +505,7 @@
 					"processMetadata": "Przetwarzaj metadane",
 					"generateFileHashes": "Generuj skróty plików",
 					"generateKoreaderHashes": "Generuj skróty KoReader",
-					"scaleEvenlyByFactor": "Skalowane równomiernie",
+					"scaleEvenlyByFactor": "Skalowanie równomierne",
 					"exact": "Dokładny wymiar",
 					"scaleDimension": "O stałych wymiarach"
 				}
@@ -1254,6 +1254,7 @@
 				"access": "Dostęp",
 				"email": "Adres e-mail",
 				"notifications": "Powiadomienia",
+				"tags": "Etykiety",
 				"label": "Zarządzanie"
 			}
 		},
@@ -1296,9 +1297,9 @@
 					},
 					"heading": "Język i ustawienia regionalne",
 					"subtitle": [
-						"Stump obsługuje wiele języków i ustawień regionalnych, ustaw swoje preferencje poniżej. Proszę rozważ pomoc w poprawie jakości",
+						"Stump obsługuje wiele języków i ustawień regionalnych, ustaw swoje preferencje poniżej. Jeśli jesteś w stanie, proszę rozważ pomoc w poprawie jakości",
 						"tłumaczeń Stump",
-						"jeśli jesteś w stanie!"
+						"!"
 					]
 				}
 			}
@@ -1327,6 +1328,7 @@
 						"autumn": "Jesień",
 						"cosmic": "Kosmiczny",
 						"pumpkin": "Dynia",
+						"midnight": "Północ",
 						"matrix": "Matrix"
 					}
 				},
@@ -1635,7 +1637,7 @@
 							"description": "Spowoduje to wylogowanie z bieżącego serwera",
 							"confirm": "Przełącz na serwer",
 							"server": "Serwer",
-							"uri": "Adres URL"
+							"uri": "Odnośnik"
 						}
 					},
 					"resetConfiguration": {
@@ -1837,7 +1839,7 @@
 		"server/users": {
 			"helmet": "Zarządzanie użytkownikami",
 			"title": "Użytkownicy",
-			"description": "Zarządzanie użytkownikami na tym serwerze",
+			"description": "Zarządzaj użytkownikami na tym serwerze",
 			"createUser": {
 				"helmet": "Dodaj użytkownika",
 				"title": "Dodaj użytkownika",
@@ -1852,7 +1854,7 @@
 				"accessControl": {
 					"heading": "Kontrola i ograniczenia dostępu",
 					"subtitle": [
-						"Skonfiguruj wszelkie ograniczenia, które chcesz zastosować do tego użytkownika. Aby uzyskać więcej informacji o kontroli dostępu, zobacz",
+						"Skonfiguruj wszelkie ograniczenia, które chcesz zastosować dla tego użytkownika. Aby uzyskać więcej informacji o kontroli dostępu, zobacz",
 						"dokumentację"
 					],
 					"ageRestriction": {
@@ -1861,7 +1863,7 @@
 						"placeholder": "13",
 						"enforceUnset": {
 							"label": "Wymuś na nieokreślonych",
-							"description": "Jeśli opcja jest włączona, użytkownicy będą ograniczeni do dostępu do treści bez dostępnych ocen wiekowych"
+							"description": "Jeśli opcja ta jest włączona, użytkownik nie będzie miał dostępu do treści bez ocen wiekowych"
 						}
 					},
 					"tagRestriction": {
@@ -1931,7 +1933,7 @@
 					"email": {
 						"label": "Wysyłka poczty elektronicznej",
 						"send": {
-							"label": "Wysyłaj wiadomości poczty elektronicznej",
+							"label": "Wysyłanie wiadomości poczty elektronicznej",
 							"description": "Pozwala użytkownikowi wysyłać wiadomości e-mail z serwera na którykolwiek ze skonfigurowanych aliasów"
 						},
 						"arbitrary_send": {
@@ -2142,6 +2144,55 @@
 				"helmet": "Aktualizuj wysyłkę",
 				"title": "Aktualizuj wysyłkę",
 				"description": "Aktualizuj detale tej wysyłki SMTP"
+			}
+		},
+		"server/tags": {
+			"helmet": "Zarządzanie etykietami",
+			"title": "Etykiety",
+			"description": "Utwórz i zarządzaj etykietami w celu organizacji treści",
+			"sections": {
+				"table": {
+					"title": "Etykiety",
+					"description": "Wszystkie etykiety dostępne na tym serwerze",
+					"empty": {
+						"title": "Brak etykiet",
+						"action": "Utwórz swoją pierwszą etykietę, aby rozpocząć"
+					},
+					"columns": {
+						"name": "Nazwa"
+					},
+					"actionMenu": {
+						"rename": "Zmień nazwę"
+					}
+				},
+				"createTag": {
+					"trigger": "Utwórz etykietę",
+					"modal": {
+						"heading": "Utwórz nową etykietę",
+						"description": "Etykiety mogą być przypisywane do książek, serii lub bibliotek",
+						"name": {
+							"label": "Nazwa",
+							"placeholder": "Wprowadź nazwę etykiety"
+						},
+						"submit": "Utwórz"
+					}
+				},
+				"renameTag": {
+					"modal": {
+						"heading": "Zmień nazwę etykiety",
+						"description": "Zmień nazwę tej etykiety we wszystkich przypisanych pozycjach",
+						"name": {
+							"label": "Nazwa",
+							"placeholder": "Wprowadź nową nazwę etykiety"
+						},
+						"submit": "Zmień nazwę"
+					}
+				},
+				"deleteTag": {
+					"title": "Usuń etykietę",
+					"description": "Etykieta zostanie usunięta ze wszystkich książek, serii i bibliotek. Operacji tej nie można cofnąć.",
+					"confirm": "Usuń"
+				}
 			}
 		}
 	},
@@ -2361,15 +2412,15 @@
 			"description": "Pozwala użytkownikowi na wysyłanie niestandardowych wiadomości e-mail na dowolny adres"
 		},
 		"EMAIL_SEND": {
-			"label": "Wysyłaj wiadomości poczty elektronicznej",
+			"label": "Wysyłanie wiadomości poczty elektronicznej",
 			"description": "Pozwala użytkownikowi na wysyłanie wiadomości e-mail przez system"
 		},
 		"FILE_EXPLORER": {
-			"label": "Przeglądarka plików",
+			"label": "Przeglądanie plików",
 			"description": "Pozwala użytkownikowi na przeglądanie i eksploracje systemu plików serwera"
 		},
 		"MANAGE_LIBRARY": {
-			"label": "Zarządzaj bibliotekami",
+			"label": "Zarządzanie bibliotekami",
 			"description": "Pozwala użytkownikowi na zarządzanie ustawieniami biblioteki i konfiguracją"
 		},
 		"MANAGE_NOTIFIER": {
@@ -2413,11 +2464,11 @@
 			"description": "Pozwala użytkownikowi na przesyłanie plików na serwer"
 		},
 		"MANAGE_JOBS": {
-			"label": "Zarządzaj zadaniami",
+			"label": "Zarządzanie zadaniami",
 			"description": "Pozwala użytkownikowi na zarządzanie dowolnym zadaniem w kolejce"
 		},
 		"EDIT_METADATA": {
-			"label": "Edycja metadanych",
+			"label": "Edytowanie metadanych",
 			"description": "Pozwala użytkownikowi na edycję metadanych książek i serii"
 		},
 		"WRITE_BACK_METADATA": {
@@ -2427,6 +2478,357 @@
 		"EDIT_THUMBNAILS": {
 			"label": "Edycja miniatur",
 			"description": "Pozwala użytkownikowi na edycję miniatur książek i serii"
+		}
+	},
+	"mobileApp": {
+		"addOrEditServer": {
+			"addServer": {
+				"title": "Dodaj serwer",
+				"subtitle": "Skonfiguruj nowy serwer, aby uzyskać dostęp do swojej zawartości"
+			},
+			"editServer": {
+				"title": "Edytuj serwer",
+				"subtitle": "Edytuj serwer"
+			},
+			"kind": "Wariant",
+			"customHeaders": {
+				"label": "Niestandardowe nagłówki",
+				"addHeader": "Dodaj nagłówek",
+				"invalidHeader": "Nieprawidłowy nagłówek"
+			},
+			"auth": {
+				"label": "Autoryzacja",
+				"default": {
+					"label": "Logowanie",
+					"description": "Zostaniesz poproszony w razie potrzeby o zalogowanie się podczas dostępu do zawartości"
+				},
+				"token": {
+					"label": "Token",
+					"placeholder": "Token"
+				},
+				"basic": "Podstawowe"
+			},
+			"serverNamePlaceholder": "Mój serwer",
+			"catalogUrl": "Odnośnik do katalogu",
+			"failedToConnect": "Połączenie z serwerem nie powiodło się",
+			"didConnect": "Połączono",
+			"checkConnection": "Sprawdź połączenie",
+			"setAsDefaultServer": "Ustaw jako domyślny serwer",
+			"enableOPDS": "Włącz OPDS",
+			"validation": {
+				"nameAlreadyExists": "Podana nazwa jest już używana",
+				"cannotSetAuthorizationHeader": "Nie można ustawić nagłówka uwierzytelnienia"
+			}
+		},
+		"bookActions": {
+			"markAsRead": {
+				"label": "Oznacz jako przeczytane",
+				"confirmation": "Czy na pewno chcesz oznaczyć {{bookTitle}} jako przeczytane?"
+			},
+			"clearProgress": {
+				"label": "Wyczyść postęp",
+				"confirmation": "Czy na pewno chcesz wyczyścić postęp dla {{bookTitle}}?"
+			},
+			"deleteBook": {
+				"label": "Usuń książkę",
+				"confirmation": "Czy na pewno chcesz usunąć {{bookTitle}}?"
+			},
+			"seeDetails": "Zobacz szczegóły"
+		},
+		"bookMetadata": {
+			"ageRating": "Klasyfikacja wiekowa",
+			"downloadedAt": "Pobrane",
+			"format": "Format",
+			"genres": "Gatunki",
+			"language": "Język",
+			"publisher": "Wydawca",
+			"size": "Rozmiar",
+			"volume": "Tom",
+			"year": "Rok"
+		},
+		"common": {
+			"cancel": "Anuluj",
+			"chapter": "Rozdział",
+			"clear": "Wyczyść",
+			"confirm": "Potwierdź",
+			"details": "Szczegóły",
+			"delete": "Usuń",
+			"downloads": "Pobrane",
+			"edit": "Edytuj",
+			"enabled": "Aktywne",
+			"enable": "Aktywuj",
+			"error": "Błąd",
+			"name": "Nazwa",
+			"none": "Brak",
+			"options": "Ustawienia",
+			"page": "Strona",
+			"pages": "Strony",
+			"password": "Hasło",
+			"progress": "Postęp",
+			"readTime": "Czas czytania",
+			"readMore": "Dowiedz się więcej",
+			"save": "Zapisz",
+			"select": "Zaznacz",
+			"settings": "Ustawienia",
+			"servers": "Serwery",
+			"thisBook": "ta książka",
+			"thisServer": "ten serwer",
+			"unknown": "Nieznany",
+			"unknownTitle": "Bez tytułu",
+			"url": "Odnośnik",
+			"username": "Nazwa użytkownika",
+			"value": "Wartość",
+			"version": "Wersja"
+		},
+		"emptyState": {
+			"noStumpServers": "Nie dodano żadnych serwerów Stump",
+			"noOPDSServers": "Nie dodano żadnych serwerów OPDS",
+			"noServers": "Nie skonfigurowano żadnych serwerów",
+			"cta": "Zacznij od dodania serwera, aby uzyskać do swojej kolekcji książek",
+			"seeDocumentation": "Zobacz dokumentację"
+		},
+		"tabs": {
+			"servers": "Serwery",
+			"localLibrary": "Biblioteka",
+			"settings": "Ustawienia"
+		},
+		"localLibrary": {
+			"title": "Biblioteka lokalna",
+			"emptyState": {
+				"all": {
+					"title": "Brak pozycji do czytania",
+					"description": "Tutaj pojawią się pobrane książki"
+				},
+				"imported": {
+					"title": "Brak zaimportowanych książek",
+					"description": "Zaimportuj książki, aby przeczytać je offline"
+				},
+				"server": {
+					"title": "Brak pobranych książek",
+					"description": "Pobierz książki z biblioteki, aby odczytać je w trybie offline"
+				}
+			},
+			"downloadQueue": {
+				"downloading": "Pobieranie",
+				"failed": "Niepowodzenie",
+				"nothingDownloading": "Nic nie jest pobierane",
+				"noActiveDownloads": "Brak aktywnych pobrań",
+				"noFailedDownloads": "Brak nieudanych pobrań",
+				"downloadStarting": "Rozpoczynanie..."
+			},
+			"downloadsHeaderMenu": {
+				"deleteAllDownloads": {
+					"label": "Usuń książki",
+					"confirmation": "Czy na pewno chcesz usunąć lokalną bibliotekę?",
+					"disclaimer": "Tej czynności nie można cofnąć."
+				},
+				"seeProblems": "Zobacz problemy ({{problemCount}})",
+				"hideCurated": "Ukryj wyselekcjonowane",
+				"showCurated": "Pokaż wyselekcjonowane",
+				"attemptSync": "Spróbuj zsynchronizować"
+			},
+			"downloadsHeaderSortMenu": {
+				"sortBy": {
+					"NAME": "Nazwa",
+					"ADDED_AT": "Data dodania",
+					"SERIES": "Seria"
+				},
+				"sortDirection": {
+					"ASC": "Rosnąco",
+					"DESC": "Malejąco"
+				},
+				"sortDirectionText": {
+					"ASC": "A → Z",
+					"DESC": "Z → A"
+				},
+				"sortDirectionDate": {
+					"ASC": "Najpierw najstarsze",
+					"DESC": "Najpierw najnowsze"
+				},
+				"sourceFilter": {
+					"all": "Wszystkie książki",
+					"server": "Pobrane",
+					"imported": "Zaimportowane"
+				}
+			},
+			"downloadProblemsSheet": {
+				"title": "Nieudane pobierania",
+				"noFailedDownloads": "Brak nieudanych pobrań",
+				"retryAll": "Ponów wszystkie",
+				"dismissAll": "Odrzucić wszystkie"
+			}
+		},
+		"settings": {
+			"preferences": {
+				"label": "Preferencje",
+				"appTheme": {
+					"label": "Motyw",
+					"options": {
+						"light": "Jasny",
+						"dark": "Ciemny"
+					}
+				},
+				"appPrimaryColor": "Akcent",
+				"appLanguage": "Język",
+				"defaultServer": "Domyślny serwer",
+				"thumbnailRatio": "Współczynnik miniatur",
+				"thumbnailPlaceholder": {
+					"label": "Miniatury zastępcze",
+					"options": {
+						"grayscale": "Odcienie szarości",
+						"averageColor": "Średnie wartości kolorów",
+						"colorful": "Kolorowe",
+						"thumbhash": "Thumbhash"
+					}
+				},
+				"thumbnailResizeMode": {
+					"label": "Skalowanie miniatur",
+					"options": {
+						"cover": "Okładka",
+						"stretch": "Rozciągnij",
+						"fit": "Dopasuj"
+					}
+				}
+			},
+			"reading": {
+				"label": "Czytane",
+				"preferNativePdf": "Preferuj natywny PDF",
+				"preferMinimalReader": "Preferuj minimalny czytnik",
+				"disableDismissGesture": "Wyłącz gest odrzucania"
+			},
+			"stump": {
+				"label": "Stump",
+				"description": "Funkcje Stump są opcjonalne i, jeśli ich nie potrzebujesz, możesz je wyłączyć",
+				"bookClubsEnabled": "Funkcje klubu książki"
+			},
+			"autoSyncLocalData": "Automatycznie synchronizuj dane lokalne",
+			"management": {
+				"label": "Zarządzanie",
+				"dataUsage": {
+					"label": "Wykorzystanie danych",
+					"nonStumpData": "Dane inne niż Stump",
+					"serversTotal": "Łącznie serwerów",
+					"totalFiles": "Łącznie plików",
+					"totalSize": "Łączny rozmiar",
+					"deleteDownloads": {
+						"label": "Usuń pobrane",
+						"confirmation": "Czy na pewno chcesz usunąć wszystkie pobrania z {{serverName}}?",
+						"deleteFailed": {
+							"title": "Usunięcie nie powiodło się",
+							"description": "Wystąpił błąd podczas usuwania wszystkich pobrań z {{serverName}}"
+						}
+					},
+					"noDownloads": "Brak pobranych plików z tego serwera",
+					"storedPreferences": {
+						"label": "Zapisane preferencje",
+						"description": "Różne dane, takie jak preferencje książek, czasy odczytu, itp."
+					},
+					"clearPreferences": "Wyczyść preferencje"
+				}
+			},
+			"debug": {
+				"label": "Debugowanie",
+				"clearCache": {
+					"memory": {
+						"button": "Pamięć",
+						"success": "Wyczyszczono pamięć"
+					},
+					"disk": {
+						"button": "Dysk",
+						"success": "Wyczyszczono pamięć podręczną"
+					}
+				},
+				"deleteDatabase": {
+					"label": "Usuń bazę danych",
+					"success": {
+						"title": "Usunięto bazę danych",
+						"description": "Proszę uruchom aplikację ponownie"
+					},
+					"error": {
+						"title": "Usunięcie nie powiodło się",
+						"description": "Wystąpił błąd podczas usuwania bazy danych"
+					}
+				},
+				"performanceMonitor": "Monitor wydajności",
+				"reduceAnimations": "Ogranicz animacje",
+				"maskUrls": "Ukryj odnośniki",
+				"debugAnalytics": {
+					"label": "Analityka debugowania",
+					"description": "Wyślij dodatkowe zdarzenia związane z debugowaniem, aby pomóc w rozwiązywaniu problemów"
+				}
+			},
+			"contactInfo": {
+				"label": "Kontakt",
+				"email": "Adres e-mail",
+				"discord": "Discord",
+				"github": "GitHub"
+			},
+			"supportInfo": {
+				"buildInformation": "Informacje o kompilacji",
+				"version": "Wersja: {{version}}",
+				"suuportIdentifier": "Identyfikator wsparcia: {{supportID}}"
+			}
+		},
+		"readerSettings": {
+			"title": "Ustawienia czytnika",
+			"sections": {
+				"mode": "Tryb",
+				"imageOptions": "Ustawienia obrazów",
+				"controls": "Sterowanie"
+			},
+			"readingMode": {
+				"label": "Kierunek",
+				"options": {
+					"PAGED": "Strony",
+					"CONTINUOUS_HORIZONTAL": "Przewijanie (poziome)",
+					"CONTINUOUS_VERTICAL": "Przewijanie (pionowe)"
+				}
+			},
+			"readingDirection": {
+				"label": "Kierunek",
+				"options": {
+					"RTL": "Od prawej do lewej",
+					"LTR": "Od lewej do prawej"
+				}
+			},
+			"doublePageBehavior": {
+				"label": "Podwójna strona",
+				"options": {
+					"always": "Zawsze",
+					"auto": "Automatycznie",
+					"off": "Wyłączone"
+				}
+			},
+			"separateSecondPage": "Oddziel drugą stronę",
+			"imageScaling": {
+				"label": "Skalowanie",
+				"options": {
+					"AUTO": "Automatyczne",
+					"HEIGHT": "Dopasuj wysokość",
+					"WIDTH": "Dopasuj szerokość",
+					"NONE": "Brak"
+				}
+			},
+			"allowDownscaling": "Skalowanie zmniejszające",
+			"tapSidesToNavigate": "Dotknij boki, aby nawigować",
+			"footerControls": {
+				"label": "Stopka",
+				"options": {
+					"images": "Galeria obrazów",
+					"slider": "Suwak"
+				}
+			}
+		},
+		"savedServerActions": {
+			"clearCache": "Wyczyść pamięć podręczną",
+			"discardTokens": {
+				"label": "Wyczyść tokeny",
+				"description": "Dotyczy tylko tokenów logowania"
+			},
+			"deleteServer": {
+				"title": "Usuń serwer",
+				"confirmation": "Czy na pewno chcesz usunąć {{serverName}}?"
+			}
 		}
 	}
 }

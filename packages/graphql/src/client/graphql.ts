@@ -2054,6 +2054,11 @@ export type Mutation = {
   removeBookClubMember: BookClubMember;
   /** Remove your own suggestion (only before it's resolved) */
   removeSuggestion: BookClubBookSuggestion;
+  /**
+   * Rename a tag. Returns the updated tag, or an error if the tag was not found or the new
+   * name already exists.
+   */
+  renameTag: Tag;
   /** Reorder uncompleted books in the club's queue. Completed books cannot be reordered since they are effectively archived */
   reorderBooks: BookClub;
   resetLibraryMetadata: Library;
@@ -2605,6 +2610,12 @@ export type MutationRemoveBookClubMemberArgs = {
 
 export type MutationRemoveSuggestionArgs = {
   suggestionId: Scalars['ID']['input'];
+};
+
+
+export type MutationRenameTagArgs = {
+  id: Scalars['Int']['input'];
+  name: Scalars['String']['input'];
 };
 
 
@@ -4309,6 +4320,8 @@ export type StumpConfig = {
   refreshTokenTtl: Scalars['Int']['output'];
   /** The time in seconds that a login session will be valid for. */
   sessionTtl: Scalars['Int']['output'];
+  /** Whether to trust proxy headers for determining client IP and scheme (e.g., X-Forwarded-For) */
+  trustProxyHeaders: Scalars['Boolean']['output'];
   /** The verbosity with which system logs are visible (default: 1). */
   verbosity: Scalars['Int']['output'];
 };
@@ -4547,6 +4560,12 @@ export enum UserPermission {
   AccessKoreaderSync = 'ACCESS_KOREADER_SYNC',
   /** Grant access to access the smart list feature. This includes the ability to create and edit smart lists */
   AccessSmartList = 'ACCESS_SMART_LIST',
+  /** Grant user access to change **their own** avatar */
+  ChangeAvatar = 'CHANGE_AVATAR',
+  /** Grant user access to change **their own** password */
+  ChangePassword = 'CHANGE_PASSWORD',
+  /** Grant user access to change **their own** username */
+  ChangeUsername = 'CHANGE_USERNAME',
   /** Grant access to create a book club (access book club) */
   CreateBookClub = 'CREATE_BOOK_CLUB',
   /** Grant access to create a library */
@@ -5129,7 +5148,7 @@ export type OnDeckBooksQuery = { __typename?: 'Query', onDeck: { __typename?: 'P
       & { ' $fragmentRefs'?: { 'OnDeckBookItemFragment': OnDeckBookItemFragment } }
     )>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', totalPages: number, currentPage: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
 
-export type ReadingNowFragment = { __typename?: 'Media', id: string, resolvedName: string, pages: number, metadata?: { __typename?: 'MediaMetadata', summary?: string | null, genres: Array<string>, links: Array<string> } | null, thumbnail: { __typename?: 'ImageRef', url: string, height?: number | null, width?: number | null, metadata?: { __typename?: 'ImageMetadata', averageColor?: string | null, thumbhash?: string | null, colors: Array<{ __typename?: 'ImageColor', color: string, percentage: any }> } | null }, readProgress?: { __typename?: 'ActiveReadingSession', epubcfi?: string | null, page?: number | null, percentageCompleted?: any | null, updatedAt?: any | null, locator?: { __typename?: 'ReadiumLocator', locations?: { __typename?: 'ReadiumLocation', position?: number | null } | null } | null } | null } & { ' $fragmentName'?: 'ReadingNowFragment' };
+export type ReadingNowFragment = { __typename?: 'Media', id: string, resolvedName: string, pages: number, metadata?: { __typename?: 'MediaMetadata', summary?: string | null, genres: Array<string>, links: Array<string>, publisher?: string | null, year?: number | null } | null, thumbnail: { __typename?: 'ImageRef', url: string, height?: number | null, width?: number | null, metadata?: { __typename?: 'ImageMetadata', averageColor?: string | null, thumbhash?: string | null, colors: Array<{ __typename?: 'ImageColor', color: string, percentage: any }> } | null }, readProgress?: { __typename?: 'ActiveReadingSession', epubcfi?: string | null, page?: number | null, percentageCompleted?: any | null, updatedAt?: any | null, locator?: { __typename?: 'ReadiumLocator', locations?: { __typename?: 'ReadiumLocation', position?: number | null } | null } | null } | null } & { ' $fragmentName'?: 'ReadingNowFragment' };
 
 export type RecentlyAddedBooksQueryVariables = Exact<{
   pagination?: InputMaybe<Pagination>;
@@ -6574,6 +6593,33 @@ export type ProvidersSectionGetProvidersQuery = { __typename?: 'Query', metadata
     & { ' $fragmentRefs'?: { 'ExistingProviderCardFragment': ExistingProviderCardFragment } }
   )> };
 
+export type CreateTagModalMutationVariables = Exact<{
+  tags: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type CreateTagModalMutation = { __typename?: 'Mutation', createTags: Array<{ __typename?: 'Tag', id: number, name: string }> };
+
+export type DeleteTagConfirmModalMutationVariables = Exact<{
+  tags: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type DeleteTagConfirmModalMutation = { __typename?: 'Mutation', deleteTags: Array<{ __typename?: 'Tag', id: number, name: string }> };
+
+export type RenameTagModalMutationVariables = Exact<{
+  id: Scalars['Int']['input'];
+  name: Scalars['String']['input'];
+}>;
+
+
+export type RenameTagModalMutation = { __typename?: 'Mutation', renameTag: { __typename?: 'Tag', id: number, name: string } };
+
+export type TagTableQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type TagTableQuery = { __typename?: 'Query', tags: Array<{ __typename?: 'Tag', id: number, name: string }> };
+
 export type UserStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -6770,6 +6816,8 @@ export const ReadingNowFragmentDoc = new TypedDocumentString(`
     summary
     genres
     links
+    publisher
+    year
   }
   thumbnail {
     url
@@ -9105,6 +9153,8 @@ export const ContinueReadingDocument = new TypedDocumentString(`
     summary
     genres
     links
+    publisher
+    year
   }
   thumbnail {
     url
@@ -12628,6 +12678,38 @@ export const ProvidersSectionGetProvidersDocument = new TypedDocumentString(`
   createdAt
   updatedAt
 }`) as unknown as TypedDocumentString<ProvidersSectionGetProvidersQuery, ProvidersSectionGetProvidersQueryVariables>;
+export const CreateTagModalDocument = new TypedDocumentString(`
+    mutation CreateTagModal($tags: [String!]!) {
+  createTags(tags: $tags) {
+    id
+    name
+  }
+}
+    `) as unknown as TypedDocumentString<CreateTagModalMutation, CreateTagModalMutationVariables>;
+export const DeleteTagConfirmModalDocument = new TypedDocumentString(`
+    mutation DeleteTagConfirmModal($tags: [String!]!) {
+  deleteTags(tags: $tags) {
+    id
+    name
+  }
+}
+    `) as unknown as TypedDocumentString<DeleteTagConfirmModalMutation, DeleteTagConfirmModalMutationVariables>;
+export const RenameTagModalDocument = new TypedDocumentString(`
+    mutation RenameTagModal($id: Int!, $name: String!) {
+  renameTag(id: $id, name: $name) {
+    id
+    name
+  }
+}
+    `) as unknown as TypedDocumentString<RenameTagModalMutation, RenameTagModalMutationVariables>;
+export const TagTableDocument = new TypedDocumentString(`
+    query TagTable {
+  tags {
+    id
+    name
+  }
+}
+    `) as unknown as TypedDocumentString<TagTableQuery, TagTableQueryVariables>;
 export const UserStatsDocument = new TypedDocumentString(`
     query UserStats {
   userCount

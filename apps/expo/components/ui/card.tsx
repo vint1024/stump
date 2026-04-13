@@ -1,3 +1,4 @@
+import { clone, getColor, serialize, set } from 'colorjs.io/fn'
 import { CircleAlert, LucideIcon } from 'lucide-react-native'
 import React, { ComponentProps, ReactNode, useState } from 'react'
 import { Easing, Platform, Pressable, View, ViewProps } from 'react-native'
@@ -35,6 +36,7 @@ type RowProps = Omit<ViewProps, 'children'> & {
 	label?: string
 	description?: string
 	icon?: LucideIcon
+	iconBackgroundColor?: string
 	disabled?: boolean
 	renderDivider?: boolean
 } & ({ value?: string | number; children?: never } | { children?: ReactNode; value?: never })
@@ -68,7 +70,7 @@ export function Card({
 
 		return (
 			<View
-				className={cn('ios:px-4 flex flex-row items-center justify-between gap-4 px-2', {
+				className={cn('ios:px-4 gap-4 px-2 flex flex-row items-center justify-between', {
 					'justify-end': !label && actions,
 				})}
 			>
@@ -116,7 +118,7 @@ function StatGroup({ children, className }: StatGroupProps) {
 
 			<View
 				className={cn(
-					'ios:p-4 flex-row flex-wrap items-start justify-evenly gap-x-1 gap-y-4 p-3',
+					'ios:p-4 gap-x-1 gap-y-4 p-3 flex-row flex-wrap items-start justify-evenly',
 					className,
 				)}
 			>
@@ -129,9 +131,9 @@ function StatGroup({ children, className }: StatGroupProps) {
 function Stat({ label, value, suffix }: StatProps) {
 	return (
 		<View className="items-center justify-center">
-			<Text className="mb-1 text-center font-medium text-foreground-muted">{label}</Text>
-			<View className="flex-row items-end gap-0">
-				<Text size="xl" className="text-center font-semibold">
+			<Text className="mb-1 font-medium text-center text-foreground-muted">{label}</Text>
+			<View className="gap-0 flex-row items-end">
+				<Text size="xl" className="font-semibold text-center">
 					{value}
 				</Text>
 				{suffix != null && (
@@ -148,7 +150,7 @@ function Row({ value, children, ...props }: RowProps) {
 	return (
 		<BaseRowComponent {...props}>
 			{value != undefined && (
-				<Text className="flex-1 text-right text-lg text-foreground-muted">{value}</Text>
+				<Text className="text-lg flex-1 text-right text-foreground-muted">{value}</Text>
 			)}
 			{children}
 		</BaseRowComponent>
@@ -174,7 +176,7 @@ function LongRow({ value, className, ...props }: Omit<RowProps, 'children'>) {
 	return (
 		<BaseRowComponent
 			onPress={() => setExpanded(!expanded)}
-			className={cn('flex-wrap gap-1', className)}
+			className={cn('gap-1 flex-wrap', className)}
 			{...props}
 		>
 			{value != undefined && (
@@ -204,7 +206,7 @@ function LongRow({ value, className, ...props }: Omit<RowProps, 'children'>) {
 					{isExpandable && (
 						<Text
 							style={{ color: accentColor || colors.fill.brand.DEFAULT }}
-							className={cn('px-1 font-medium', !expanded && 'absolute bottom-0 right-0')}
+							className={cn('px-1 font-medium', !expanded && 'bottom-0 right-0 absolute')}
 						>
 							{!expanded ? 'See more' : 'See less'}
 						</Text>
@@ -222,7 +224,7 @@ function CardBackground({ className, ...props }: ViewProps) {
 		<View
 			className={cn(
 				// We hide the overflow so that the first divider gets hidden
-				'squircle ios:rounded-[2rem] flex overflow-hidden rounded-3xl bg-black/5 dark:bg-white/10',
+				'squircle ios:rounded-[2rem] rounded-3xl bg-black/5 dark:bg-white/10 flex overflow-hidden',
 				className,
 			)}
 			{...props}
@@ -234,7 +236,7 @@ function Divider({ hasIcon, className, ...props }: { hasIcon?: boolean } & ViewP
 	return (
 		<View
 			className={cn(
-				'ios:mx-4 mx-2 h-px bg-black/10 dark:bg-white/10',
+				'ios:mx-4 mx-2 bg-black/10 dark:bg-white/10 h-px',
 				// gap between icon and text (gap-4) + icon width (w-8) + initial ios padding (ml-4)
 				hasIcon && 'ios:ml-16',
 				className,
@@ -248,6 +250,7 @@ function BaseRowComponent({
 	label,
 	description,
 	icon,
+	iconBackgroundColor,
 	renderDivider = true,
 	children,
 	className,
@@ -267,21 +270,17 @@ function BaseRowComponent({
 				onPress={onPress}
 				disabled={disabled}
 				className={cn(
-					'flex flex-row items-center justify-between gap-x-4 px-4 py-3.5',
+					'gap-x-4 px-4 py-3.5 tablet:py-5 flex flex-row items-center justify-between',
 					disabled && 'pointer-events-none opacity-50',
 					className,
 				)}
 				{...props}
 			>
 				{label && (
-					<View className="shrink flex-row items-center justify-center gap-4">
-						{icon && (
-							<View className="squircle flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/75 dark:bg-black/40">
-								<Icon as={icon} className="h-6 w-6 text-foreground-muted" />
-							</View>
-						)}
-						<View className="shrink gap-0.5">
-							<Text className="shrink text-lg">{label}</Text>
+					<View className="gap-4 shrink flex-row items-center justify-center">
+						{icon && <GradientIcon icon={icon} backgroundColor={iconBackgroundColor} />}
+						<View className="gap-0.5 shrink">
+							<Text className="text-lg shrink">{label}</Text>
 							{description && (
 								<Text size="sm" className="text-foreground-muted">
 									{description}
@@ -296,6 +295,45 @@ function BaseRowComponent({
 	)
 }
 
+function GradientIcon({ icon, backgroundColor }: { icon: LucideIcon; backgroundColor?: string }) {
+	const { isDarkColorScheme } = useColorScheme()
+
+	const lightPlainColor = getColor(backgroundColor || '#404040')
+	const darkPlainColor = clone(lightPlainColor)
+	set(lightPlainColor, {
+		'oklch.l': (l) => l + (isDarkColorScheme ? 0.1 : 0.18),
+		'oklch.c': (c) => c * (isDarkColorScheme ? 1 : 1.2),
+	})
+	set(darkPlainColor, {
+		'oklch.l': (l) => l + (isDarkColorScheme ? -0.1 : 0.05),
+		'oklch.c': (c) => c * (isDarkColorScheme ? 1 : 1.2),
+	})
+
+	const lightColor = serialize(lightPlainColor, { format: 'hex' })
+	const darkColor = serialize(darkPlainColor, { format: 'hex' })
+
+	const gradient = easeGradient({
+		colorStops: {
+			0: { color: lightColor },
+			1: { color: darkColor },
+		},
+		easing: Easing.bezier(0.42, 0, 0.58, 1),
+	})
+
+	return (
+		<View className="squircle h-8 w-8 rounded-xl flex shrink-0 items-center justify-center">
+			<LinearGradient
+				{...gradient}
+				useAngle
+				angle={195}
+				style={{ position: 'absolute', inset: 0 }}
+			/>
+			<Icon as={icon} size={18} strokeWidth={1.8} absoluteStrokeWidth color="white" />
+			<View className="inset-0 rounded-xl dark:border-white/10 border-white/30 squircle absolute border-[0.75px]" />
+		</View>
+	)
+}
+
 // MARK: Shared components
 
 type ListEmptyMessageProps = {
@@ -306,12 +344,12 @@ type ListEmptyMessageProps = {
 export const ListEmptyMessage = ({ icon, message }: ListEmptyMessageProps) => (
 	<View
 		className={cn(
-			'squircle h-24 w-full items-center justify-center gap-2 rounded-3xl border border-dashed border-edge p-3',
+			'squircle h-24 gap-2 rounded-3xl p-3 w-full items-center justify-center border border-dashed border-edge',
 			Platform.OS === 'android' && 'rounded-2xl',
 		)}
 	>
 		<View className="relative flex items-center justify-center">
-			<View className="squircle flex items-center justify-center rounded-lg bg-background-surface p-2">
+			<View className="squircle rounded-lg p-2 flex items-center justify-center bg-background-surface">
 				<Icon as={icon || CircleAlert} className="h-6 w-6 text-foreground-muted" />
 				{/* <Icon as={Slash} className="absolute h-6 w-6 transform text-foreground opacity-80" /> */}
 			</View>

@@ -1971,6 +1971,11 @@ type Mutation {
 	"""
 	createTags(tags: [String!]!): [Tag!]!
 	"""
+	Rename a tag. Returns the updated tag, or an error if the tag was not found or the new
+	name already exists.
+	"""
+	renameTag(id: Int!, name: String!): Tag!
+	"""
 	Delete tags. Returns a list containing the deleted tags, or an error if deletion failed.
 	
 	* `tags` - A non-empty list of tags to create.
@@ -3141,6 +3146,8 @@ type StumpConfig {
 	pdfHighQuality: Boolean!
 	"The number of seconds after which a book can be re-completed"
 	bookCompletionDedupTimeoutSecs: Int!
+	"Whether to trust proxy headers for determining client IP and scheme (e.g., X-Forwarded-For)"
+	trustProxyHeaders: Boolean!
 }
 
 type Subscription {
@@ -3367,6 +3374,12 @@ enum UserPermission {
 	ACCESS_BOOK_CLUB
 	"Grant access to create a book club (access book club)"
 	CREATE_BOOK_CLUB
+	"Grant user access to change **their own** password"
+	CHANGE_PASSWORD
+	"Grant user access to change **their own** username"
+	CHANGE_USERNAME
+	"Grant user access to change **their own** avatar"
+	CHANGE_AVATAR
 	"Grant access to read any emailers in the system"
 	EMAILER_READ
 	"Grant access to create an emailer"

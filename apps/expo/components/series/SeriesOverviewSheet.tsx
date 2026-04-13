@@ -3,7 +3,7 @@ import { PREFETCH_STALE_TIME, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { graphql, SeriesOverviewSheetQuery } from '@stump/graphql'
 import { formatHumanDuration } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -12,6 +12,7 @@ import { IS_IOS_24_PLUS, useColors } from '~/lib/constants'
 import { formatBytesSeparate } from '~/lib/format'
 
 import { MetadataBadgeSection } from '../overview'
+import { SheetBackDetection } from '../SheetBackDetection'
 import { Card, Heading, Text } from '../ui'
 
 const query = graphql(`
@@ -81,6 +82,7 @@ export const SeriesOverviewSheet = forwardRef<TrueSheet, Props>(({ seriesId }, r
 	} = useSuspenseGraphQL(query, sdk.cacheKey('seriesById', ['overviewSheet', seriesId]), {
 		id: seriesId,
 	})
+	const [isOpen, setIsOpen] = useState(false)
 
 	const colors = useColors()
 	const insets = useSafeAreaInsets()
@@ -90,23 +92,29 @@ export const SeriesOverviewSheet = forwardRef<TrueSheet, Props>(({ seriesId }, r
 	}
 
 	return (
-		<TrueSheet
-			ref={ref}
-			detents={['auto', 1]}
-			cornerRadius={24}
-			grabber
-			scrollable
-			backgroundColor={IS_IOS_24_PLUS ? undefined : colors.sheet.background}
-			grabberOptions={{
-				color: colors.sheet.grabber,
-			}}
-			style={{
-				paddingBottom: insets.bottom,
-			}}
-			insetAdjustment="automatic"
-		>
-			<SheetContent series={series} />
-		</TrueSheet>
+		<>
+			<TrueSheet
+				ref={ref}
+				detents={['auto', 1]}
+				grabber
+				scrollable
+				backgroundColor={IS_IOS_24_PLUS ? undefined : colors.sheet.background}
+				grabberOptions={{
+					color: colors.sheet.grabber,
+				}}
+				style={{
+					paddingBottom: insets.bottom,
+				}}
+				insetAdjustment="automatic"
+				onDidPresent={() => setIsOpen(true)}
+				onDidDismiss={() => setIsOpen(false)}
+			>
+				<SheetContent series={series} />
+			</TrueSheet>
+
+			{/*@ts-expect-error: it should be fine*/}
+			{ref && <SheetBackDetection ref={ref} isOpen={isOpen} />}
+		</>
 	)
 })
 SeriesOverviewSheet.displayName = 'SeriesOverviewSheet'
@@ -134,7 +142,7 @@ function SheetContent({ series: { stats, metadata, resolvedName, tags } }: Sheet
 	const hasAbout = metadata?.summary || metadata?.descriptionFormatted
 
 	return (
-		<ScrollView className="flex-1 px-4 py-6" nestedScrollEnabled>
+		<ScrollView className="px-4 py-6 flex-1" nestedScrollEnabled>
 			<View className="gap-6">
 				<View className="px-2">
 					<Heading size="2xl" numberOfLines={3}>
@@ -142,7 +150,7 @@ function SheetContent({ series: { stats, metadata, resolvedName, tags } }: Sheet
 					</Heading>
 
 					{tags.length > 0 && (
-						<View className="mt-4 flex flex-row flex-wrap gap-3">
+						<View className="mt-4 gap-3 flex flex-row flex-wrap">
 							{tags.map((tag) => (
 								<Text key={tag.name} className="text-foreground-muted">
 									#{tag.name}

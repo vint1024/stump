@@ -3,7 +3,7 @@ import { PREFETCH_STALE_TIME, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { graphql, LibraryOverviewSheetQuery } from '@stump/graphql'
 import { formatHumanDuration } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
-import { forwardRef } from 'react'
+import { forwardRef, useState } from 'react'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { IS_IOS_24_PLUS, useColors } from '~/lib/constants'
 import { formatBytesSeparate } from '~/lib/format'
 
+import { SheetBackDetection } from '../SheetBackDetection'
 import { Card, Heading, Text } from '../ui'
 
 const query = graphql(`
@@ -55,6 +56,7 @@ export const LibraryOverviewSheet = forwardRef<TrueSheet, Props>(({ libraryId },
 	} = useSuspenseGraphQL(query, sdk.cacheKey('libraryById', ['overviewSheet', libraryId]), {
 		id: libraryId,
 	})
+	const [isOpen, setIsOpen] = useState(false)
 
 	const colors = useColors()
 	const insets = useSafeAreaInsets()
@@ -64,23 +66,29 @@ export const LibraryOverviewSheet = forwardRef<TrueSheet, Props>(({ libraryId },
 	}
 
 	return (
-		<TrueSheet
-			ref={ref}
-			detents={['auto', 1]}
-			cornerRadius={24}
-			grabber
-			scrollable
-			backgroundColor={IS_IOS_24_PLUS ? undefined : colors.sheet.background}
-			grabberOptions={{
-				color: colors.sheet.grabber,
-			}}
-			style={{
-				paddingBottom: insets.bottom,
-			}}
-			insetAdjustment="automatic"
-		>
-			<SheetContent library={library} />
-		</TrueSheet>
+		<>
+			<TrueSheet
+				ref={ref}
+				detents={['auto', 1]}
+				grabber
+				scrollable
+				backgroundColor={IS_IOS_24_PLUS ? undefined : colors.sheet.background}
+				grabberOptions={{
+					color: colors.sheet.grabber,
+				}}
+				style={{
+					paddingBottom: insets.bottom,
+				}}
+				insetAdjustment="automatic"
+				onDidPresent={() => setIsOpen(true)}
+				onDidDismiss={() => setIsOpen(false)}
+			>
+				<SheetContent library={library} />
+			</TrueSheet>
+
+			{/*@ts-expect-error: it should be fine*/}
+			<SheetBackDetection ref={ref} isOpen={isOpen} />
+		</>
 	)
 })
 LibraryOverviewSheet.displayName = 'LibraryOverviewSheet'
@@ -98,7 +106,7 @@ function SheetContent({ library }: SheetContentProps) {
 	const formattedTime = formatHumanDuration(stats.totalReadingTimeSeconds, { significantUnits: 1 })
 
 	return (
-		<ScrollView className="flex-1 p-6" nestedScrollEnabled>
+		<ScrollView className="p-6 flex-1" nestedScrollEnabled>
 			<View className="gap-8">
 				<View>
 					<Heading size="2xl" numberOfLines={3}>
@@ -110,7 +118,7 @@ function SheetContent({ library }: SheetContentProps) {
 					)}
 
 					{library.tags.length > 0 && (
-						<View className="mt-4 flex flex-row flex-wrap gap-3">
+						<View className="mt-4 gap-3 flex flex-row flex-wrap">
 							{library.tags.map((tag) => (
 								<Text key={tag.name} className="text-foreground-muted">
 									#{tag.name}

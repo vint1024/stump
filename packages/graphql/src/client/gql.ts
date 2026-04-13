@@ -71,7 +71,7 @@ type Documents = {
     "\n\tmutation PushLocalReadProgression($id: ID!, $input: MediaProgressInput!) {\n\t\tupdateMediaProgress(id: $id, input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": typeof types.PushLocalReadProgressionDocument,
     "\n\tquery ContinueReading($pagination: Pagination) {\n\t\tkeepReading(pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...BookListItem\n\t\t\t\t...ReadingNow\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on OffsetPaginationInfo {\n\t\t\t\t\ttotalPages\n\t\t\t\t\tcurrentPage\n\t\t\t\t\tpageSize\n\t\t\t\t\tpageOffset\n\t\t\t\t\tzeroBased\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.ContinueReadingDocument,
     "\n\tquery OnDeckBooks($pagination: Pagination) {\n\t\tonDeck(pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...OnDeckBookItem\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on OffsetPaginationInfo {\n\t\t\t\t\ttotalPages\n\t\t\t\t\tcurrentPage\n\t\t\t\t\tpageSize\n\t\t\t\t\tpageOffset\n\t\t\t\t\tzeroBased\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.OnDeckBooksDocument,
-    "\n\tfragment ReadingNow on Media {\n\t\tid\n\t\tresolvedName\n\t\tmetadata {\n\t\t\tsummary\n\t\t\tgenres\n\t\t\tlinks\n\t\t}\n\t\tthumbnail {\n\t\t\turl\n\t\t\tmetadata {\n\t\t\t\taverageColor\n\t\t\t\tcolors {\n\t\t\t\t\tcolor\n\t\t\t\t\tpercentage\n\t\t\t\t}\n\t\t\t\tthumbhash\n\t\t\t}\n\t\t\theight\n\t\t\twidth\n\t\t}\n\t\tpages\n\t\treadProgress {\n\t\t\tepubcfi\n\t\t\tpage\n\t\t\tpercentageCompleted\n\t\t\tupdatedAt\n\t\t\tlocator {\n\t\t\t\tlocations {\n\t\t\t\t\tposition\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.ReadingNowFragmentDoc,
+    "\n\tfragment ReadingNow on Media {\n\t\tid\n\t\tresolvedName\n\t\tmetadata {\n\t\t\tsummary\n\t\t\tgenres\n\t\t\tlinks\n\t\t\tpublisher\n\t\t\tyear\n\t\t}\n\t\tthumbnail {\n\t\t\turl\n\t\t\tmetadata {\n\t\t\t\taverageColor\n\t\t\t\tcolors {\n\t\t\t\t\tcolor\n\t\t\t\t\tpercentage\n\t\t\t\t}\n\t\t\t\tthumbhash\n\t\t\t}\n\t\t\theight\n\t\t\twidth\n\t\t}\n\t\tpages\n\t\treadProgress {\n\t\t\tepubcfi\n\t\t\tpage\n\t\t\tpercentageCompleted\n\t\t\tupdatedAt\n\t\t\tlocator {\n\t\t\t\tlocations {\n\t\t\t\t\tposition\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.ReadingNowFragmentDoc,
     "\n\tquery RecentlyAddedBooks($pagination: Pagination) {\n\t\trecentlyAddedMedia(pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...BookListItem\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\tcurrentCursor\n\t\t\t\t\tnextCursor\n\t\t\t\t\tlimit\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.RecentlyAddedBooksDocument,
     "\n\tquery RecentlyAddedSeriesHorizontal($pagination: Pagination) {\n\t\trecentlyAddedSeries(pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...RecentlyAddedSeriesItem\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\tcurrentCursor\n\t\t\t\t\tnextCursor\n\t\t\t\t\tlimit\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.RecentlyAddedSeriesHorizontalDocument,
     "\n\tfragment BookGridItem on Media {\n\t\tid\n\t\tresolvedName\n\t\tthumbnail {\n\t\t\turl\n\t\t\tmetadata {\n\t\t\t\taverageColor\n\t\t\t\tcolors {\n\t\t\t\t\tcolor\n\t\t\t\t\tpercentage\n\t\t\t\t}\n\t\t\t\tthumbhash\n\t\t\t}\n\t\t\theight\n\t\t\twidth\n\t\t}\n\t\treadProgress {\n\t\t\tpercentageCompleted\n\t\t}\n\t\treadHistory {\n\t\t\tcompletedAt\n\t\t}\n\t}\n": typeof types.BookGridItemFragmentDoc,
@@ -285,6 +285,10 @@ type Documents = {
     "\n\tmutation DeleteProviderDialog($id: Int!) {\n\t\tdeleteMetadataProvider(id: $id) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.DeleteProviderDialogDocument,
     "\n\tfragment ExistingProviderCard on MetadataProviderConfigModel {\n\t\tid\n\t\tproviderType\n\t\tenabled\n\t\tapiTokenExpiresAt\n\t\tautoApplyConfig\n\t\tcreatedAt\n\t\tupdatedAt\n\t}\n": typeof types.ExistingProviderCardFragmentDoc,
     "\n\tquery ProvidersSectionGetProviders {\n\t\tmetadataProviderConfigs {\n\t\t\tid\n\t\t\t...ExistingProviderCard\n\t\t}\n\t}\n": typeof types.ProvidersSectionGetProvidersDocument,
+    "\n\tmutation CreateTagModal($tags: [String!]!) {\n\t\tcreateTags(tags: $tags) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.CreateTagModalDocument,
+    "\n\tmutation DeleteTagConfirmModal($tags: [String!]!) {\n\t\tdeleteTags(tags: $tags) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.DeleteTagConfirmModalDocument,
+    "\n\tmutation RenameTagModal($id: Int!, $name: String!) {\n\t\trenameTag(id: $id, name: $name) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.RenameTagModalDocument,
+    "\n\tquery TagTable {\n\t\ttags {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.TagTableDocument,
     "\n\tquery UserStats {\n\t\tuserCount\n\t\ttopReaders(take: 1) {\n\t\t\tid\n\t\t\tusername\n\t\t\tfinishedReadingSessionsCount\n\t\t}\n\t\tactiveReadingSessionCount\n\t\tfinishedReadingSessionCount\n\t}\n": typeof types.UserStatsDocument,
     "\n\tmutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {\n\t\tupdateUser(id: $id, input: $input) {\n\t\t\tid\n\t\t\tusername\n\t\t\tageRestriction {\n\t\t\t\tage\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t\tpermissions\n\t\t\tmaxSessionsAllowed\n\t\t}\n\t}\n": typeof types.CreateOrUpdateUserFormUpdateUserDocument,
     "\n\tmutation CreateOrUpdateUserFormCreateUser($input: CreateUserInput!) {\n\t\tcreateUser(input: $input) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.CreateOrUpdateUserFormCreateUserDocument,
@@ -368,7 +372,7 @@ const documents: Documents = {
     "\n\tmutation PushLocalReadProgression($id: ID!, $input: MediaProgressInput!) {\n\t\tupdateMediaProgress(id: $id, input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": types.PushLocalReadProgressionDocument,
     "\n\tquery ContinueReading($pagination: Pagination) {\n\t\tkeepReading(pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...BookListItem\n\t\t\t\t...ReadingNow\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on OffsetPaginationInfo {\n\t\t\t\t\ttotalPages\n\t\t\t\t\tcurrentPage\n\t\t\t\t\tpageSize\n\t\t\t\t\tpageOffset\n\t\t\t\t\tzeroBased\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.ContinueReadingDocument,
     "\n\tquery OnDeckBooks($pagination: Pagination) {\n\t\tonDeck(pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...OnDeckBookItem\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on OffsetPaginationInfo {\n\t\t\t\t\ttotalPages\n\t\t\t\t\tcurrentPage\n\t\t\t\t\tpageSize\n\t\t\t\t\tpageOffset\n\t\t\t\t\tzeroBased\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.OnDeckBooksDocument,
-    "\n\tfragment ReadingNow on Media {\n\t\tid\n\t\tresolvedName\n\t\tmetadata {\n\t\t\tsummary\n\t\t\tgenres\n\t\t\tlinks\n\t\t}\n\t\tthumbnail {\n\t\t\turl\n\t\t\tmetadata {\n\t\t\t\taverageColor\n\t\t\t\tcolors {\n\t\t\t\t\tcolor\n\t\t\t\t\tpercentage\n\t\t\t\t}\n\t\t\t\tthumbhash\n\t\t\t}\n\t\t\theight\n\t\t\twidth\n\t\t}\n\t\tpages\n\t\treadProgress {\n\t\t\tepubcfi\n\t\t\tpage\n\t\t\tpercentageCompleted\n\t\t\tupdatedAt\n\t\t\tlocator {\n\t\t\t\tlocations {\n\t\t\t\t\tposition\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.ReadingNowFragmentDoc,
+    "\n\tfragment ReadingNow on Media {\n\t\tid\n\t\tresolvedName\n\t\tmetadata {\n\t\t\tsummary\n\t\t\tgenres\n\t\t\tlinks\n\t\t\tpublisher\n\t\t\tyear\n\t\t}\n\t\tthumbnail {\n\t\t\turl\n\t\t\tmetadata {\n\t\t\t\taverageColor\n\t\t\t\tcolors {\n\t\t\t\t\tcolor\n\t\t\t\t\tpercentage\n\t\t\t\t}\n\t\t\t\tthumbhash\n\t\t\t}\n\t\t\theight\n\t\t\twidth\n\t\t}\n\t\tpages\n\t\treadProgress {\n\t\t\tepubcfi\n\t\t\tpage\n\t\t\tpercentageCompleted\n\t\t\tupdatedAt\n\t\t\tlocator {\n\t\t\t\tlocations {\n\t\t\t\t\tposition\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.ReadingNowFragmentDoc,
     "\n\tquery RecentlyAddedBooks($pagination: Pagination) {\n\t\trecentlyAddedMedia(pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...BookListItem\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\tcurrentCursor\n\t\t\t\t\tnextCursor\n\t\t\t\t\tlimit\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.RecentlyAddedBooksDocument,
     "\n\tquery RecentlyAddedSeriesHorizontal($pagination: Pagination) {\n\t\trecentlyAddedSeries(pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...RecentlyAddedSeriesItem\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\tcurrentCursor\n\t\t\t\t\tnextCursor\n\t\t\t\t\tlimit\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.RecentlyAddedSeriesHorizontalDocument,
     "\n\tfragment BookGridItem on Media {\n\t\tid\n\t\tresolvedName\n\t\tthumbnail {\n\t\t\turl\n\t\t\tmetadata {\n\t\t\t\taverageColor\n\t\t\t\tcolors {\n\t\t\t\t\tcolor\n\t\t\t\t\tpercentage\n\t\t\t\t}\n\t\t\t\tthumbhash\n\t\t\t}\n\t\t\theight\n\t\t\twidth\n\t\t}\n\t\treadProgress {\n\t\t\tpercentageCompleted\n\t\t}\n\t\treadHistory {\n\t\t\tcompletedAt\n\t\t}\n\t}\n": types.BookGridItemFragmentDoc,
@@ -582,6 +586,10 @@ const documents: Documents = {
     "\n\tmutation DeleteProviderDialog($id: Int!) {\n\t\tdeleteMetadataProvider(id: $id) {\n\t\t\tid\n\t\t}\n\t}\n": types.DeleteProviderDialogDocument,
     "\n\tfragment ExistingProviderCard on MetadataProviderConfigModel {\n\t\tid\n\t\tproviderType\n\t\tenabled\n\t\tapiTokenExpiresAt\n\t\tautoApplyConfig\n\t\tcreatedAt\n\t\tupdatedAt\n\t}\n": types.ExistingProviderCardFragmentDoc,
     "\n\tquery ProvidersSectionGetProviders {\n\t\tmetadataProviderConfigs {\n\t\t\tid\n\t\t\t...ExistingProviderCard\n\t\t}\n\t}\n": types.ProvidersSectionGetProvidersDocument,
+    "\n\tmutation CreateTagModal($tags: [String!]!) {\n\t\tcreateTags(tags: $tags) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.CreateTagModalDocument,
+    "\n\tmutation DeleteTagConfirmModal($tags: [String!]!) {\n\t\tdeleteTags(tags: $tags) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.DeleteTagConfirmModalDocument,
+    "\n\tmutation RenameTagModal($id: Int!, $name: String!) {\n\t\trenameTag(id: $id, name: $name) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.RenameTagModalDocument,
+    "\n\tquery TagTable {\n\t\ttags {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.TagTableDocument,
     "\n\tquery UserStats {\n\t\tuserCount\n\t\ttopReaders(take: 1) {\n\t\t\tid\n\t\t\tusername\n\t\t\tfinishedReadingSessionsCount\n\t\t}\n\t\tactiveReadingSessionCount\n\t\tfinishedReadingSessionCount\n\t}\n": types.UserStatsDocument,
     "\n\tmutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {\n\t\tupdateUser(id: $id, input: $input) {\n\t\t\tid\n\t\t\tusername\n\t\t\tageRestriction {\n\t\t\t\tage\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t\tpermissions\n\t\t\tmaxSessionsAllowed\n\t\t}\n\t}\n": types.CreateOrUpdateUserFormUpdateUserDocument,
     "\n\tmutation CreateOrUpdateUserFormCreateUser($input: CreateUserInput!) {\n\t\tcreateUser(input: $input) {\n\t\t\tid\n\t\t}\n\t}\n": types.CreateOrUpdateUserFormCreateUserDocument,
@@ -836,7 +844,7 @@ export function graphql(source: "\n\tquery OnDeckBooks($pagination: Pagination) 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n\tfragment ReadingNow on Media {\n\t\tid\n\t\tresolvedName\n\t\tmetadata {\n\t\t\tsummary\n\t\t\tgenres\n\t\t\tlinks\n\t\t}\n\t\tthumbnail {\n\t\t\turl\n\t\t\tmetadata {\n\t\t\t\taverageColor\n\t\t\t\tcolors {\n\t\t\t\t\tcolor\n\t\t\t\t\tpercentage\n\t\t\t\t}\n\t\t\t\tthumbhash\n\t\t\t}\n\t\t\theight\n\t\t\twidth\n\t\t}\n\t\tpages\n\t\treadProgress {\n\t\t\tepubcfi\n\t\t\tpage\n\t\t\tpercentageCompleted\n\t\t\tupdatedAt\n\t\t\tlocator {\n\t\t\t\tlocations {\n\t\t\t\t\tposition\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').ReadingNowFragmentDoc;
+export function graphql(source: "\n\tfragment ReadingNow on Media {\n\t\tid\n\t\tresolvedName\n\t\tmetadata {\n\t\t\tsummary\n\t\t\tgenres\n\t\t\tlinks\n\t\t\tpublisher\n\t\t\tyear\n\t\t}\n\t\tthumbnail {\n\t\t\turl\n\t\t\tmetadata {\n\t\t\t\taverageColor\n\t\t\t\tcolors {\n\t\t\t\t\tcolor\n\t\t\t\t\tpercentage\n\t\t\t\t}\n\t\t\t\tthumbhash\n\t\t\t}\n\t\t\theight\n\t\t\twidth\n\t\t}\n\t\tpages\n\t\treadProgress {\n\t\t\tepubcfi\n\t\t\tpage\n\t\t\tpercentageCompleted\n\t\t\tupdatedAt\n\t\t\tlocator {\n\t\t\t\tlocations {\n\t\t\t\t\tposition\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').ReadingNowFragmentDoc;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -1689,6 +1697,22 @@ export function graphql(source: "\n\tfragment ExistingProviderCard on MetadataPr
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n\tquery ProvidersSectionGetProviders {\n\t\tmetadataProviderConfigs {\n\t\t\tid\n\t\t\t...ExistingProviderCard\n\t\t}\n\t}\n"): typeof import('./graphql').ProvidersSectionGetProvidersDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tmutation CreateTagModal($tags: [String!]!) {\n\t\tcreateTags(tags: $tags) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n"): typeof import('./graphql').CreateTagModalDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tmutation DeleteTagConfirmModal($tags: [String!]!) {\n\t\tdeleteTags(tags: $tags) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n"): typeof import('./graphql').DeleteTagConfirmModalDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tmutation RenameTagModal($id: Int!, $name: String!) {\n\t\trenameTag(id: $id, name: $name) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n"): typeof import('./graphql').RenameTagModalDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tquery TagTable {\n\t\ttags {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n"): typeof import('./graphql').TagTableDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

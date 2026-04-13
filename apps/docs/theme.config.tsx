@@ -16,7 +16,7 @@ export default {
 		key: 'sea-orm-migration',
 		content: (
 			<Link href="/guides/breaking-changes/0.1.0">
-				🚧 Stump will soon have major updates! Please read about upcoming breaking changes 💥
+				Stump 0.1.0 is out! Please read about the breaking changes if you are upgrading 💥
 			</Link>
 		),
 	},

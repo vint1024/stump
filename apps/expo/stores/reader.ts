@@ -75,6 +75,9 @@ export type ReaderStore = {
 	bookTimers: Record<string, ElapsedSeconds>
 	setBookTimer: (id: string, timer: ElapsedSeconds) => void
 
+	bookOverrides: Record<string, boolean>
+	setBookOverride: (id: string, override: boolean) => void
+
 	showControls: boolean
 	setShowControls: (show: boolean) => void
 }
@@ -110,19 +113,38 @@ export const useReaderStore = create<ReaderStore>()(
 				isReading: false,
 				setIsReading: (reading) => set({ isReading: reading }),
 				globalSettings: DEFAULT_BOOK_PREFERENCES,
-				setGlobalSettings: (updates: Partial<GlobalSettings>) =>
-					set({ globalSettings: { ...get().globalSettings, ...updates } }),
+				setGlobalSettings: (updates: Partial<GlobalSettings>) => {
+					// NOTE: i added this timeout to fix a weird crash that happens in very specific circumstances
+					// when updating globalSettings from within a native callback (e.g. zeego + truesheet).
+					// i honestly don't fully understand why this fixed it, it was a shot in the dark to try
+					// and see if defering the update until after interactions would help, and once added i did
+					// not observe the error. the crash was reported in testflight, so no issue to link to, but
+					// i confirmed it on both platforms. super weird:
+					// - go into paged reader for book where you have not messed with settings (will not work otherwise)
+					// - open action menu and if:
+					//   1. clicking shortcut to toggle direction, works FINE
+					//   2. click into settings -> change direction -> crash with red herring nativation context error
+					// - go back into book, change settings -> it's fine
+					// - go into new book (new non-messed with book), go into settings first, change settings -> crash
+					// an onlooker is probably thinking "well why not timeout more colocated to the actual update in reader settigns?"
+					// i did, and for whatever reason (even though logically identical) it did not work. so, unforunately, the timeout
+					// is here for now
+					setTimeout(() => set({ globalSettings: { ...get().globalSettings, ...updates } }))
+				},
 
 				bookSettings: {},
 				addBookSettings: (id, preferences) =>
 					set({ bookSettings: { ...get().bookSettings, [id]: preferences } }),
-				setBookSettings: (id, updates) =>
+				setBookSettings: (id, updates) => {
+					const bookPreferences = get().bookSettings?.[id]
 					set({
 						bookSettings: {
 							...get().bookSettings,
-							[id]: { ...get().bookSettings[id], ...updates },
+							...(bookPreferences ? { [id]: { ...bookPreferences, ...updates } } : {}),
 						},
-					}),
+					})
+				},
+
 				bookCache: {},
 				setBookCache: (id, data) => {
 					set({
@@ -140,9 +162,14 @@ export const useReaderStore = create<ReaderStore>()(
 							),
 						),
 					}),
+
 				bookTimers: {},
 				setBookTimer: (id, elapsedSeconds) =>
 					set({ bookTimers: { ...get().bookTimers, [id]: elapsedSeconds } }),
+
+				bookOverrides: {},
+				setBookOverride: (id, override) =>
+					set({ bookOverrides: { ...get().bookOverrides, [id]: override } }),
 
 				showControls: false,
 				setShowControls: (show) => set({ showControls: show }),
@@ -175,11 +202,13 @@ export const useBookPreferences = ({ book, ...params }: Params) => {
 
 	const bookSettingsMap = useReaderStore((state) => state.bookSettings)
 	const globalSettings = useReaderStore((state) => state.globalSettings)
+	const bookOverrides = useReaderStore((state) => state.bookOverrides)
 	const addBookSettings = useReaderStore((state) => state.addBookSettings)
 	const setBookSettingsFn = useReaderStore((state) => state.setBookSettings)
 	const setGlobalSettings = useReaderStore((state) => state.setGlobalSettings)
 
 	const bookSettings = useMemo(() => bookSettingsMap[book.id], [bookSettingsMap, book.id])
+	const overrideGlobalSettings = useMemo(() => bookOverrides[book.id], [bookOverrides, book.id])
 
 	const setBookPreferences = useCallback(
 		(updates: Partial<BookPreferences>) => {
@@ -198,9 +227,10 @@ export const useBookPreferences = ({ book, ...params }: Params) => {
 
 	return {
 		globalSettings,
+		overrideGlobalSettings,
 		preferences: {
 			...globalSettings,
-			...(bookSettings || globalSettings),
+			...(overrideGlobalSettings && bookSettings ? bookSettings : {}),
 		},
 		setBookPreferences,
 		updateGlobalSettings: setGlobalSettings,

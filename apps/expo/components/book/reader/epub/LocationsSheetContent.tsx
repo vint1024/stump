@@ -20,6 +20,13 @@ import { useEpubSheetStore } from '~/stores/epubSheet'
 import AnnotationsAndBookmarks from './AnnotationsAndBookmarks'
 import { useEpubReaderContext } from './context'
 
+// TODO(ux): the more i use this the more i dislike it. a running list of thoughts:
+// - the overview isn't as important, if i click a button signaling toc at the very least it should open toc first
+// - i am starting to really dislike the pager view. it _kinda_ made sense to colocate toc + annotations, however i
+//   am realizing (at least for me) i'd rather them separate
+// maybe we can do sm like ((Aa) (Bookmark) (Ellipsis)) (or move Aa into ellipsis), either move toc into ellipses
+// or keep it separate on left, then shove more functionality into ellipsis (page jump, search eventually, bookmarks/annotations, etc)
+
 export default function LocationsSheetContent() {
 	const { getRequestHeaders } = useEpubReaderContext()
 
@@ -98,8 +105,8 @@ export default function LocationsSheetContent() {
 	if (!book) return
 
 	return (
-		<View className="flex-1 gap-1">
-			<View className="flex-row items-center justify-around px-4 py-6">
+		<View className="gap-1 flex-1">
+			<View className="px-4 py-6 flex-row items-center justify-around">
 				<Pressable onPress={() => pagerViewRef.current?.setPage(0)}>
 					{({ pressed }) => (
 						<Text
@@ -154,7 +161,7 @@ export default function LocationsSheetContent() {
 					key="1"
 				>
 					<ScrollView contentContainerStyle={{ paddingBottom: 16, paddingTop: 12 }}>
-						<View className="flex items-center gap-4">
+						<View className="gap-4 flex items-center">
 							<ThumbnailImage
 								source={{
 									uri: book?.thumbnail.url,
@@ -171,14 +178,14 @@ export default function LocationsSheetContent() {
 									{bookTitle}
 								</Heading>
 
-								<Text className="text-center text-base text-foreground-muted">
+								<Text className="text-base text-center text-foreground-muted">
 									{bookAuthor}
 									{bookPublisher ? ` • ${bookPublisher}` : null}
 								</Text>
 							</View>
 
 							{!!book.metadata?.summary && (
-								<Text className="px-4 text-center text-sm text-foreground-muted">
+								<Text className="px-4 text-sm text-center text-foreground-muted">
 									{stripHtml(book.metadata.summary).result}
 								</Text>
 							)}
@@ -292,7 +299,7 @@ const TableOfContentsListItem = ({
 				{({ pressed }) => (
 					<>
 						<View
-							className={cn('squircle absolute inset-0 rounded-[1.25rem]')}
+							className={cn('squircle inset-0 absolute rounded-[1.25rem]')}
 							style={[
 								{ opacity: pressed ? 0.7 : 1, marginLeft: 6 + level * 16, marginRight: 6 },
 								currentChapterActive && { backgroundColor: backgroundColor },
@@ -305,7 +312,7 @@ const TableOfContentsListItem = ({
 						>
 							<Text
 								className={cn(
-									'flex-1 py-4 text-base',
+									'py-4 text-base flex-1',
 									currentChapterActive && 'font-bold',
 									isChild && 'text-foreground-muted',
 								)}
@@ -315,7 +322,7 @@ const TableOfContentsListItem = ({
 							</Text>
 							<Text
 								className={cn(
-									'shrink-0 py-4 text-base text-foreground-muted',
+									'py-4 text-base shrink-0 text-foreground-muted',
 									currentChapterActive && 'font-bold',
 								)}
 								style={currentChapterActive && { color: textColor }}
@@ -334,7 +341,7 @@ const TableOfContentsListItem = ({
 
 const Divider = ({ level = 0 }: { level?: number }) => (
 	<View
-		className="h-px bg-black/10 dark:bg-white/10"
+		className="bg-black/10 dark:bg-white/10 h-px"
 		style={{
 			// for android, it's quite hard to size child dividers to complement full width dividers,
 			// or to size any dividers to complement the active background (since it doesn't touch the sides)
@@ -371,7 +378,7 @@ const ScrollToChapterIndicator = ({
 		<Animated.View
 			entering={enteringAnimation}
 			exiting={exitingAnimation}
-			className={cn('absolute left-0 right-0 items-center', className)}
+			className={cn('left-0 right-0 absolute items-center', className)}
 		>
 			<Pressable onPress={onPress}>
 				<GlassView

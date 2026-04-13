@@ -11,7 +11,7 @@ import { scheduleOnRN } from 'react-native-worklets'
 import { stripHtml } from 'string-strip-html'
 
 import { ThumbnailImage } from '~/components/image'
-import { Heading, Progress, Text } from '~/components/ui'
+import { Badge, Heading, Progress, Text } from '~/components/ui'
 import { epubProgress, imageMeta, syncStatus } from '~/db'
 import { COLORS, useColors } from '~/lib/constants'
 import { parseGraphQLDecimal } from '~/lib/format'
@@ -71,8 +71,8 @@ export default function ReadingNow({ books }: Props) {
 		})
 
 	return (
-		<View className="flex items-start gap-4">
-			<View className="absolute left-0 top-0 z-30 w-[20px]" style={{ height: imageHeight + 8 }} />
+		<View className="gap-4 flex items-start">
+			<View className="left-0 top-0 absolute z-30 w-[20px]" style={{ height: imageHeight + 8 }} />
 
 			<View className="w-full">
 				<Carousel
@@ -142,6 +142,8 @@ type ReadingNowItemProps = {
 function ReadingNowItem({ book }: ReadingNowItemProps) {
 	const { width, isTablet } = useDisplay()
 
+	const colors = useColors()
+
 	const percentageCompleted = parseGraphQLDecimal(book.readProgress?.percentage)
 	const epubProgression = epubProgress.safeParse(book.readProgress?.epubProgress).data
 	const currentPage = book.readProgress?.page ?? epubProgression?.locations?.position ?? '??'
@@ -150,7 +152,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 	const imageHeight = IMAGE_WIDTH / thumbnailRatio
 
 	// TODO: figure out why I need explicit widths for *each* elem
-	const renderBookContent = useCallback(() => {
+	const renderTabletContent = useCallback(() => {
 		if (!isTablet) return null
 
 		const contentWidth =
@@ -163,11 +165,13 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 		const bookMetadata = book.bookMetadata as Partial<MediaMetadata> | undefined
 
 		const description = stripHtml(bookMetadata?.summary || '').result
-		const genres = bookMetadata?.genres?.map((genre) => `#${genre}`).join(', ')
-		const links = bookMetadata?.links || []
+		const genresSlice = (bookMetadata?.genres || []).slice(0, 4)
+
+		const publisher = bookMetadata?.publisher
+		const year = bookMetadata?.year
 
 		return (
-			<View className="flex flex-col flex-wrap gap-2">
+			<View className="gap-2 flex flex-col flex-wrap">
 				<Heading
 					style={{
 						width: contentWidth,
@@ -175,6 +179,31 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 				>
 					{book.bookName}
 				</Heading>
+
+				{(publisher || year) && (
+					<View
+						className="gap-2 flex flex-row flex-wrap items-center"
+						style={{
+							width: contentWidth,
+						}}
+					>
+						{publisher && (
+							<Badge
+								style={{
+									backgroundColor: colors.fill.brand.secondary,
+								}}
+							>
+								<Text className="text-sm">{publisher}</Text>
+							</Badge>
+						)}
+
+						{year && (
+							<Badge>
+								<Text className="text-sm">{year}</Text>
+							</Badge>
+						)}
+					</View>
+				)}
 
 				{description && (
 					<Text
@@ -190,31 +219,23 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 				<View />
 				<View />
 
-				{genres && (
-					<Text
-						style={{
-							width: contentWidth,
-						}}
-					>
-						{genres}
-					</Text>
-				)}
-
-				{links.length > 0 && (
+				{genresSlice.length > 0 && (
 					<View
-						className="flex flex-row flex-wrap gap-2"
+						className="gap-2 flex flex-row flex-wrap items-center"
 						style={{
 							width: contentWidth,
 						}}
 					>
-						{links.slice(0, 3).map((link) => (
-							<BookMetaLink key={link} href={link} />
+						{genresSlice.map((genre, itemIndex) => (
+							<Badge key={`${genre}-${itemIndex}`} className="bg-black/5 dark:bg-white/10">
+								<Text className="text-sm">{genre}</Text>
+							</Badge>
 						))}
 					</View>
 				)}
 			</View>
 		)
-	}, [isTablet, width, book])
+	}, [isTablet, width, book, colors])
 
 	const status = useMemo(() => syncStatus.safeParse(book.readProgress?.syncStatus).data, [book])
 	const thumbnailData = useMemo(
@@ -236,8 +257,8 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 	})
 
 	return (
-		<View className="flex flex-row gap-4">
-			<Pressable onPress={() => router.push(`/offline/${book.id}/read`)}>
+		<View className="gap-4 flex flex-row">
+			<Pressable onPress={() => router.push(`/offline/${book.id}`)}>
 				<ThumbnailImage
 					source={{
 						// @ts-expect-error: URI doesn't like undefined but it shows a placeholder when
@@ -250,12 +271,12 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 				/>
 
 				{status && (
-					<View className="absolute right-0 z-20 w-full items-end p-3 shadow">
+					<View className="right-0 p-3 shadow absolute z-20 w-full items-end">
 						<SyncIcon status={status} size={24} />
 					</View>
 				)}
 
-				<View className="absolute bottom-0 z-20 w-full gap-2 p-3">
+				<View className="bottom-0 gap-2 p-3 absolute z-20 w-full">
 					{!isTablet && (
 						<Text
 							className="text-2xl font-bold leading-8"
@@ -271,10 +292,10 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 						</Text>
 					)}
 
-					<View className="flex items-start gap-2">
+					<View className="gap-2 flex items-start">
 						<View className="flex w-full flex-row items-center justify-between">
 							<Text
-								className="flex-wrap text-base"
+								className="text-base flex-wrap"
 								style={{
 									color: COLORS.dark.foreground.subtle,
 									opacity: 0.9,
@@ -288,7 +309,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 							</Text>
 
 							<Text
-								className="flex-wrap text-base"
+								className="text-base flex-wrap"
 								style={{
 									color: COLORS.dark.foreground.subtle,
 									opacity: 0.9,
@@ -304,7 +325,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 
 						{percentageCompleted != null && (
 							<Progress
-								className="h-1 bg-[#898d94]"
+								className="h-1 bg-white/40"
 								indicatorClassName="bg-[#f5f3ef]"
 								value={percentageCompleted * 100}
 							/>
@@ -313,7 +334,7 @@ function ReadingNowItem({ book }: ReadingNowItemProps) {
 				</View>
 			</Pressable>
 
-			{renderBookContent()}
+			{renderTabletContent()}
 		</View>
 	)
 }

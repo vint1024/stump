@@ -12,6 +12,7 @@ import {
 	PcCase,
 	ScrollText,
 	Server,
+	Tag,
 	UserCircle,
 	Users,
 } from 'lucide-react'
@@ -162,6 +163,13 @@ export const createRouteGroups = (client: QueryClient, api: Api): RouteGroup[] =
 				localeKey: 'server/notifications',
 				permissions: [UserPermission.ReadNotifier],
 				to: '/settings/notifications',
+			},
+			{
+				icon: Tag,
+				label: 'Tags',
+				localeKey: 'server/tags',
+				permissions: [UserPermission.ManageLibrary],
+				to: '/settings/tags',
 			},
 		],
 		label: 'Management',

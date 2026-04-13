@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react-native'
 import { Platform } from 'react-native'
 
 import { useActiveServer, useStumpServer } from '~/components/activeServer'
-import ChevronBackLink from '~/components/ChevronBackLink'
+import BackLink from '~/components/BackLink'
 import { Icon } from '~/components/ui'
 import { IS_IOS_24_PLUS } from '~/lib/constants'
 import { usePreferencesStore } from '~/stores'
@@ -30,9 +30,10 @@ export default function Layout() {
 					headerBlurEffect: IS_IOS_24_PLUS ? undefined : 'regular',
 					headerLargeTitle: true,
 					headerLargeTitleStyle: { fontSize: 30 },
-					headerRight: canCreateClubs
-						? () => <Link href={`/server/${serverID}/clubs/create`}>{PlusIcon}</Link>
-						: undefined,
+					headerRight:
+						canCreateClubs && Platform.OS === 'android'
+							? () => <Link href={`/server/${serverID}/clubs/create`}>{PlusIcon}</Link>
+							: undefined,
 				}}
 			/>
 
@@ -45,7 +46,7 @@ export default function Layout() {
 					headerBlurEffect: IS_IOS_24_PLUS ? undefined : 'regular',
 					animation: animationEnabled ? 'default' : 'none',
 					presentation: 'formSheet',
-					headerLeft: Platform.OS === 'android' ? undefined : () => <ChevronBackLink />,
+					headerLeft: Platform.OS === 'android' ? undefined : () => <BackLink />,
 				}}
 			/>
 
@@ -59,7 +60,7 @@ export default function Layout() {
 						headerBlurEffect: IS_IOS_24_PLUS ? undefined : 'regular',
 						presentation: 'formSheet',
 						animation: animationEnabled ? 'default' : 'none',
-						headerLeft: Platform.OS === 'android' ? undefined : () => <ChevronBackLink />,
+						headerLeft: Platform.OS === 'android' ? undefined : () => <BackLink />,
 					}}
 				/>
 			)}

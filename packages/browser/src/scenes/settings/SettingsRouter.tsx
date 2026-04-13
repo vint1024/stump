@@ -21,6 +21,7 @@ const GeneralServerSettingsScene = lazy(
 const MetadataIntegrationsScene = lazy(() => import('./server/metadataIntegrations/index.ts'))
 const ServerLogsScene = lazy(() => import('./server/logs/ServerLogsScene.tsx'))
 const JobSettingsScene = lazy(() => import('./server/jobs/JobSettingsScene.tsx'))
+const TagSettingsScene = lazy(() => import('./server/tags'))
 
 /**
  * The main router for the settings scene(s). Mostly just a collection of nested routers
@@ -35,6 +36,7 @@ export default function SettingsRouter() {
 	const canManageUsers = checkPermission(UserPermission.ManageUsers)
 	const canManageEmail = checkPermission(UserPermission.EmailerManage)
 	const canReadProviders = checkPermission(UserPermission.MetadataProviderRead)
+	const canManageLibrary = checkPermission(UserPermission.ManageLibrary)
 
 	return (
 		<Routes>
@@ -55,6 +57,7 @@ export default function SettingsRouter() {
 				{canReadProviders && (
 					<Route path="metadata-integrations" element={<MetadataIntegrationsScene />} />
 				)}
+				{canManageLibrary && <Route path="tags" element={<TagSettingsScene />} />}
 
 				<Route path="*" element={<Navigate to="account" replace />} />
 			</Route>

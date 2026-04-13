@@ -5,9 +5,9 @@ export default function Feedback() {
 	return (
 		<div className="max-w-7xl gap-20 px-6 py-10 lg:px-8 lg:py-24 mx-auto flex w-full flex-col">
 			<div className="gap-5 flex flex-col">
-				<h2 className="text-2xl font-bold tracking-tight text-black sm:text-4xl dark:text-neutral-100">
-					Feedback
-				</h2>
+				<div className="text-2xl sm:text-4xl">
+					<h2 className="font-bold tracking-tight text-black dark:text-neutral-100">Feedback</h2>
+				</div>
 
 				<p className="text-neutral-650 text-base sm:text-lg md:max-w-3xl md:text-xl dark:text-neutral-400">
 					Stump is a community-driven project. The best way to improve the software is to hear and
