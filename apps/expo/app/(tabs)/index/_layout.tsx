@@ -1,6 +1,8 @@
+import { QueryClientProvider } from '@tanstack/react-query'
 import { Stack } from 'expo-router'
 import { Platform } from 'react-native'
 
+import { serversQueryClient } from '~/components/activeServer/queryClient'
 import { AddServerDialog } from '~/components/savedServer'
 import { IS_IOS_24_PLUS } from '~/lib/constants'
 import { useTranslate } from '~/lib/hooks'
@@ -12,16 +14,18 @@ export default function Screen() {
 
 	// TODO(android): this looks shit on android, idky the header is so short
 	return (
-		<Stack
-			screenOptions={{
-				title: t('tabs.servers'),
-				headerShown: true,
-				headerTransparent: Platform.OS === 'ios',
-				headerLargeTitle: true,
-				headerBlurEffect: IS_IOS_24_PLUS ? undefined : 'regular',
-				animation: animationEnabled ? 'default' : 'none',
-				headerRight: () => <AddServerDialog />,
-			}}
-		/>
+		<QueryClientProvider client={serversQueryClient}>
+			<Stack
+				screenOptions={{
+					title: t('tabs.servers'),
+					headerShown: true,
+					headerTransparent: Platform.OS === 'ios',
+					headerLargeTitle: true,
+					headerBlurEffect: IS_IOS_24_PLUS ? undefined : 'regular',
+					animation: animationEnabled ? 'default' : 'none',
+					headerRight: () => <AddServerDialog />,
+				}}
+			/>
+		</QueryClientProvider>
 	)
 }

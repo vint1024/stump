@@ -51,20 +51,11 @@ export default function Screen() {
 		[router, didMount],
 	)
 
-	// const serverStatuses = useQueries({
-	// 	queries: stumpServers.map((server) => ({
-	// 		queryFn: async () =>
-	// 			({
-	// 				name: server.name,
-	// 				status: await checkUrl(formatApiURL(server.url, 'v1')),
-	// 			}) as PingResult,
-	// 		queryKey: ['ping', server.url, server.name],
-	// 		refetchInterval: (result?: PingResult) => {
-	// 			if (!result) return false
-	// 			return result.status ? PING_HEALTHY_INTERVAL_MS : PING_UNHEALTHY_INTERVAL_MS
-	// 		},
-	// 	})),
-	// })
+	// useFocusEffect(
+	// 	useCallback(() => {
+	// 		todo: just refetch entire store
+	// 	}, []),
+	// )
 
 	const handleDeleteServer = useCallback(
 		(server: SavedServer) => {
