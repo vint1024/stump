@@ -8,6 +8,9 @@ type KnownServer = 'stump' | 'codex' | 'kavita' | 'komga'
 // todo: figure out how to ident
 // ^ my thought is using for logos for servers screen, for stump idk yet. user avatar or stump logo
 
+// ^^ alternatively, i could just _not_ store the meta of what type of server and just _assume_ /favicon.ico will return
+// something
+
 export async function identifyKnownServer(server: SavedServer): Promise<KnownServer | null> {
 	if (server.kind === 'stump') {
 		return 'stump'
