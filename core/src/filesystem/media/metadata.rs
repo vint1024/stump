@@ -210,6 +210,20 @@ pub struct ProcessedMediaMetadata {
 		deserialize_with = "optional_i32_deserializer"
 	)]
 	pub page_count: Option<i32>,
+
+	// TODO: new stuff for write back to sort through:
+	pub pages: Option<Vec<PageMetadata>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default, Merge)]
+#[serde(rename_all(serialize = "PascalCase"))]
+pub struct PageMetadata {
+	#[serde(default, alias = "Image")]
+	image: Option<String>,
+	#[serde(default, alias = "Type")]
+	r#type: Option<String>,
+	#[serde(default, alias = "ImageSize")]
+	image_size: Option<String>,
 }
 
 impl ProcessedMediaMetadata {
@@ -254,6 +268,12 @@ impl ProcessedMediaMetadata {
 			identifier_uuid: Set(self.identifier_uuid),
 			..Default::default()
 		}
+	}
+
+	pub fn apply(&mut self, metadata: models::entity::media_metadata::Model) {
+		// assume metadata is up to date
+		// take the metadata and dump into the ProcessedMediaMetadata struct (self)
+		// caller of apply would then dump back into a string and write to ComicInfo.xml
 	}
 }
 

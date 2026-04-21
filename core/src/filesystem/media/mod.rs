@@ -11,6 +11,7 @@ pub use format::*;
 pub use metadata::*;
 pub use process::*;
 pub use utils::is_accepted_cover_name;
+pub(crate) use utils::metadata_from_buf;
 
 #[cfg(test)]
 pub(crate) mod tests {
