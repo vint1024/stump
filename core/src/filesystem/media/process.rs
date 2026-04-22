@@ -66,6 +66,9 @@ pub struct ProcessedFileHashes {
 	pub koreader_hash: Option<String>,
 }
 
+// TODO(metadata-writes): add trait fn to e.g. write_into_file() so we can do e.g. write_into_file("ComicInfo.xml", bytes);
+// // Or, a new FileWriter trait if that feels cleaner separation
+//
 // TODO(perf): Implement generic hasher which just takes X bytes from the file (and async version)
 /// Trait defining a standard API for processing files throughout Stump. Every
 /// supported file type should implement this trait.
@@ -95,6 +98,9 @@ pub trait FileProcessor {
 	/// Process the metadata of a file. This should gather the metadata of the file
 	/// without processing the entire file.
 	fn process_metadata(path: &str) -> Result<Option<ProcessedMediaMetadata>, FileError>;
+
+	/// Process the metadata of a file but return the raw bytes of the metadata file
+	fn process_metadata_raw(path: &str) -> Result<Option<Vec<u8>>, FileError>;
 
 	/// Get the bytes of a page of the file.
 	fn get_page(
@@ -271,6 +277,46 @@ pub async fn process_metadata_async(
 			tracing::trace!(
 				is_err = send_result.is_err(),
 				"Sending result of sync process_metadata"
+			);
+		}
+	});
+
+	let metadata = if let Ok(recv) = rx.await {
+		recv?
+	} else {
+		handle
+			.await
+			.map_err(|e| FileError::UnknownError(e.to_string()))?;
+		return Err(FileError::UnknownError(
+			"Failed to receive metadata".to_string(),
+		));
+	};
+
+	Ok(metadata)
+}
+
+#[tracing::instrument(err, fields(path = %path.as_ref().display()))]
+pub fn process_metadata_raw(
+	path: impl AsRef<Path>,
+) -> Result<Option<Vec<u8>>, FileError> {
+	let path_str = path.as_ref().to_str().unwrap_or_default();
+	dispatch_processor!(path, process_metadata_raw, path_str)
+}
+
+#[tracing::instrument(err, fields(path = %path.as_ref().display()))]
+pub async fn process_metadata_raw_async(
+	path: impl AsRef<Path>,
+) -> Result<Option<Vec<u8>>, FileError> {
+	let (tx, rx) = oneshot::channel();
+
+	let handle = spawn_blocking({
+		let path = path.as_ref().to_path_buf();
+
+		move || {
+			let send_result = tx.send(process_metadata_raw(path.as_path()));
+			tracing::trace!(
+				is_err = send_result.is_err(),
+				"Sending result of sync process_metadata_raw"
 			);
 		}
 	});

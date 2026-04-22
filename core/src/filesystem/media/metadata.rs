@@ -269,12 +269,6 @@ impl ProcessedMediaMetadata {
 			..Default::default()
 		}
 	}
-
-	pub fn apply(&mut self, metadata: models::entity::media_metadata::Model) {
-		// assume metadata is up to date
-		// take the metadata and dump into the ProcessedMediaMetadata struct (self)
-		// caller of apply would then dump back into a string and write to ComicInfo.xml
-	}
 }
 
 // NOTE: this is primarily used for converting the EPUB metadata into a common Metadata struct

@@ -155,6 +155,10 @@ impl FileProcessor for RarProcessor {
 		}
 	}
 
+	fn process_metadata_raw(path: &str) -> Result<Option<Vec<u8>>, FileError> {
+		unimplemented!()
+	}
+
 	fn process(
 		path: &str,
 		options: FileProcessorOptions,

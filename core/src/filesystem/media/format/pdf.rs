@@ -94,6 +94,10 @@ impl FileProcessor for PdfProcessor {
 		Ok(file.trailer.info_dict.map(ProcessedMediaMetadata::from))
 	}
 
+	fn process_metadata_raw(path: &str) -> Result<Option<Vec<u8>>, FileError> {
+		unimplemented!()
+	}
+
 	fn process(
 		path: &str,
 		options: FileProcessorOptions,

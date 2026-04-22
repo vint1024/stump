@@ -1,7 +1,16 @@
-use models::entity::{media, media_metadata};
+use models::entity::{media, media_metadata, media_tag, tag};
+use quick_xml::{escape::unescape, events::Event, Reader, Writer};
 use sea_orm::ConnectionTrait;
 
-use crate::{filesystem::media::ProcessedMediaMetadata, CoreError};
+use crate::{
+	filesystem::media::{process_metadata_raw_async, ProcessedMediaMetadata},
+	CoreError,
+};
+
+const SHELL_COMIC_INFO: &str = r#"<?xml version="1.0"?>
+<ComicInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+</ComicInfo>
+"#;
 
 // 1. assume fetched information from database and pass as inputs to function call (i.e., purely functional)
 // 2. give function reference to book, let it query and make detemrinations, etc (i.e., handle the damn thing)
@@ -23,6 +32,19 @@ where
 				"Book with ID {book_id} not found"
 			)))?;
 
+	let Some(metadata) = metadata else {
+		return Err(CoreError::InternalError(
+			"This book does not have any existing metadata to writeback".to_string(),
+		));
+	};
+
+	let existing_tags = tag::Entity::find_for_media_id(&media.id)
+		.all(conn)
+		.await?
+		.into_iter()
+		.map(|tag| tag.name)
+		.collect();
+
 	// 2. ensure file exists
 	let file_path = media.path.clone();
 	if let Err(e) = tokio::fs::metadata(&file_path).await {
@@ -30,9 +52,20 @@ where
 		return Err(e.into());
 	}
 
-	// 3. TODO: convert into ComicInfo.xml (e.g., convert_to_comic_info()) <-- use metadata from above
-	// 4. TODO: merge/replace with existing WRITE into ZIP
-	// 5. Done, wow how ez
+	// 3. pull the raw metadata from file to be used in step 4
+	// we collect the CURRENT metadata so that we can inline replace tags manually to minimize risk of
+	// data loss which could happen if we were to just dump our rust struct back into XML (e.g., if
+	// we didn't process X field used by some software, we don't want to lose it)
+	let existing_xml_bytes = process_metadata_raw_async(file_path)
+		.await?
+		.unwrap_or_else(|| SHELL_COMIC_INFO.to_string().into_bytes().to_vec());
+	let xml_string = String::from_utf8_lossy(&existing_xml_bytes).to_string();
+
+	// 4. take db metadata and merge into existing xml (or template, if none exist)
+	let updated_metadata = merge_metadata_into_xml(metadata, existing_tags, xml_string);
+
+	// 5. TODO: write updated_metadata xml as ComicInfo.xml in file, see TODO remark in process.rs re: trait fns
+	// 6. Done, wow how ez
 
 	unimplemented!()
 }
@@ -43,12 +76,47 @@ where
 
 type XmlString = String;
 
-fn convert_to_comic_info(
+fn merge_metadata_into_xml(
 	metadata: media_metadata::Model,
-	// TODO: tags?
-	// TODO: potentially intake existing as struct?
-	existing_xml: ProcessedMediaMetadata,
+	existing_tags: Vec<String>,
+	existing_xml: XmlString,
 ) -> Result<XmlString, CoreError> {
+	// aim for suboptimal first:
+	// 1. loop through each tag
+	// 2. find corresponding tag in `metadata`
+	// 3. if it is a processable tag (e.g., Title) then replace value <Title>value</Title>
+	// ^ tricky part with this is reconciling the ones we could not find (e.g., what if we used shell)
+	// emphasis on suboptimal:
+	// - track the fields visited? e.g. SUPPORTED_FIELDS = ["title", "writers", ..., etc]
+	// - if by end of loop, we filter unvisited and append to end of xml (inside <ComicInfo> ofc)
+
+	// !! pseudo code !!
+	//
+	// loop:
+	// if event is start: <-- we can get the tag name (e.g., "Title")
+	//      current_tag = event.tag
+	//      visited_tags["Title"] = true
+	// if event is text: <-- this is the value inside the tag (e.g., "The Way of Kings")
+	//      existing_text = event.text
+	//      new_text = metadata["Title"]
+	//      el.replace_text(existing_text, new_text)
+	// if event is end:
+	//      current_tag = None
+	// if event is eof:
+	//      break
+	//
+	// for unprocessed_field in visited_tags.filter(value is false):
+	//      write_field(metadata[field])
+	//
+	// !! pseudo code !!
+	//
+	// ^ open questions:
+	// 1. where are we writing to? do we:
+	//      - maintain a writer and sync position with reader?
+	//      - easiest is probably to just have a writer attached to a separate buffer that
+	//        always writes for each event, not just text replacement
+	// 2. actual api for reader/writer, not pseudo code
+
 	/*
 	search for: parse_opf_xml --> example API usage:
 
@@ -101,65 +169,65 @@ fn convert_to_comic_info(
 //     relying on serde to dump the entire thing which could technically
 //     lead to data loss since we do not intake or represent all which is supported
 
-#[cfg(test)]
-mod tests {
-	use models::entity::media_metadata;
+// #[cfg(test)]
+// mod tests {
+// 	use models::entity::media_metadata;
 
-	use crate::filesystem::{
-		media::{metadata_from_buf, ProcessedMediaMetadata},
-		metadata::writer::comic_info::convert_to_comic_info,
-	};
+// 	use crate::filesystem::{
+// 		media::{metadata_from_buf, ProcessedMediaMetadata},
+// 		metadata::writer::comic_info::convert_to_comic_info,
+// 	};
 
-	// for route 1 (relying on serde + using some unimplement apply function)
-	#[test]
-	fn test_basic_conversion() {
-		// pretend this is what currently exists in ComicInfo.xml
-		let basic = ProcessedMediaMetadata {
-			title: Some("Invincible 001".to_string()),
-			..Default::default()
-		};
+// 	// for route 1 (relying on serde + using some unimplement apply function)
+// 	#[test]
+// 	fn test_basic_conversion() {
+// 		// pretend this is what currently exists in ComicInfo.xml
+// 		let basic = ProcessedMediaMetadata {
+// 			title: Some("Invincible 001".to_string()),
+// 			..Default::default()
+// 		};
 
-		// FIXME: won't actually work bc missing fields but fine for demonstration for now
-		// let's pretend a user updated the title manually
-		let metadata = media_metadata::Model {
-			title: Some("Invincible #1".to_string()),
-			..Default::default()
-		};
+// 		// FIXME: won't actually work bc missing fields but fine for demonstration for now
+// 		// let's pretend a user updated the title manually
+// 		let metadata = media_metadata::Model {
+// 			title: Some("Invincible #1".to_string()),
+// 			..Default::default()
+// 		};
 
-		let xml_string = convert_to_comic_info(metadata.clone(), basic.clone())
-			.expect("Should have converted comic info");
+// 		let xml_string = convert_to_comic_info(metadata.clone(), basic.clone())
+// 			.expect("Should have converted comic info");
 
-		let deserialized_xml = metadata_from_buf(&xml_string)
-			.expect("Should have properly parsed xml_string");
+// 		let deserialized_xml = metadata_from_buf(&xml_string)
+// 			.expect("Should have properly parsed xml_string");
 
-		assert_eq!(metadata.title, deserialized_xml.title);
-	}
+// 		assert_eq!(metadata.title, deserialized_xml.title);
+// 	}
 
-	// for route 2 (use reader/writer from quick_xml to create new string)
-	#[test]
-	fn test_basic_conversion_route_two() {
-		// pretend this is what currently exists in ComicInfo.xml
-		let basic = quick_xml::se::to_string(&ProcessedMediaMetadata {
-			title: Some("Invincible 001".to_string()),
-			..Default::default()
-		});
+// 	// for route 2 (use reader/writer from quick_xml to create new string)
+// 	#[test]
+// 	fn test_basic_conversion_route_two() {
+// 		// pretend this is what currently exists in ComicInfo.xml
+// 		let basic = quick_xml::se::to_string(&ProcessedMediaMetadata {
+// 			title: Some("Invincible 001".to_string()),
+// 			..Default::default()
+// 		});
 
-		// FIXME: won't actually work bc missing fields but fine for demonstration for now
-		// let's pretend a user updated the title manually
-		let metadata = media_metadata::Model {
-			title: Some("Invincible #1".to_string()),
-			..Default::default()
-		};
+// 		// FIXME: won't actually work bc missing fields but fine for demonstration for now
+// 		// let's pretend a user updated the title manually
+// 		let metadata = media_metadata::Model {
+// 			title: Some("Invincible #1".to_string()),
+// 			..Default::default()
+// 		};
 
-		// let xml_string = update_comic_info(metadata.clone(), basic.clone())
-		// 	.expect("Should have updated comic info XML string");
+// 		// let xml_string = update_comic_info(metadata.clone(), basic.clone())
+// 		// 	.expect("Should have updated comic info XML string");
 
-		// let deserialized_xml = metadata_from_buf(&xml_string)
-		// 	.expect("Should have properly parsed xml_string");
+// 		// let deserialized_xml = metadata_from_buf(&xml_string)
+// 		// 	.expect("Should have properly parsed xml_string");
 
-		// assert_eq!(metadata.title, deserialized_xml.title);
-	}
-}
+// 		// assert_eq!(metadata.title, deserialized_xml.title);
+// 	}
+// }
 
 /*
 <?xml version="1.0"?>

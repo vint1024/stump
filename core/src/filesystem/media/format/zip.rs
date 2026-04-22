@@ -79,7 +79,7 @@ impl FileProcessor for ZipProcessor {
 		})
 	}
 
-	fn process_metadata(path: &str) -> Result<Option<ProcessedMediaMetadata>, FileError> {
+	fn process_metadata_raw(path: &str) -> Result<Option<Vec<u8>>, FileError> {
 		let zip_file = File::open(path)?;
 		let mut archive = zip::ZipArchive::new(zip_file)?;
 
@@ -110,14 +110,23 @@ impl FileProcessor for ZipProcessor {
 				trace!("Found ComicInfo.xml");
 				let mut contents = Vec::new();
 				file.read_to_end(&mut contents)?;
-				let contents = String::from_utf8_lossy(&contents).to_string();
-				trace!(contents_len = contents.len(), "Read ComicInfo.xml");
-				metadata = metadata_from_buf(&contents);
+				metadata = Some(contents);
 				break;
 			}
 		}
 
 		Ok(metadata)
+	}
+
+	fn process_metadata(path: &str) -> Result<Option<ProcessedMediaMetadata>, FileError> {
+		match Self::process_metadata_raw(path)? {
+			Some(bytes) => {
+				let contents = String::from_utf8_lossy(&bytes).to_string();
+				trace!(contents_len = contents.len(), "Read ComicInfo.xml");
+				Ok(metadata_from_buf(&contents))
+			},
+			_ => Ok(None),
+		}
 	}
 
 	fn process(
