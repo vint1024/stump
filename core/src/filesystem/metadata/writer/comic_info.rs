@@ -1,5 +1,14 @@
+use std::{
+	collections::{HashMap, HashSet},
+	num::NonZeroU16,
+};
+
 use models::entity::{media, media_metadata, media_tag, tag};
-use quick_xml::{escape::unescape, events::Event, Reader, Writer};
+use quick_xml::{
+	escape::unescape,
+	events::{BytesText, Event},
+	Reader, Writer,
+};
 use sea_orm::ConnectionTrait;
 
 use crate::{
@@ -76,161 +85,176 @@ where
 
 type XmlString = String;
 
+// aim for suboptimal first:
+// 1. loop through each tag
+// 2. find corresponding tag in `metadata`
+// 3. if it is a processable tag (e.g., Title) then replace value <Title>value</Title>
+// ^ tricky part with this is reconciling the ones we could not find (e.g., what if we used shell)
+// emphasis on suboptimal:
+// - track the fields visited? e.g. SUPPORTED_FIELDS = ["title", "writers", ..., etc]
+// - if by end of loop, we filter unvisited and append to end of xml (inside <ComicInfo> ofc)
+
+// !! pseudo code !!
+//
+// loop:
+// if event is start: <-- we can get the tag name (e.g., "Title")
+//      current_tag = event.tag
+//      visited_tags["Title"] = true
+// if event is text: <-- this is the value inside the tag (e.g., "The Way of Kings")
+//      existing_text = event.text
+//      new_text = metadata["Title"] <-- pull from database metadata
+//      el.replace_text(existing_text, new_text)
+// if event is end:
+//      current_tag = None
+// if event is eof:
+//      break
+//
+// for unprocessed_field in visited_tags.filter(value is false):
+//      write_field(metadata[field])
+//
+// !! pseudo code !!
+//
+// ^ open questions:
+// 1. where are we writing to? do we:
+//      - maintain a writer and sync position with reader?
+//      - easiest is probably to just have a writer attached to a separate buffer that
+//        always writes for each event, not just text replacement
+// 2. actual api for reader/writer, not pseudo code
+
 fn merge_metadata_into_xml(
 	metadata: media_metadata::Model,
 	existing_tags: Vec<String>,
 	existing_xml: XmlString,
 ) -> Result<XmlString, CoreError> {
-	// aim for suboptimal first:
-	// 1. loop through each tag
-	// 2. find corresponding tag in `metadata`
-	// 3. if it is a processable tag (e.g., Title) then replace value <Title>value</Title>
-	// ^ tricky part with this is reconciling the ones we could not find (e.g., what if we used shell)
-	// emphasis on suboptimal:
-	// - track the fields visited? e.g. SUPPORTED_FIELDS = ["title", "writers", ..., etc]
-	// - if by end of loop, we filter unvisited and append to end of xml (inside <ComicInfo> ofc)
+	let mut reader = Reader::from_str(&existing_xml);
+	reader.config_mut().trim_text(true);
 
-	// !! pseudo code !!
-	//
-	// loop:
-	// if event is start: <-- we can get the tag name (e.g., "Title")
-	//      current_tag = event.tag
-	//      visited_tags["Title"] = true
-	// if event is text: <-- this is the value inside the tag (e.g., "The Way of Kings")
-	//      existing_text = event.text
-	//      new_text = metadata["Title"]
-	//      el.replace_text(existing_text, new_text)
-	// if event is end:
-	//      current_tag = None
-	// if event is eof:
-	//      break
-	//
-	// for unprocessed_field in visited_tags.filter(value is false):
-	//      write_field(metadata[field])
-	//
-	// !! pseudo code !!
-	//
-	// ^ open questions:
-	// 1. where are we writing to? do we:
-	//      - maintain a writer and sync position with reader?
-	//      - easiest is probably to just have a writer attached to a separate buffer that
-	//        always writes for each event, not just text replacement
-	// 2. actual api for reader/writer, not pseudo code
+	let mut writer = Writer::new(Vec::new());
+	let mut buf = Vec::new();
+	let mut current_tag = String::default();
+	let mut visited = HashSet::<String>::new();
 
-	/*
-	search for: parse_opf_xml --> example API usage:
+	let metadata_map = build_metadata_map(metadata.clone(), existing_tags.clone());
 
-	   loop {
-	   let current_target = None;
-		while let Some(event) = reader.read() {
-		 match event {
-		   Ok(Event::XmlStartTag(e)) => {
-			// extract name to set current target
-			current_target = Some(e.name);
-		   },
-		   Ok(Event::Text(e)) => {
-		   let Some(target) = current_target else {
-			   continue;
-		   }
-		   // get the text
-		   // replace text with metadata
+	loop {
+		match reader.read_event_into(&mut buf) {
+			Ok(Event::Start(e)) => {
+				let tag = String::from_utf8_lossy(e.name().as_ref()).to_string();
+				current_tag = tag.clone();
 
-					match target.to_lowercase() {
-					"teams" => {
-						metada.teams
-					}
-					}
+				if let Some(None) = metadata_map.get(tag.as_str()) {
+					visited.insert(tag.clone());
+				} else {
+					writer.write_event(Event::Start(e))?;
+				}
+			},
+			// TODO: determine if Event::Text would pop off if e.g. <Title></Title> and if so
+			// how do we handle it here
+			Ok(Event::Text(e)) => match metadata_map.get(current_tag.as_str()) {
+				Some(Some(value)) => {
+					// TODO: do we need to escape value?
+					writer.write_event(Event::Text(BytesText::new(value)))?;
+					visited.insert(current_tag.clone());
+				},
+				Some(None) => {
+					// already handled in Event::Start
+				},
+				None => {
+					tracing::debug!(
+						?current_tag,
+						"This field is not managed by Stump. Writing it back as-is."
+					);
+					writer.write_event(Event::Text(e))?;
+				},
+			},
+			// TODO: how do we handle <Title /> OR <Title></Title> if that ends up here
+			Ok(Event::Empty(e)) => {
+				unimplemented!()
+			},
+			Ok(Event::End(e)) => {
+				// not end, i.e. eof, just end of tag
+				let tag = String::from_utf8_lossy(e.name().as_ref()).to_string();
 
-		   // continue, maybe unset current_target
-		   }
-
-		 }
+				if let Some(None) = metadata_map.get(tag.as_str()) {
+					current_tag.clear();
+				} else {
+					// if it is ComicInfo tag ^ ->
+					//          writer write it:
+					//              1. start event for the tag
+					//              2. text like before (same todo as above re: do we need to escape)
+					//              3. end event for the tag
+					// TODO: do this
+					writer.write_event(Event::End(e))?;
+				}
+			},
+			Ok(Event::Eof) => break,
+			// if none of the above, idk how to handle it so just write it as-is
+			Ok(e) => {
+				tracing::debug!(
+					event = ?e,
+					"Ecountered event which is not explicitly handled. Writing back as-is"
+				);
+				writer.write_event(e)?;
+			},
+			_ => {
+				unimplemented!()
+			},
 		}
+	}
 
-	   }
-
-	*/
-
-	// 1. load and parse into rust struct for us
-	// 2. define `apply` to set struct fields from media metadata
-	// 3. take sruct and just convert to string
-	// 4. write the string
-
-	unimplemented!()
+	Ok(String::from_utf8(writer.into_inner())?)
 }
 
-// LOGAN REFERENCES:
-// - https://serde.rs/
-//   - https://serde.rs/json.html
-// - https://docs.rs/quick-xml/latest/quick_xml/
-// - https://anansi-project.github.io/docs/comicinfo/documentation
-//   - we don't currenly deserialize all fields, so manual xml reader/writer has
-//     benefit of finding tags and inline replacing instead of
-//     relying on serde to dump the entire thing which could technically
-//     lead to data loss since we do not intake or represent all which is supported
+fn build_metadata_map(
+	metadata: media_metadata::Model,
+	existing_tags: Vec<String>,
+) -> HashMap<&'static str, Option<String>> {
+	let mut map = HashMap::new();
 
-// #[cfg(test)]
-// mod tests {
-// 	use models::entity::media_metadata;
+	map.insert("Title", metadata.title.clone());
+	map.insert("Series", metadata.series.clone());
 
-// 	use crate::filesystem::{
-// 		media::{metadata_from_buf, ProcessedMediaMetadata},
-// 		metadata::writer::comic_info::convert_to_comic_info,
-// 	};
+	// TODO: add all the other fckn fields
 
-// 	// for route 1 (relying on serde + using some unimplement apply function)
-// 	#[test]
-// 	fn test_basic_conversion() {
-// 		// pretend this is what currently exists in ComicInfo.xml
-// 		let basic = ProcessedMediaMetadata {
-// 			title: Some("Invincible 001".to_string()),
-// 			..Default::default()
-// 		};
+	map
+}
 
-// 		// FIXME: won't actually work bc missing fields but fine for demonstration for now
-// 		// let's pretend a user updated the title manually
-// 		let metadata = media_metadata::Model {
-// 			title: Some("Invincible #1".to_string()),
-// 			..Default::default()
-// 		};
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use models::entity::media_metadata;
+	use quick_xml::de::from_str as xml_from_str;
 
-// 		let xml_string = convert_to_comic_info(metadata.clone(), basic.clone())
-// 			.expect("Should have converted comic info");
+	#[test]
+	fn test_basic_conversion() {
+		// this is what currently exists in the embedded ComicInfo.xml
+		let existing_xml = r#"<?xml version="1.0"?>
+<ComicInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <Title>Invincible 001</Title>
+</ComicInfo>
+"#;
 
-// 		let deserialized_xml = metadata_from_buf(&xml_string)
-// 			.expect("Should have properly parsed xml_string");
+		let metadata = media_metadata::Model {
+			title: Some("Invincible #1".to_string()),
+			..Default::default()
+		};
 
-// 		assert_eq!(metadata.title, deserialized_xml.title);
-// 	}
+		let xml_string =
+			merge_metadata_into_xml(metadata.clone(), vec![], existing_xml.to_string())
+				.expect("Should have converted comic info");
 
-// 	// for route 2 (use reader/writer from quick_xml to create new string)
-// 	#[test]
-// 	fn test_basic_conversion_route_two() {
-// 		// pretend this is what currently exists in ComicInfo.xml
-// 		let basic = quick_xml::se::to_string(&ProcessedMediaMetadata {
-// 			title: Some("Invincible 001".to_string()),
-// 			..Default::default()
-// 		});
+		assert!(xml_string.contains("Invincible #1")); // the updated title
 
-// 		// FIXME: won't actually work bc missing fields but fine for demonstration for now
-// 		// let's pretend a user updated the title manually
-// 		let metadata = media_metadata::Model {
-// 			title: Some("Invincible #1".to_string()),
-// 			..Default::default()
-// 		};
+		let deserialized_xml: ProcessedMediaMetadata =
+			xml_from_str(&xml_string).expect("Should have properly parsed xml_string");
 
-// 		// let xml_string = update_comic_info(metadata.clone(), basic.clone())
-// 		// 	.expect("Should have updated comic info XML string");
+		assert_eq!(metadata.title, deserialized_xml.title);
+	}
 
-// 		// let deserialized_xml = metadata_from_buf(&xml_string)
-// 		// 	.expect("Should have properly parsed xml_string");
-
-// 		// assert_eq!(metadata.title, deserialized_xml.title);
-// 	}
-// }
-
-/*
-<?xml version="1.0"?>
+	#[test]
+	fn test_full_conversion() {
+		// TODO: add tags to this example
+		let existing_xml = r#"<?xml version="1.0"?>
 <ComicInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Title>Heist Part Two</Title>
   <Series>The Amazing Spider-Man</Series>
@@ -270,31 +294,52 @@ Note: Unknown Comic Books variant by Mico Suayan connects with Venom #8, Web of 
   <Characters>Armadillo, Black Cat, Captain America, Carlie Cooper, Hawkeye, Human Torch, Iron Man, Jarvis, Kate Bishop, Mary Jane, Odessa Drake, Spider-Man, Squirrel Girl, Thing, Thor, Walter Hardy, Wasp</Characters>
   <Teams>Thieves Guild</Teams>
   <Pages>
-	<Page Image="0" Type="FrontCover" ImageSize="741291" />
-	<Page Image="1" ImageSize="1383958" />
-	<Page Image="2" ImageSize="1897301" />
-	<Page Image="3" ImageSize="1956592" />
-	<Page Image="4" ImageSize="1348064" />
-	<Page Image="5" ImageSize="2050915" />
-	<Page Image="6" ImageSize="1570591" />
-	<Page Image="7" ImageSize="1868853" />
-	<Page Image="8" ImageSize="1703356" />
-	<Page Image="9" ImageSize="1835994" />
-	<Page Image="10" ImageSize="1600821" />
-	<Page Image="11" ImageSize="2207163" />
-	<Page Image="12" ImageSize="2401548" />
-	<Page Image="13" ImageSize="1891242" />
-	<Page Image="14" ImageSize="2012601" />
-	<Page Image="15" ImageSize="1761542" />
-	<Page Image="16" ImageSize="1797303" />
-	<Page Image="17" ImageSize="2332849" />
-	<Page Image="18" ImageSize="2023561" />
-	<Page Image="19" ImageSize="2239700" />
-	<Page Image="20" ImageSize="2271632" />
-	<Page Image="21" ImageSize="1879935" />
-	<Page Image="22" ImageSize="1663028" />
-	<Page Image="23" ImageSize="750766" />
+						<Page Image="0" Type="FrontCover" ImageSize="741291" />
+						<Page Image="1" ImageSize="1383958" />
+						<Page Image="2" ImageSize="1897301" />
+						<Page Image="3" ImageSize="1956592" />
+						<Page Image="4" ImageSize="1348064" />
+						<Page Image="5" ImageSize="2050915" />
+						<Page Image="6" ImageSize="1570591" />
+						<Page Image="7" ImageSize="1868853" />
+						<Page Image="8" ImageSize="1703356" />
+						<Page Image="9" ImageSize="1835994" />
+						<Page Image="10" ImageSize="1600821" />
+						<Page Image="11" ImageSize="2207163" />
+						<Page Image="12" ImageSize="2401548" />
+						<Page Image="13" ImageSize="1891242" />
+						<Page Image="14" ImageSize="2012601" />
+						<Page Image="15" ImageSize="1761542" />
+						<Page Image="16" ImageSize="1797303" />
+						<Page Image="17" ImageSize="2332849" />
+						<Page Image="18" ImageSize="2023561" />
+						<Page Image="19" ImageSize="2239700" />
+						<Page Image="20" ImageSize="2271632" />
+						<Page Image="21" ImageSize="1879935" />
+						<Page Image="22" ImageSize="1663028" />
+						<Page Image="23" ImageSize="750766" />
   </Pages>
-</ComicInfo>
+</ComicInfo>"#;
 
- */
+		let metadata = media_metadata::Model {
+			// TODO: add all the fields
+			..Default::default()
+		};
+
+		let xml_string =
+			merge_metadata_into_xml(metadata.clone(), vec![], existing_xml.to_string())
+				.expect("Should have converted comic info");
+
+		let deserialized_xml: ProcessedMediaMetadata =
+			xml_from_str(&xml_string).expect("Should have properly parsed xml_string");
+
+		// TODO: assert each field in deserialized_xml
+	}
+}
+
+// LOGAN REFERENCES:
+// - https://anansi-project.github.io/docs/comicinfo/documentation
+//   - we don't currenly deserialize all fields, so manual xml reader/writer has
+//     benefit of finding tags and inline replacing instead of
+//     relying on serde to dump the entire thing which could technically
+//     lead to data loss since we do not intake or represent all which is supported
