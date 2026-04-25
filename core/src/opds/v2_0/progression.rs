@@ -17,13 +17,63 @@ pub const CANTOOK_PROGRESSION_REL: &str = "http://www.cantook.com/api/progressio
 #[derive(Debug, Default, Clone, Builder, Serialize, Deserialize)]
 #[builder(build_fn(error = "crate::CoreError"), default, setter(into))]
 #[serde(rename_all = "camelCase")]
-pub struct OPDSProgression {
+pub struct OPDSProgressionDraft {
 	#[builder(default = "default_now()")]
 	modified: String,
 	#[builder(default)]
 	device: OPDSProgressionDevice,
 	#[builder(default)]
 	locator: OPDSProgressionLocator,
+}
+
+impl From<OPDSProgressionDraft> for OPDSProgressionV1 {
+	fn from(draft: OPDSProgressionDraft) -> Self {
+		OPDSProgressionV1 {
+			modified: draft.modified,
+			device: draft.device,
+			progression: draft
+				.locator
+				.locations
+				.as_ref()
+				.and_then(|l| l.total_progression),
+			references: draft
+				.locator
+				.locations
+				.as_ref()
+				.and_then(|l| l.fragments.clone()),
+		}
+	}
+}
+
+// See https://github.com/opds-community/drafts/pull/91
+#[derive(Debug, Default, Clone, Builder, Serialize, Deserialize)]
+#[builder(build_fn(error = "crate::CoreError"), default, setter(into))]
+#[serde(rename_all = "camelCase")]
+pub struct OPDSProgressionV1 {
+	#[builder(default = "default_now()")]
+	modified: String,
+	#[builder(default)]
+	device: OPDSProgressionDevice,
+	/// Progression in the resource expressed as a percentage (0.0 to 1.0). This is
+	/// progression within the current resource, not the entire publication.
+	///
+	/// A few clarifying notes:
+	/// If the publication is a single resource, e.g., comics, manga, etc, this is equivalent to total_progression
+	/// If the publication has multiple resources, e.g., EPUB, this is progression within the current resource only
+	progression: Option<f64>,
+	/// A list of references within the resource which orient to the current position
+	references: Option<Vec<String>>,
+}
+
+// TODO: Not enough support for progression to justify keeping this around for too long
+// just remove Draft and promote V1 to OPDSProgression when we're ready. at the very least,
+// i just want to make sure Codex has a chance to update
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum OPDSProgression {
+	Draft(OPDSProgressionDraft),
+	Current(OPDSProgressionV1),
 }
 
 impl OPDSProgression {
