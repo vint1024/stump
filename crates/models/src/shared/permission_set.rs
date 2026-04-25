@@ -91,12 +91,37 @@ impl AssociatedPermission for UserPermission {
 			UserPermission::DeleteNotifier => {
 				vec![UserPermission::ManageNotifier, UserPermission::ReadNotifier]
 			},
-			UserPermission::ManageUsers => vec![UserPermission::ReadUsers],
+			UserPermission::CreateUser => vec![UserPermission::ReadUsers],
+			UserPermission::LockUser => vec![UserPermission::ReadUsers],
+			UserPermission::DeleteUser => {
+				vec![UserPermission::UpdateUser, UserPermission::ReadUsers]
+			},
+			UserPermission::ManageUserSessions => vec![UserPermission::ReadUsers],
+			UserPermission::ManageUsers => {
+				vec![UserPermission::DeleteUser, UserPermission::CreateUser]
+			},
 			UserPermission::ReadPersistedLogs => {
 				vec![UserPermission::ReadJobs]
 			},
 			UserPermission::WriteBackMetadata => vec![UserPermission::EditMetadata],
 			UserPermission::EditThumbnails => vec![],
+			UserPermission::ViewAllSmartLists => vec![],
+			// TODO(permissions): sort this one out
+			UserPermission::ManageServer => vec![
+				UserPermission::CreateBookClub,
+				UserPermission::EmailerManage,
+				UserPermission::CreateLibrary,
+				UserPermission::ManageLibrary,
+				UserPermission::CreateNotifier,
+				UserPermission::ManageNotifier,
+				UserPermission::CreateUser,
+				UserPermission::LockUser,
+				UserPermission::ManageUsers,
+				UserPermission::ReadPersistedLogs,
+				UserPermission::WriteBackMetadata,
+				UserPermission::EditThumbnails,
+				UserPermission::ViewAllSmartLists,
+			],
 			_ => vec![],
 		}
 	}
@@ -106,18 +131,12 @@ impl AssociatedPermission for UserPermission {
 /// is checked against their explicitly assigned permissions, as well as any inherited
 /// ones through permission associations.
 fn user_has_permission(user: &AuthUser, permission: UserPermission) -> bool {
-	user.is_server_owner
-		|| user
-			.permissions
-			.iter()
-			.any(|p| p == &permission || p.associated().contains(&permission))
+	user.permissions
+		.iter()
+		.any(|p| p == &permission || p.associated().contains(&permission))
 }
 
 pub fn user_has_all_permissions(user: &AuthUser, permissions: &[UserPermission]) -> bool {
-	if user.is_server_owner {
-		return true;
-	}
-
 	let missing_permissions = permissions
 		.iter()
 		.filter(|&permission| !user_has_permission(user, *permission))

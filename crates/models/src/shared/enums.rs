@@ -737,6 +737,16 @@ pub enum UserPermission {
 	/// Note that this is explicitly for querying users via user-specific endpoints.
 	/// This would not affect relational queries, such as members in a common book club.
 	ReadUsers,
+	/// Grant access to create managed user accounts
+	CreateUser,
+	/// Grant access to update another user account, excluding preferences
+	UpdateUser,
+	/// Grant access to delete another user
+	DeleteUser,
+	/// Grant access to lock another user, preventing them from logging in until an admin unlocks them
+	LockUser,
+	/// Grant access to view and manage active sessions and auth tokens for other users
+	ManageUserSessions,
 	/// Grant access to manage users (create,edit,delete)
 	ManageUsers,
 	/// Grant access to read notifiers
@@ -763,7 +773,9 @@ pub enum UserPermission {
 	ReadPersistedLogs,
 	/// Grant access to read system logs
 	ReadSystemLogs,
-	/// Grant access to manage the server. This is effectively a step below server owner
+	/// Grant access to view all smart lists, even those they don't have explicit access to
+	ViewAllSmartLists,
+	/// Grant access to manage the server. This is effectively full access and encompasses all other permissions
 	ManageServer,
 }
 

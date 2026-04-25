@@ -9,6 +9,7 @@ use crate::{
 	error_message,
 };
 
+// TODO(permissions): remove this?
 /// Guard that checks if the user is the owner of the server.
 pub struct ServerOwnerGuard;
 
@@ -74,10 +75,6 @@ impl PermissionGuard {
 impl Guard for PermissionGuard {
 	async fn check(&self, ctx: &Context<'_>) -> Result<()> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
-
-		if user.is_server_owner {
-			return Ok(());
-		}
 
 		let authorized = self
 			.permissions

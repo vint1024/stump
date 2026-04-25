@@ -25,6 +25,7 @@ pub struct Model {
 	#[sea_orm(column_type = "Text")]
 	#[graphql(skip)]
 	pub hashed_password: String,
+	// TODO(permissions): consider removing
 	pub is_server_owner: bool,
 	#[sea_orm(column_type = "Text", nullable)]
 	pub avatar_path: Option<String>,
@@ -67,7 +68,7 @@ impl AuthUser {
 	}
 
 	pub fn has_permission(&self, permission: UserPermission) -> bool {
-		self.is_server_owner || self.permissions.contains(&permission)
+		self.permissions.contains(&permission)
 	}
 }
 
