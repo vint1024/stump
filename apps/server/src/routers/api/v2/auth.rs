@@ -9,10 +9,13 @@ use axum::{
 use axum_extra::{headers::UserAgent, TypedHeader};
 use chrono::{DateTime, Duration, FixedOffset, Utc};
 use graphql::data::{AuthContext, ServiceContext};
-use models::entity::{
-	session,
-	user::{self, AuthUser, LoginUser},
-	user_login_activity, user_preferences,
+use models::{
+	entity::{
+		session,
+		user::{self, AuthUser, LoginUser},
+		user_login_activity, user_preferences,
+	},
+	shared::enums::UserPermission,
 };
 use reqwest::header;
 use sea_orm::{prelude::*, IntoActiveModel, TransactionTrait};
@@ -398,7 +401,7 @@ pub async fn register(
 	let session_user = fetch_session_user(&session, ctx.conn.as_ref()).await?;
 
 	if let Some(user) = session_user {
-		if !user.is_server_owner {
+		if !user.has_permission(UserPermission::CreateUser) {
 			return Err(APIError::Forbidden(String::from(
 				"You do not have permission to access this resource.",
 			)));
@@ -407,6 +410,7 @@ pub async fn register(
 		// if users exist, a valid session is required to register a new user
 		return Err(APIError::Unauthorized);
 	} else if !has_users {
+		// TODO(permissions): rm this?
 		// if no users present, the user is automatically a server owner
 		is_server_owner = true;
 	}

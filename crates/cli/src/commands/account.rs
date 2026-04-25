@@ -206,6 +206,7 @@ async fn print_accounts(locked: Option<bool>, config: &StumpConfig) -> CliResult
 	Ok(())
 }
 
+// TODO(permissions): rm this?
 async fn change_server_owner(config: &StumpConfig) -> CliResult<()> {
 	let conn = connect(config).await?;
 

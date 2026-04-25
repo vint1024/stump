@@ -108,6 +108,7 @@ impl AssociatedPermission for UserPermission {
 			UserPermission::ViewAllSmartLists => vec![],
 			// TODO(permissions): sort this one out
 			UserPermission::ManageServer => vec![
+				UserPermission::AccessGraphQLPlayground,
 				UserPermission::CreateBookClub,
 				UserPermission::EmailerManage,
 				UserPermission::CreateLibrary,

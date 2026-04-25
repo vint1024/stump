@@ -78,10 +78,6 @@ impl AuthContext {
 	pub fn enforce_permissions(&self, permissions: &[UserPermission]) -> Result<()> {
 		let user = self.user();
 
-		if user.is_server_owner {
-			return Ok(());
-		}
-
 		if user.is_locked {
 			return Err(error_message::LOCKED_ACCOUNT.into());
 		}
@@ -104,6 +100,7 @@ impl AuthContext {
 		Ok(self.user())
 	}
 
+	// TODO(permissions): rm this?
 	/// Enforce that the current user is the server owner, otherwise return an error
 	#[tracing::instrument(skip(self))]
 	pub fn enforce_server_owner(&self) -> Result<()> {

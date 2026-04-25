@@ -46,8 +46,7 @@ impl UserMutation {
 		Ok(deleted_rows.rows_affected)
 	}
 
-	/// Upload an avatar image for either the authenticated viewer or for any user if
-	/// called by a server owner
+	/// Upload an avatar image for either the authenticated viewer or for any user (if authorized by permissions)
 	#[graphql(
 		guard = "OptionalFeatureGuard::new(OptionalFeature::Upload).and(PermissionGuard::new(&[UserPermission::UploadFile, UserPermission::ChangeAvatar]))"
 	)]
@@ -63,7 +62,9 @@ impl UserMutation {
 
 		let target_id = match &id {
 			Some(id) => {
-				if id.as_str() != user.id && !user.is_server_owner {
+				if id.as_str() != user.id
+					&& !user.has_permission(UserPermission::ManageUsers)
+				{
 					return Err(FORBIDDEN_ACTION.into());
 				}
 				id.to_string()
@@ -599,6 +600,7 @@ async fn update_user(
 
 	let txn = conn.begin().await?;
 
+	// TODO(permissions): ensure to revisit this
 	let is_updating_server_owner = by_user.is_server_owner && by_user.id == for_user_id;
 	if !is_updating_server_owner {
 		update_user_age_restriction(&for_user_id, &input.age_restriction, &txn).await?;

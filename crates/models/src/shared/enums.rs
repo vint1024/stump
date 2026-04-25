@@ -678,6 +678,8 @@ pub enum SupportedFont {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum UserPermission {
+	/// Grant access to the GraphQL playground interface
+	AccessGraphQLPlayground,
 	/// Grant access to read/create their own API keys
 	AccessAPIKeys,
 	/// Grant access to the koreader sync feature
