@@ -653,6 +653,7 @@ pub enum SupportedFont {
 // - Access to library logs
 // - Access to system logs
 // - Access to jobs and job management
+// TODO(permissions): address the various implicit permissions throughout and add explicit
 
 /// The permissions a user may be granted
 #[derive(

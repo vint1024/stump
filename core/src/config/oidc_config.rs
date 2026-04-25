@@ -7,6 +7,24 @@ use super::env_keys::*;
 
 const REQUIRED_SCOPES: &str = "openid,email";
 
+// TODO(permissions): i am not sure how to go about claims and permissions, or at the very least i am not sure what is standard. i figure there are really two routes:
+// 1. provider supplies all permissions in a claim and we just reconcile with that
+// 2. a mapping of groups to permissions is defined in config and the provider just supplies the group(s) the user belongs to
+// i lean towards 2, feels way more flexible, but should ask around.
+// a loose dump of ideas:
+/*
+inside OidcConfig:
+	- group_claim: Option<String> // the claim that contains the user's groups/roles, default "groups"
+	- group_permission_mapping: Option<HashMap<String, Vec<UserPermission>>> // mapping of group names to permissions
+
+i could then do e.g.
+[oidc.group_permission_mapping]
+admin = ["MANAGE_SERVER", "MANAGE_USERS"]
+user = ["CHANGE_USERNAME", "CHANGE_AVATAR"]
+
+and then (re)sync permissions each login
+*/
+
 /// Configuration for OpenID Connect (OIDC) authentication
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, SimpleObject)]
 #[graphql(name = "OidcConfig")]
