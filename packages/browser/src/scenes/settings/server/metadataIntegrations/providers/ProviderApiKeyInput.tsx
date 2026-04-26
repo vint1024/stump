@@ -99,10 +99,17 @@ type Validator = (
 	t: (key: string, args?: Record<string, unknown>) => string,
 ) => Promise<boolean>
 
-const validateHardcoverApiKey: Validator = async (apiKey, t) => {
+const checkPrefix = (
+	apiKey: string,
+	t: (key: string, args?: Record<string, unknown>) => string,
+) => {
 	if (apiKey.startsWith('Bearer ')) {
 		throw new Error(t(getKey('apiToken.noBearerPrefixRequired')))
 	}
+}
+
+const validateHardcoverApiKey: Validator = async (apiKey, t) => {
+	checkPrefix(apiKey, t)
 
 	const response = await fetch('https://api.hardcover.app/v1/graphql', {
 		method: 'POST',
@@ -135,6 +142,42 @@ const validateHardcoverApiKey: Validator = async (apiKey, t) => {
 	return getProperty(data, 'data.me[0].id') != null
 }
 
+// TODO: comic vine blocks browser requests -__- so that really fucked up the pattern i started
+// adding here. i guess i will proxy through the server, instead, probably for the best
+// but still a little annoying
+
+const validateComicVineApiKey: Validator = async (apiKey, t) => {
+	checkPrefix(apiKey, t)
+
+	// const response = await fetch(
+	// 	`https://comicvine.gamespot.com/api/characters/?api_key=${apiKey}&format=json&limit=1`,
+	// 	{
+	// 		method: 'GET',
+	// 		headers: {
+	// 			'User-Agent': 'StumpWeb/1.0',
+	// 		},
+	// 	},
+	// )
+
+	// if (!response.ok) {
+	// 	throw new Error(t(getKey('apiToken.comicVineStatusError'), { status: response.status }))
+	// }
+
+	// const data = await response.json()
+
+	// const statusCode = getProperty(data, 'status_code') as number | undefined
+	// // https://comicvine.gamespot.com/api/documentation#toc-0-0
+	// if (statusCode && statusCode !== 1) {
+	// 	const errorMessage = getProperty(data, 'error') as string | undefined
+	// 	throw new Error(
+	// 		t(getKey('apiToken.comicVineValidationError'), { message: errorMessage ?? statusCode }),
+	// 	)
+	// }
+
+	return true
+}
+
 const PROVIDER_VALIDATORS: Record<MetadataProvider, Validator | null> = {
 	HARDCOVER: validateHardcoverApiKey,
+	COMIC_VINE: validateComicVineApiKey,
 }

@@ -2302,6 +2302,8 @@
 			"helmet": "Metadata integrations",
 			"title": "Metadata integrations",
 			"addProvider": "Add provider",
+			"createProviderError": "Failed to create provider",
+			"updateProviderError": "Failed to update provider",
 			"noProviders": "No providers configured yet. Add one to get started",
 			"providers": {
 				"title": "Providers",

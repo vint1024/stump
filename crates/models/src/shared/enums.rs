@@ -435,6 +435,8 @@ pub enum MetadataFetchStatus {
 pub enum MetadataProvider {
 	/// Hardcover (https://hardcover.app)
 	Hardcover,
+	/// ComicVine (https://comicvine.gamespot.com/api/)
+	ComicVine,
 }
 
 impl MetadataProvider {
@@ -447,6 +449,7 @@ impl MetadataProvider {
 				LibraryType::Manga,
 				LibraryType::LightNovel,
 			],
+			Self::ComicVine => &[LibraryType::Comic],
 		}
 	}
 }

@@ -1763,6 +1763,8 @@ input MetadataFieldOverride {
 enum MetadataProvider {
 	"Hardcover (https://hardcover.app)"
 	HARDCOVER
+	"ComicVine (https://comicvine.gamespot.com/api/)"
+	COMIC_VINE
 }
 
 type MetadataProviderConfigModel {
