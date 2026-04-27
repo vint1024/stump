@@ -9,6 +9,9 @@ use sea_orm::ConnectionTrait;
 
 use crate::{filesystem::media::process_metadata_raw_async, CoreError};
 
+// TODO(organization): unimportant, but figure it might be good to move comic_info.rs and future ebook_opf.rs or w/e
+// up the tree (since no actual writing is being done) and rethink the structure. for now, though, just trucking along
+
 const SHELL_COMIC_INFO: &str = r#"<?xml version="1.0"?>
 <ComicInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 </ComicInfo>

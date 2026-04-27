@@ -1,4 +1,5 @@
 use std::{
+	fs::File,
 	io::{BufReader, Read, Seek},
 	path::{Path, PathBuf},
 };
@@ -832,7 +833,7 @@ fn validate_series_upload_contents(
 /// Validate a file within a series upload archive. This function checks the file against
 /// allowed file types based on extension as well as magic byte inference. If either check
 /// fails then an error is returned.
-fn validate_zip_file(zip_file: &mut ZipFile) -> Result<()> {
+fn validate_zip_file(zip_file: &mut ZipFile<'_, &mut File>) -> Result<()> {
 	/// Any file extension not in this list will trigger an error
 	const ALLOWED_EXTENSIONS: &[&str] = &[
 		"cbr", "cbz", "epub", "pdf", "xml", "json", "png", "jpg", "jpeg", "webp", "gif",

@@ -402,6 +402,45 @@ impl FileProcessor for ZipProcessor {
 	}
 }
 
+impl ZipProcessor {
+	pub fn get_path_to_metadata(path: &str) -> Result<Option<String>, FileError> {
+		let zip_file = File::open(path)?;
+		let mut archive = zip::ZipArchive::new(zip_file)?;
+
+		let mut metadata_path = None;
+
+		for i in 0..archive.len() {
+			let file = archive.by_index(i)?;
+
+			if file.is_dir() {
+				trace!("Skipping directory");
+				continue;
+			}
+
+			let path_buf = file.enclosed_name().unwrap_or_else(|| {
+				tracing::warn!("Failed to get enclosed name for zip entry");
+				PathBuf::from(file.name())
+			});
+			let path = path_buf.as_path();
+
+			if path.is_hidden_file() {
+				trace!(path = ?path, "Skipping hidden file");
+				continue;
+			}
+
+			let FileParts { file_name, .. } = path.file_parts();
+
+			if file_name == "ComicInfo.xml" {
+				let enclosed_path = path.to_string_lossy().to_string();
+				metadata_path = Some(enclosed_path);
+				break;
+			}
+		}
+
+		Ok(metadata_path)
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;

@@ -508,6 +508,21 @@ impl EpubProcessor {
 
 		Ok(content_bytes)
 	}
+
+	// TODO(metadata-writeback): come back to epub
+	// Returns the path of the OPF metadata file within the ZIP file
+	// pub fn get_opf_path(path: &str) -> Result<String, FileError> {
+	// 	let mut epub_file = Self::open(path)?;
+
+	// 	// OEBS/package.opf
+
+	// 	// epub_file.metadata
+
+	// 	let container = epub_file.get_resource_by_path(&epub_file.root_file)?;
+	//        let root = xmlutils::XMLReader::parse(container.as_slice())?;
+
+	// 	unimplemented!()
+	// }
 }
 
 /// Parse OPF XML content and extract supported metadata
