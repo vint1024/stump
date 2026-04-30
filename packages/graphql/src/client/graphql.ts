@@ -2237,6 +2237,8 @@ export type Mutation = {
    * called by a server owner
    */
   uploadUserAvatar: User;
+  /** Validate the provided API token by making a test request using a client instance */
+  validateProviderConfig: ProviderCredentialVerification;
   /**
    * "Visit" a library, which will upsert a record of the user's last visit to the library.
    * This is used to inform the UI of the last library which was visited by the user
@@ -2997,6 +2999,11 @@ export type MutationUploadUserAvatarArgs = {
 };
 
 
+export type MutationValidateProviderConfigArgs = {
+  config: ValidateMetadataProviderConfigInput;
+};
+
+
 export type MutationVisitLibraryArgs = {
   id: Scalars['ID']['input'];
 };
@@ -3250,6 +3257,13 @@ export type PlaceholderGenerationOutput = {
   skippedEntities: Scalars['Int']['output'];
   /** The total number of entities that were visited */
   visitedEntities: Scalars['Int']['output'];
+};
+
+export type ProviderCredentialVerification = {
+  __typename?: 'ProviderCredentialVerification';
+  error?: Maybe<Scalars['String']['output']>;
+  isValid: Scalars['Boolean']['output'];
+  responseStatus: Scalars['Int']['output'];
 };
 
 export enum PublicationStatus {
@@ -4742,6 +4756,13 @@ export type UserPreferences = {
   thumbnailPlaceholderStyle: ThumbnailPlaceholderStyle;
   thumbnailRatio: Scalars['Float']['output'];
   userId?: Maybe<Scalars['String']['output']>;
+};
+
+export type ValidateMetadataProviderConfigInput = {
+  /** The API token for authenticating with the provider */
+  apiToken: Scalars['String']['input'];
+  /** The provider type */
+  providerType: MetadataProvider;
 };
 
 export type CreateBookClubMobileMutationVariables = Exact<{
@@ -6624,6 +6645,13 @@ export type DeleteProviderDialogMutationVariables = Exact<{
 export type DeleteProviderDialogMutation = { __typename?: 'Mutation', deleteMetadataProvider: { __typename?: 'MetadataProviderConfigModel', id: number } };
 
 export type ExistingProviderCardFragment = { __typename?: 'MetadataProviderConfigModel', id: number, providerType: MetadataProvider, enabled: boolean, apiTokenExpiresAt?: any | null, autoApplyConfig?: any | null, createdAt: any, updatedAt?: any | null } & { ' $fragmentName'?: 'ExistingProviderCardFragment' };
+
+export type ProviderApiKeyInputValidateKeyMutationVariables = Exact<{
+  config: ValidateMetadataProviderConfigInput;
+}>;
+
+
+export type ProviderApiKeyInputValidateKeyMutation = { __typename?: 'Mutation', validateProviderConfig: { __typename?: 'ProviderCredentialVerification', isValid: boolean, error?: string | null, responseStatus: number } };
 
 export type ProvidersSectionGetProvidersQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -12754,6 +12782,15 @@ export const DeleteProviderDialogDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<DeleteProviderDialogMutation, DeleteProviderDialogMutationVariables>;
+export const ProviderApiKeyInputValidateKeyDocument = new TypedDocumentString(`
+    mutation ProviderApiKeyInputValidateKey($config: ValidateMetadataProviderConfigInput!) {
+  validateProviderConfig(config: $config) {
+    isValid
+    error
+    responseStatus
+  }
+}
+    `) as unknown as TypedDocumentString<ProviderApiKeyInputValidateKeyMutation, ProviderApiKeyInputValidateKeyMutationVariables>;
 export const ProvidersSectionGetProvidersDocument = new TypedDocumentString(`
     query ProvidersSectionGetProviders {
   metadataProviderConfigs {

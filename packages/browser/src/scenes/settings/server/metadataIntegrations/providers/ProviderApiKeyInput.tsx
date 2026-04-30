@@ -1,8 +1,11 @@
+import { useGraphQLMutation } from '@stump/client'
 import { Alert, AlertDescription, AlertTitle, PasswordInput } from '@stump/components'
-import { MetadataProvider } from '@stump/graphql'
+import {
+	extractErrorMessage,
+	graphql,
+	ProviderApiKeyInputValidateKeyMutation,
+} from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
-import { useMutation } from '@tanstack/react-query'
-import getProperty from 'lodash/get'
 import { AlertTriangleIcon } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
 import { useFormContext, useFormState, useWatch } from 'react-hook-form'
@@ -10,8 +13,19 @@ import { useDebouncedValue } from 'rooks'
 
 import { CreateProviderConfigSchema } from './schema'
 
+const verificationMutation = graphql(`
+	mutation ProviderApiKeyInputValidateKey($config: ValidateMetadataProviderConfigInput!) {
+		validateProviderConfig(config: $config) {
+			isValid
+			error
+			responseStatus
+		}
+	}
+`)
+
 export function ProviderApiKeyInput() {
 	const form = useFormContext<CreateProviderConfigSchema>()
+
 	const { t } = useLocaleContext()
 	const { errors } = useFormState({ control: form.control })
 
@@ -23,32 +37,29 @@ export function ProviderApiKeyInput() {
 	const [debouncedValue] = useDebouncedValue(value, 500)
 
 	const {
+		data: validationResult,
 		mutate,
 		isPending,
-		error: fetchError,
-	} = useMutation({
-		mutationKey: ['validateApiKey', provider, debouncedValue],
-		mutationFn: async ({ apiKey, validator }: { apiKey: string; validator: Validator }) => {
-			const isValid = await validator(apiKey, t)
-			if (!isValid) {
-				form.setError('apiToken', {
-					type: 'validate',
-					message: t(getKey('apiToken.validationError')),
-				})
-			} else {
-				form.clearErrors('apiToken')
-			}
-		},
-	})
+		error: criticalError,
+	} = useGraphQLMutation(verificationMutation, {})
 
 	const validateKey = useCallback(
 		async (apiKey: string) => {
 			if (isPending || !apiKey) return
-			const validator = PROVIDER_VALIDATORS[provider]
-			if (!validator) return
-			mutate({ apiKey, validator })
+
+			form.clearErrors('apiToken')
+
+			if (apiKey.startsWith('Bearer ')) {
+				form.setError('apiToken', {
+					type: 'validate',
+					message: t(getKey('apiToken.noBearerPrefixRequired')),
+				})
+			}
+
+			mutate({ config: { apiToken: apiKey, providerType: provider } })
 		},
-		[provider, mutate, isPending],
+
+		[provider, mutate, isPending, t, form],
 	)
 
 	useEffect(
@@ -59,10 +70,16 @@ export function ProviderApiKeyInput() {
 				form.clearErrors('apiToken')
 			}
 		},
+
 		// eslint-disable-next-line react-compiler/react-compiler
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[debouncedValue],
 	)
+
+	const validationError = checkValidationResult(validationResult, t)
+	const criticalMessage = criticalError
+		? extractErrorMessage(criticalError, t(getKey('apiToken.validationRequestErrorUnknown')))
+		: null
 
 	return (
 		<>
@@ -76,15 +93,11 @@ export function ProviderApiKeyInput() {
 				fullWidth
 			/>
 
-			{fetchError && (
+			{(validationError || criticalMessage) && (
 				<Alert variant="destructive">
 					<AlertTriangleIcon />
 					<AlertTitle>{t(getKey('apiToken.validationRequestError'))}</AlertTitle>
-					<AlertDescription>
-						{fetchError instanceof Error
-							? fetchError.message
-							: t(getKey('apiToken.validationRequestErrorUnknown'))}
-					</AlertDescription>
+					<AlertDescription>{validationError || criticalMessage}</AlertDescription>
 				</Alert>
 			)}
 		</>
@@ -94,90 +107,20 @@ export function ProviderApiKeyInput() {
 const LOCALE_KEY = 'settingsScene.server/metadataIntegrations.providerForm'
 const getKey = (key: string) => `${LOCALE_KEY}.${key}`
 
-type Validator = (
-	apiKey: string,
-	t: (key: string, args?: Record<string, unknown>) => string,
-) => Promise<boolean>
-
-const checkPrefix = (
-	apiKey: string,
+const checkValidationResult = (
+	mutationResult: ProviderApiKeyInputValidateKeyMutation | undefined,
 	t: (key: string, args?: Record<string, unknown>) => string,
 ) => {
-	if (apiKey.startsWith('Bearer ')) {
-		throw new Error(t(getKey('apiToken.noBearerPrefixRequired')))
-	}
-}
+	const validationResult = mutationResult?.validateProviderConfig
+	if (!validationResult || validationResult.isValid) return null
 
-const validateHardcoverApiKey: Validator = async (apiKey, t) => {
-	checkPrefix(apiKey, t)
-
-	const response = await fetch('https://api.hardcover.app/v1/graphql', {
-		method: 'POST',
-		body: JSON.stringify({
-			query: `
-          query {
-            me {
-              id
-              username
-            }
-          }
-        `,
-		}),
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${apiKey}`,
-		},
-	})
-
-	if (!response.ok) {
-		throw new Error(t(getKey('apiToken.hardcoverStatusError'), { status: response.status }))
+	if (validationResult.error) {
+		return t(getKey('apiToken.providerError'), { message: validationResult.error })
 	}
 
-	const data = await response.json()
-	const firstError = getProperty(data, 'errors[0].message')
-	if (firstError && typeof firstError === 'string') {
-		throw new Error(t(getKey('apiToken.hardcoverValidationError'), { message: firstError }))
+	if (validationResult.responseStatus) {
+		return t(getKey('apiToken.providerStatusError'), { status: validationResult.responseStatus })
 	}
-	// hardcover `me` is an array for whatever reason
-	return getProperty(data, 'data.me[0].id') != null
-}
 
-// TODO: comic vine blocks browser requests -__- so that really fucked up the pattern i started
-// adding here. i guess i will proxy through the server, instead, probably for the best
-// but still a little annoying
-
-const validateComicVineApiKey: Validator = async (apiKey, t) => {
-	checkPrefix(apiKey, t)
-
-	// const response = await fetch(
-	// 	`https://comicvine.gamespot.com/api/characters/?api_key=${apiKey}&format=json&limit=1`,
-	// 	{
-	// 		method: 'GET',
-	// 		headers: {
-	// 			'User-Agent': 'StumpWeb/1.0',
-	// 		},
-	// 	},
-	// )
-
-	// if (!response.ok) {
-	// 	throw new Error(t(getKey('apiToken.comicVineStatusError'), { status: response.status }))
-	// }
-
-	// const data = await response.json()
-
-	// const statusCode = getProperty(data, 'status_code') as number | undefined
-	// // https://comicvine.gamespot.com/api/documentation#toc-0-0
-	// if (statusCode && statusCode !== 1) {
-	// 	const errorMessage = getProperty(data, 'error') as string | undefined
-	// 	throw new Error(
-	// 		t(getKey('apiToken.comicVineValidationError'), { message: errorMessage ?? statusCode }),
-	// 	)
-	// }
-
-	return true
-}
-
-const PROVIDER_VALIDATORS: Record<MetadataProvider, Validator | null> = {
-	HARDCOVER: validateHardcoverApiKey,
-	COMIC_VINE: validateComicVineApiKey,
+	return t(getKey('apiToken.validationError'))
 }
