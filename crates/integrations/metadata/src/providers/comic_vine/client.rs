@@ -1,4 +1,5 @@
-use reqwest_middleware::ClientWithMiddleware;
+use http_cache_reqwest::{Cache, CacheMode, HttpCache, HttpCacheOptions, MokaManager};
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 
 use crate::{
 	client::{build_client_with_retry, RetryClientConfig},
@@ -26,8 +27,6 @@ use super::{
 /// Honestly that is quite low. I chose 1 req/sec to be a bit more cautious, but
 /// that will easily exceed the hourly limit for even small libraries
 const COMIC_VINE_DEFAULT_RATE_LIMIT: u32 = 1;
-// note per above, their official rec is to cache responses and i think given the low rate limit i will
-// sooooo TODO: https://crates.io/crates/http-cache-reqwest
 
 pub struct ComicVineClient {
 	client: ClientWithMiddleware,
@@ -48,8 +47,21 @@ impl ComicVineClient {
 			))
 			.build()
 			.expect("Failed to build ComicVine HTTP client"); // this should never really happen
+		let with_retry = build_client_with_retry(inner, RetryClientConfig::default());
+
+		let with_cache = ClientBuilder::from_client(with_retry)
+			.with(
+				// the rec in their api docs is to cache responses becaues of the low rate limit
+				Cache(HttpCache {
+					mode: CacheMode::Default,
+					manager: MokaManager::default(),
+					options: HttpCacheOptions::default(),
+				}),
+			)
+			.build();
+
 		Self {
-			client: build_client_with_retry(inner, RetryClientConfig::default()),
+			client: with_cache,
 			api_key,
 			rate_limiter: RateLimiter::new(
 				rate_limit.unwrap_or(COMIC_VINE_DEFAULT_RATE_LIMIT),
