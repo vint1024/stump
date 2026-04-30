@@ -868,14 +868,14 @@
 				"strategies": {
 					"FILL_GAPS": "Lücken füllen",
 					"PREFER_EXTERNAL": "Bevorzuge Extern",
-					"PREFER_EXTERNAL_AND_MERGE_LISTS": "Prefer external and merge lists",
-					"FILL_AND_MERGE_LISTS": "Fill and merge lists"
+					"PREFER_EXTERNAL_AND_MERGE_LISTS": "Bevorzuge Externe und vereine Listen",
+					"FILL_AND_MERGE_LISTS": "Fülle und vereine Listen"
 				}
 			},
 			"fieldAction": {
-				"keepCurrent": "Keep current",
-				"takeExternal": "Take external",
-				"mergeLists": "Merge lists",
+				"keepCurrent": "Akutelles behalten",
+				"takeExternal": "Externes nehmen",
+				"mergeLists": "Listen vereinen",
 				"editManually": "Manuell bearbeiten",
 				"lockField": "Feld sperren",
 				"unlockField": "Feld entsperren",
@@ -893,16 +893,16 @@
 			},
 			"acceptAll": {
 				"label": "Alle akzeptieren",
-				"failed": "Failed to accept all matches",
-				"success": "All pending matches accepted"
+				"failed": "Fehler beim Akzeptieren aller Treffer",
+				"success": "Alle ausstehenden Treffer akzeptiert"
 			},
 			"rejectAll": {
 				"label": "Alle ablehnen",
-				"failed": "Failed to reject all matches",
-				"success": "All pending matches rejected"
+				"failed": "Fehler beim Ablehnen aller Treffer",
+				"success": "Alle ausstehenden Treffer abgelehnt"
 			},
-			"startReview": "Start review",
-			"nothingToReview": "No pending metadata matches to review"
+			"startReview": "Überprüfung starten",
+			"nothingToReview": "Keine ausstehende Metadaten-Treffer zum Überprüfen"
 		}
 	},
 	"seriesOverviewScene": {
@@ -1363,10 +1363,10 @@
 						"password": "Passwort",
 						"activeChangesPrompt": "Du hast ungespeicherte Änderungen",
 						"uselessForm": {
-							"title": "You lack permissions to change these settings",
-							"description": "Contact your administrator if you want to make changes to these settings"
+							"title": "Dir fehlen die Berechtigungen diese Einstellungen zu verändern",
+							"description": "Kontaktiere deinen Administrator, falls du Änderungen an diesen Einstellungen vornehmen möchten"
 						},
-						"insufficientPermission": "You do not have permission to change this"
+						"insufficientPermission": "Du hast keine Berechtigungen um dies zu ändern"
 					},
 					"errors": {
 						"updateFailed": "Beim Aktualisieren deines Profils ist ein Fehler aufgetreten. Bitte versuche es noch einmal."
@@ -1438,7 +1438,7 @@
 				"thumbnailRatioSelect": {
 					"label": "Vorschaubildverhältnis",
 					"description": "Das Seitenverhältnis für Vorschaubilder",
-					"defaultSuffix": "Default"
+					"defaultSuffix": "Standard"
 				},
 				"thumbnailPlaceholder": {
 					"label": "Vorschaubild-Platzhalter",
@@ -1516,7 +1516,7 @@
 					"description": "Stump wendet eine Maximalbreite auf das Ansichtsfenster an. Diese Einstellung erlaubt dir das Limit zu verändern oder ganz zu entfernen",
 					"tooltip": "Diese Einstellung ist derzeit nicht unterstützt, wenn die primäre Navigation auf Seitenleiste eingestellt ist",
 					"options": {
-						"noLimit": "No limit"
+						"noLimit": "Unbegrenzt"
 					}
 				},
 				"additionalPreferences": {
@@ -1883,17 +1883,17 @@
 				"scheduling": {
 					"title": "Geplante Jobs",
 					"description": "Einige Jobs können so konfiguriert werden, dass sie automatisch nach einem Zeitplan ausgeführt werden",
-					"restartRequiredTitle": "Restart required",
-					"restartRequired": "Changes to this configuration will take effect after a server restart",
-					"newScheduledJob": "New scheduled job",
+					"restartRequiredTitle": "Neustart erforderlich",
+					"restartRequired": "Änderungen an dieser Konfiguration werden nach einem Neustart des Servers wirksam",
+					"newScheduledJob": "Neuer geplanter Job",
 					"deleteScheduledJob": {
-						"title": "Delete scheduled job",
-						"description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+						"title": "Geplanten Job löschen",
+						"description": "Bist du sicher, dass du \"{{name}}\" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
 						"confirm": "Löschen"
 					},
 					"dialog": {
-						"titleCreate": "New scheduled job",
-						"titleEdit": "Edit scheduled job",
+						"titleCreate": "Neuer geplanter Job",
+						"titleEdit": "Bearbeite geplanten Job",
 						"cancel": "Abbrechen",
 						"create": "Erstellen",
 						"saveChanges": "Änderungen speichern"
@@ -1920,14 +1920,14 @@
 						"kind": {
 							"label": "Jobtyp",
 							"libraryScan": "Bibliotheksscan",
-							"metadataRetry": "Metadata Retry"
+							"metadataRetry": "Metadaten erneut versuchen"
 						},
 						"libraryIds": {
 							"label": "Zu scannende Bibliotheken",
 							"description": "Leer lassen, um alle Bibliotheken zu durchsuchen"
 						},
 						"statuses": {
-							"label": "Statuses to retry",
+							"label": "Status zum wiederholen",
 							"description": "Which metadata fetch statuses should be retried",
 							"rateLimited": "Anfragerate begrenzt",
 							"failed": "Fehlgeschlagen"
@@ -2304,7 +2304,7 @@
 			"addProvider": "Add provider",
 			"noProviders": "No providers configured yet. Add one to get started",
 			"providers": {
-				"title": "Providers",
+				"title": "Anbieter",
 				"description": "Configure external metadata providers to fetch and enrich your library data"
 			},
 			"providerForm": {
@@ -2323,7 +2323,7 @@
 					"description": "Das Datum, an dem das API-Token ablaufen wird (optional)"
 				},
 				"enableProvider": {
-					"label": "Enable provider",
+					"label": "Anbieter aktivieren",
 					"description": "It will be used for fetching if enabled"
 				},
 				"autoApplyConfig": {
@@ -2341,21 +2341,21 @@
 						"options": {
 							"FILL_GAPS": "Accept missing fields",
 							"FILL_AND_MERGE_LISTS": "Accept missing fields and merge lists",
-							"PREFER_EXTERNAL": "Prefer external data"
+							"PREFER_EXTERNAL": "Bevorzuge externe Daten"
 						}
 					}
 				}
 			},
-			"providerEnabled": "This provider is enabled",
-			"providerDisabled": "This provider is disabled",
-			"providerTokenExpiresSoon": "This provider's token will expire soon",
+			"providerEnabled": "Dieser Anbieter ist aktiviert",
+			"providerDisabled": "Dieser Anbieter ist deaktiviert",
+			"providerTokenExpiresSoon": "Der Token dieses Anbieters läuft bald ab",
 			"autoApplyOn": "Auto-apply on",
 			"autoApplyOff": "Auto-apply off",
 			"editDialog": {
-				"tooltip": "Edit provider"
+				"tooltip": "Anbieter bearbeiten"
 			},
 			"deleteDialog": {
-				"title": "Delete provider",
+				"title": "Anbieter löschen",
 				"description": "Are you sure you want to delete {{providerName}}? This action cannot be undone."
 			}
 		},
@@ -2599,16 +2599,16 @@
 			"description": "Erlaubt dem Benutzer den Zugriff auf Funktionen der intelligenten Listen, inklusive Erstellung und Verwaltung von intelligenten Listen"
 		},
 		"CHANGE_PASSWORD": {
-			"label": "Change password",
-			"description": "Allows the user to change their own password"
+			"label": "Passwort ändern",
+			"description": "Erlaubt dem Benutzer sein eigenes Passwort zu ändern"
 		},
 		"CHANGE_USERNAME": {
-			"label": "Change username",
-			"description": "Allows the user to change their own username"
+			"label": "Benutzername ändern",
+			"description": "Erlaubt dem Benutzer seinen eigenen Benutzernamen zu ändern"
 		},
 		"CHANGE_AVATAR": {
-			"label": "Change avatar",
-			"description": "Allows the user to change their own avatar"
+			"label": "Avatar ändern",
+			"description": "Erlaubt dem Benutzer seinen eigenen Avatar zu ändern"
 		},
 		"CREATE_BOOK_CLUB": {
 			"label": "Buchclubs erstellen",
@@ -2793,9 +2793,9 @@
 			"cancel": "Abbrechen",
 			"chapter": "Kapitel",
 			"clear": "Löschen",
-			"completed": "Completed",
+			"completed": "Beendet",
 			"confirm": "Bestätigen",
-			"content": "Content",
+			"content": "Inhalt",
 			"details": "Details",
 			"delete": "Löschen",
 			"downloads": "Downloads",
@@ -2803,9 +2803,9 @@
 			"enabled": "Aktiviert",
 			"enable": "Aktivieren",
 			"error": "Fehler",
-			"grid": "Grid",
-			"list": "List",
-			"lastCompleted": "Last Completed",
+			"grid": "Raster",
+			"list": "Liste",
+			"lastCompleted": "Zuletzt beendet",
 			"name": "Name",
 			"none": "Keine",
 			"options": "Optionen",
@@ -2943,7 +2943,7 @@
 				"preferNativePdf": "Native PDF bevorzugen",
 				"preferMinimalReader": "Minimalen Leser bevorzugen",
 				"disableDismissGesture": "Deaktiviere Zurück-Geste",
-				"incognitoReading": "Incognito Reading"
+				"incognitoReading": "Inkognito lesen"
 			},
 			"stump": {
 				"label": "Stump",
@@ -2951,7 +2951,7 @@
 				"bookClubsEnabled": "Buchclubfunktionen"
 			},
 			"autoSyncLocalData": "Lokale Daten automatisch synchronisieren",
-			"lowercaseTranslation": "Lowercase Labels",
+			"lowercaseTranslation": "Kleinbuchstaben-Labels",
 			"management": {
 				"label": "Verwaltung",
 				"dataUsage": {
@@ -2979,7 +2979,7 @@
 			"debug": {
 				"label": "Debug",
 				"clearCache": {
-					"label": "Clear Cache",
+					"label": "Cache Löschen",
 					"memory": {
 						"button": "RAM",
 						"success": "RAM-Cache geleert"
@@ -3029,8 +3029,8 @@
 			}
 		},
 		"readerSettings": {
-			"title": "Readereinstellungen",
-			"overrideGlobalSettings": "Override global settings",
+			"title": "Bild-Readereinstellungen",
+			"overrideGlobalSettings": "Globale Einstellungen überschreiben",
 			"sections": {
 				"mode": "Modus",
 				"imageOptions": "Bildoptionen",
@@ -3079,17 +3079,17 @@
 				}
 			},
 			"readingTimer": {
-				"label": "Reading Timer",
-				"resetTimer": "Reset Timer"
+				"label": "Lesezeit",
+				"resetTimer": "Zeit Zurücksetzen"
 			},
-			"allSettings": "All Settings"
+			"allSettings": "Alle Einstellungen"
 		},
 		"epubSettings": {
-			"title": "Epub Reader Settings",
-			"typeface": "Typeface",
-			"fontSize": "Font Size",
+			"title": "Epub-Readereinstellungen",
+			"typeface": "Schriftart",
+			"fontSize": "Schriftgröße",
 			"fontWeight": {
-				"label": "Font Weight",
+				"label": "Schriftstärke",
 				"options": {
 					"light": "Dünn",
 					"normal": "Normal",
@@ -3097,33 +3097,33 @@
 					"bold": "Fett"
 				}
 			},
-			"textNormalization": "Text Normalization",
-			"verticalText": "Vertical Text",
+			"textNormalization": "Textnormalisierung",
+			"verticalText": "Vertikaler Text",
 			"readingDirection": {
-				"label": "Reading Direction",
+				"label": "Leserichtung",
 				"options": {
-					"rtl": "Right to left",
-					"ltr": "Left to right"
+					"rtl": "Rechts nach links",
+					"ltr": "Links nach rechts"
 				}
 			},
 			"columns": {
-				"label": "Columns",
+				"label": "Spalten",
 				"options": {
 					"auto": "Auto",
-					"single": "Single",
-					"double": "Double"
+					"single": "Einzeln",
+					"double": "Doppel"
 				}
 			},
-			"pageMargins": "Page Margins",
+			"pageMargins": "Seitenränder",
 			"imageFilter": {
-				"label": "Image Filter",
+				"label": "Bildfilter",
 				"options": {
 					"none": "Keine",
 					"darken": "Verdunkeln",
-					"invert": "Invert"
+					"invert": "Invertieren"
 				}
 			},
-			"publisherStyles": "Publisher Styles",
+			"publisherStyles": "Verlagsstil",
 			"textAlignment": {
 				"label": "Textausrichtung",
 				"options": {
@@ -3134,31 +3134,31 @@
 					"justify": "Blocksatz"
 				}
 			},
-			"typeScale": "Type Scale",
-			"lineHeight": "Line Height",
-			"paragraphIndent": "Paragraph Indent",
-			"paragraphSpacing": "Paragraph Spacing",
-			"wordSpacing": "Word Spacing",
-			"letterSpacing": "Letter Spacing",
-			"hyphens": "Hyphens",
-			"ligatures": "Ligatures",
+			"typeScale": "Schriftgröße",
+			"lineHeight": "Zeilenhöhe",
+			"paragraphIndent": "Absatzeinzug",
+			"paragraphSpacing": "Absatzabstand",
+			"wordSpacing": "Wortabstand",
+			"letterSpacing": "Zeichenabstand",
+			"hyphens": "Bindestriche",
+			"ligatures": "Ligaturen",
 			"customizeTheme": {
-				"placeholder": "Theme name",
-				"background": "Background",
+				"placeholder": "Designname",
+				"background": "Hintergrund",
 				"text": "Text",
-				"highlight": "Highlight",
+				"highlight": "Markieren",
 				"premadeThemes": "Vorgefertigte Designs"
 			}
 		},
 		"libraryType": {
-			"BOOK": "Books",
+			"BOOK": "Bücher",
 			"COMIC": "Comics",
 			"LIGHT_NOVEL": "Light Novels",
 			"MANGA": "Manga",
-			"MANHWA": "Manhwa",
-			"MIXED": "Mixed",
+			"MANHWA": "Manwha",
+			"MIXED": "Gemixt",
 			"WEBTOON": "Webtoons",
-			"WEB_NOVEL": "Web Novels"
+			"WEB_NOVEL": "Webromane"
 		},
 		"savedServerActions": {
 			"clearCache": "Cache leeren",
@@ -3172,31 +3172,31 @@
 			}
 		},
 		"filtering": {
-			"notStarted": "Not Started",
-			"currentlyReading": "Currently Reading",
-			"finished": "Finished"
+			"notStarted": "Nicht begonnen",
+			"currentlyReading": "Derzeit am Lesen",
+			"finished": "Beendet"
 		},
 		"sorting": {
-			"labelEllipsis": "Sort By...",
+			"labelEllipsis": "Sortieren nach...",
 			"sortField": {
 				"NAME": "Name",
-				"ADDED_AT": "Date Added",
-				"CREATED_AT": "Date Added",
-				"NUMBER": "Series Position",
-				"SERIES": "Series",
-				"YEAR": "Year Published"
+				"ADDED_AT": "Datum Hinzugefügt",
+				"CREATED_AT": "Datum Hinzugefügt",
+				"NUMBER": "Serienposition",
+				"SERIES": "Serien",
+				"YEAR": "Jahr Veröffentlicht"
 			},
 			"sortDirection": {
-				"ASC": "Ascending",
-				"DESC": "Descending"
+				"ASC": "Aufsteigend",
+				"DESC": "Absteigend"
 			},
 			"sortDirectionString": {
 				"ASC": "A → Z",
 				"DESC": "Z → A"
 			},
 			"sortDirectionDate": {
-				"ASC": "Oldest First",
-				"DESC": "Newest First"
+				"ASC": "Älteste Zuerst",
+				"DESC": "Neueste Zuerst"
 			},
 			"sortDirectionNumber": {
 				"ASC": "1 → 10",
