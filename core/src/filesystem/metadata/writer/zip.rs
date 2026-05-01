@@ -8,6 +8,8 @@ use zip::{result::ZipError, write::SimpleFileOptions, ZipArchive, ZipWriter};
 
 use crate::filesystem::{media::zip::ZipProcessor, FileError, FileParts, PathUtils};
 
+// TODO: doc comments
+
 pub fn write_into_zip<P: AsRef<Path>>(
 	book_path: P,
 	metadata_buf: Vec<u8>,

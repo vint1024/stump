@@ -122,6 +122,15 @@ impl FileProcessor for RarProcessor {
 	}
 
 	fn process_metadata(path: &str) -> Result<Option<ProcessedMediaMetadata>, FileError> {
+		if let Some(buf) = Self::process_metadata_raw(path)? {
+			let content_str = std::str::from_utf8(&buf)?;
+			Ok(metadata_from_buf(content_str))
+		} else {
+			Ok(None)
+		}
+	}
+
+	fn process_metadata_raw(path: &str) -> Result<Option<Vec<u8>>, FileError> {
 		let mut archive = RarProcessor::open_for_processing(path)?;
 		let mut metadata_buf = None;
 
@@ -147,16 +156,7 @@ impl FileProcessor for RarProcessor {
 			}
 		}
 
-		if let Some(buf) = metadata_buf {
-			let content_str = std::str::from_utf8(&buf)?;
-			Ok(metadata_from_buf(content_str))
-		} else {
-			Ok(None)
-		}
-	}
-
-	fn process_metadata_raw(path: &str) -> Result<Option<Vec<u8>>, FileError> {
-		unimplemented!()
+		Ok(metadata_buf)
 	}
 
 	fn process(

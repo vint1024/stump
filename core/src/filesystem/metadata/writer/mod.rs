@@ -49,7 +49,6 @@ fn write_metadata_blocking<P: AsRef<Path>>(
 
 	match extension.to_lowercase().as_str() {
 		"epub" | "zip" | "cbz" => write_into_zip(book_path, metadata_buf),
-		"rar" | "cbr" => todo!(),
 		ext => Err(FileError::UnsupportedFileType(format!(
 			"File with extension {ext} is not supported for this operation"
 		))),
