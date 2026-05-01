@@ -94,8 +94,10 @@ impl FileProcessor for PdfProcessor {
 		Ok(file.trailer.info_dict.map(ProcessedMediaMetadata::from))
 	}
 
-	fn process_metadata_raw(path: &str) -> Result<Option<Vec<u8>>, FileError> {
-		unimplemented!()
+	fn process_metadata_raw(_: &str) -> Result<Option<Vec<u8>>, FileError> {
+		Err(FileError::UnsupportedFileType(
+			"PDF does not support raw metadata processing".to_string(),
+		))
 	}
 
 	fn process(

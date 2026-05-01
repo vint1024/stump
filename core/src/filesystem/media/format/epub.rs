@@ -127,6 +127,28 @@ impl FileProcessor for EpubProcessor {
 		Ok(Some(embedded_metadata))
 	}
 
+	// it is standard to have:
+	// book.epub(internally -> package.opf)
+	// AND/OR
+	// book.epub(internally -> package.opf), book.opf (externally, adjacent to file)
+	// problem: which fucking one do we use?
+	// solution (options):
+	// 1. config -> prefer internal vs prefer external opf
+	// 2. assume external means some metadata tool was used and so take that as source of truth
+	// for first pass, let's go route 2 and if people _really_ want a config it can be refactored accordingly?
+	//
+	// if brainstorming option 1:
+	//
+	// let (metadata_buf, is_external) = get_the_metadata()
+	//
+	// if config.prefer_internal_opf and !is_external:
+	//    write internal
+	//
+	// if config.prefer_external and is_external:
+	//    write external... externally? internally?
+	//
+	// ^ make a determination later, focus on XML handling first
+
 	fn process_metadata_raw(path: &str) -> Result<Option<Vec<u8>>, FileError> {
 		unimplemented!()
 	}

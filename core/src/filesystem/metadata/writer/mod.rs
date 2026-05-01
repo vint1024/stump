@@ -1,15 +1,60 @@
 use std::path::Path;
 
+use models::entity::{media, tag};
+use sea_orm::ConnectionTrait;
 use tokio::{sync::oneshot, task::spawn_blocking};
 
-use crate::filesystem::{
-	metadata::writer::zip::write_into_zip, FileError, FileParts, PathUtils,
+use crate::{
+	filesystem::{
+		metadata::{spec::comic_info::generate_comic_info, writer::zip::write_into_zip},
+		FileError, FileParts, PathUtils,
+	},
+	CoreError,
 };
 
-mod comic_info;
 mod zip;
 
-pub async fn write_metadata<P: AsRef<Path>>(
+pub async fn update_embedded_metadata<C>(
+	conn: &C,
+	book_id: String,
+) -> Result<(), CoreError>
+where
+	C: ConnectionTrait,
+{
+	let media::ModelWithMetadata { media, metadata } =
+		media::ModelWithMetadata::find_by_id(book_id.clone())
+			.into_model::<media::ModelWithMetadata>()
+			.one(conn)
+			.await?
+			.ok_or(CoreError::NotFound(format!(
+				"Book with ID {book_id} not found"
+			)))?;
+
+	let Some(metadata) = metadata else {
+		return Err(CoreError::InternalError(
+			"This book does not have any existing metadata to writeback".to_string(),
+		));
+	};
+
+	let book_path = media.path.clone();
+	if let Err(e) = tokio::fs::metadata(&book_path).await {
+		tracing::error!(error = ?e, "Could not find book on disk");
+		return Err(e.into());
+	}
+
+	let existing_tags = tag::Entity::find_for_media_id(&media.id)
+		.all(conn)
+		.await?
+		.into_iter()
+		.map(|tag| tag.name)
+		.collect();
+
+	let metadata_buf = generate_comic_info(&book_path, metadata, existing_tags).await?;
+
+	Ok(write_metadata(book_path, metadata_buf).await?)
+}
+
+async fn write_metadata<P: AsRef<Path>>(
 	book_path: P,
 	metadata_buf: Vec<u8>,
 ) -> Result<(), FileError> {

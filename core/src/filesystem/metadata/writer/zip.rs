@@ -8,8 +8,10 @@ use zip::{result::ZipError, write::SimpleFileOptions, ZipArchive, ZipWriter};
 
 use crate::filesystem::{media::zip::ZipProcessor, FileError, FileParts, PathUtils};
 
-// TODO: doc comments
-
+/// A function which writes the `metadata_buf` into a new file at `book_path`. The metadata_buf is assumed to
+/// be the correct format per the file's corresponding metadata specification.
+///
+/// Warning: This will overwrite the file at `book_path`
 pub fn write_into_zip<P: AsRef<Path>>(
 	book_path: P,
 	metadata_buf: Vec<u8>,
@@ -41,7 +43,10 @@ pub fn write_into_zip<P: AsRef<Path>>(
 	Ok(())
 }
 
-// ty <3 -> https://github.com/PaulmannLighting/smik-jar-tool/tree/main
+/// A trait that provides extra functionality for overwriting a file inside of a ZIP archive in place
+/// without needing to decompress any additional contents.
+///
+/// Derived from https://github.com/PaulmannLighting/smik-jar-tool/tree/main (ty <3)
 pub trait UpdateMetadata {
 	/// Copies the specified the files from the given [`ZipArchive`] into `self`,
 	/// except for the files listed in `exclude`. The exclusion only applies to the
@@ -136,9 +141,6 @@ where
 		Ok(())
 	}
 }
-
-// TODO: this feels useful, maybe use it?
-// https://github.com/PaulmannLighting/smik-jar-tool/blob/main/smik-jar-lib/src/by_path.rs
 
 #[cfg(test)]
 mod tests {

@@ -1,16 +1,15 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+	collections::{HashMap, HashSet},
+	path::Path,
+};
 
-use models::entity::{media, media_metadata, tag};
+use models::entity::media_metadata;
 use quick_xml::{
 	events::{BytesEnd, BytesStart, BytesText, Event},
 	Reader, Writer,
 };
-use sea_orm::ConnectionTrait;
 
 use crate::{filesystem::media::process_metadata_raw_async, CoreError};
-
-// TODO(organization): unimportant, but figure it might be good to move comic_info.rs and future ebook_opf.rs or w/e
-// up the tree (since no actual writing is being done) and rethink the structure. for now, though, just trucking along
 
 const SHELL_COMIC_INFO: &str = r#"<?xml version="1.0"?>
 <ComicInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -24,67 +23,20 @@ const HTML_CONTENT_TAGS: [&str; 1] = ["Summary"];
 /// metadata from the database:
 /// 1. Fetch the corresponding book
 /// 2. Inline replace metadata fields with database fields
-/// 3. Write updated metadata file into corresponding book
-pub async fn write_comic_info<C>(conn: &C, book_id: String) -> Result<(), CoreError>
-where
-	C: ConnectionTrait,
-{
-	let media::ModelWithMetadata { media, metadata } =
-		media::ModelWithMetadata::find_by_id(book_id.clone())
-			.into_model::<media::ModelWithMetadata>()
-			.one(conn)
-			.await?
-			.ok_or(CoreError::NotFound(format!(
-				"Book with ID {book_id} not found"
-			)))?;
-
-	let Some(metadata) = metadata else {
-		return Err(CoreError::InternalError(
-			"This book does not have any existing metadata to writeback".to_string(),
-		));
-	};
-
-	let existing_tags = tag::Entity::find_for_media_id(&media.id)
-		.all(conn)
-		.await?
-		.into_iter()
-		.map(|tag| tag.name)
-		.collect();
-
-	let file_path = media.path.clone();
-	if let Err(e) = tokio::fs::metadata(&file_path).await {
-		tracing::error!(error = ?e, "Could not find book on disk");
-		return Err(e.into());
-	}
-
-	let existing_xml_bytes = process_metadata_raw_async(file_path)
+/// It will return the newly generated XML as bytes
+pub async fn generate_comic_info<P: AsRef<Path>>(
+	book_path: P,
+	metadata: media_metadata::Model,
+	existing_tags: Vec<String>,
+) -> Result<Vec<u8>, CoreError> {
+	let existing_xml_bytes = process_metadata_raw_async(book_path)
 		.await?
 		.unwrap_or_else(|| SHELL_COMIC_INFO.to_string().into_bytes().to_vec());
 	let xml_string = String::from_utf8_lossy(&existing_xml_bytes).to_string();
 
-	let updated_metadata = merge_metadata_into_xml(metadata, existing_tags, xml_string);
+	let updated_metadata = merge_metadata_into_xml(metadata, existing_tags, xml_string)?;
 
-	// TODO: write updated_metadata xml as ComicInfo.xml in file, see TODO remark in process.rs re: trait fns
-	//
-	// 1. implement ebook xml stuff
-	// 2. implement writing operations:
-	//
-	// zip + rar + epub are all basically the same process, just rar is a diff compression alg
-	// 1. find the existing metadata file (or it might not exist)
-	// 2. replace the contents with updated ones (or write it) in place if possible (i.e., without unzip)
-	//
-	// part of the work:
-	// - does zip support writes? https://crates.io/crates/zip
-	//      - it should, but need to learn
-	//      - https://github.com/zip-rs/zip2/blob/master/examples/write_sample.rs
-	// - can we use ^ for epubs? prolly, it is a zip
-	// - does rar support writes? https://crates.io/crates/unrar
-	//
-	// decisions:
-	// functional? i.e. write_zip_comic_info, write_rar_comic_info, etc. maybe a  write.rs? utils.rs?
-	// trait based? e.g., trait MetadataWriter? put the trait in mod.rs
-
-	unimplemented!()
+	Ok(updated_metadata.as_bytes().to_vec())
 }
 
 type XmlString = String;
