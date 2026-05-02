@@ -56,6 +56,8 @@ export default function ImageBasedReader({ initialPage, onPastEndReached }: Prop
 	const insets = useSafeAreaInsets()
 
 	const [zoomResetCounter, setZoomResetCounter] = useState(0)
+	const [allowPagerScroll, setAllowPagerScroll] = useState(true)
+	const [visibleFlashListIndex, setVisibleFlashListIndex] = useState<number | null>(null)
 
 	const deviceOrientation = useMemo(
 		() => (width > height ? 'landscape' : 'portrait'),
@@ -129,12 +131,14 @@ export default function ImageBasedReader({ initialPage, onPastEndReached }: Prop
 				renderItem={({ item, index }) => (
 					<PageSet
 						flashListIndex={index}
+						isVisible={visibleFlashListIndex === index}
 						pageIndexes={item}
 						dimensions={item.map((i: number) => imageSizes[i]).filter((i) => i != null)}
 						maxWidth={width}
 						maxHeight={height}
 						onPastEndReached={onPastEndReached}
 						zoomResetCounter={zoomResetCounter}
+						onAllowPagerScrollChange={setAllowPagerScroll}
 					/>
 				)}
 				contentContainerStyle={
@@ -142,22 +146,26 @@ export default function ImageBasedReader({ initialPage, onPastEndReached }: Prop
 				}
 				horizontal={!isVertical}
 				pagingEnabled={readingMode === ReadingMode.Paged}
+				// when a page is zoomed we disable the pager to avoid funky interactions btw the zoom pan and pager
+				// https://discord.com/channels/972593831172272148/1499284646175965194/1499284646175965194
+				scrollEnabled={allowPagerScroll}
 				drawDistance={isVertical ? height : width}
 				viewabilityConfig={{ viewAreaCoveragePercentThreshold: 20 }}
 				onViewableItemsChanged={({ viewableItems }) => {
 					const firstVisibleItem = viewableItems.filter(({ isViewable }) => isViewable).at(0)
 					if (!firstVisibleItem) return
 
-					const { item } = firstVisibleItem
+					const { item, index } = firstVisibleItem
+
+					if (index != null) {
+						setVisibleFlashListIndex(index)
+					}
 
 					const itemIdx = item[item.length - 1]
 					if (itemIdx == null) return
 
 					const page = itemIdx + 1
-
-					if (firstVisibleItem) {
-						handlePageChanged(page)
-					}
+					handlePageChanged(page)
 				}}
 				initialScrollIndex={
 					// If we change between 'vertical' and 'horizontal' key, we want the current page instead
@@ -174,23 +182,27 @@ export default function ImageBasedReader({ initialPage, onPastEndReached }: Prop
 
 type PageSetProps = {
 	flashListIndex: number
+	isVisible: boolean
 	pageIndexes: PageSetIndexes
 	dimensions: ImageBasedBookPageRef[]
 	maxWidth: number
 	maxHeight: number
 	onPastEndReached?: () => void
 	zoomResetCounter: number
+	onAllowPagerScrollChange: (allow: boolean) => void
 }
 
 const PageSet = React.memo(
 	({
 		flashListIndex,
+		isVisible,
 		pageIndexes,
 		dimensions,
 		maxWidth,
 		maxHeight,
 		onPastEndReached,
 		zoomResetCounter,
+		onAllowPagerScrollChange,
 	}: PageSetProps) => {
 		const {
 			book,
@@ -216,9 +228,26 @@ const PageSet = React.memo(
 
 		const zoomableRef = useRef<ZoomableRef>(null)
 
+		const setAllowPagerIfChanged = useCallback(
+			(allow: boolean) => {
+				if (!isVisible) return
+				onAllowPagerScrollChange(allow)
+			},
+			[isVisible, onAllowPagerScrollChange],
+		)
+
+		// when the zoom counter changes, reset the zoom
 		useEffect(() => {
 			zoomableRef.current?.reset()
-		}, [zoomResetCounter])
+			setAllowPagerIfChanged(true)
+		}, [zoomResetCounter, setAllowPagerIfChanged])
+
+		// when the page is no longer visible, reset the zoom
+		useEffect(() => {
+			if (!isVisible) {
+				zoomableRef.current?.reset()
+			}
+		}, [isVisible])
 
 		const onCheckForNavigationTaps = useCallback(
 			(x: number) => {
@@ -294,8 +323,10 @@ const PageSet = React.memo(
 		const isRtl = readingDirection === ReadingDirection.Rtl
 		const directionRespectingPageIndexes = isRtl ? [...pageIndexes].reverse() : pageIndexes
 
+		const checkScale = () => setAllowPagerIfChanged(scale.value <= 1.01)
+
 		return (
-			<View style={isRtl && { transform: [{ scaleX: -1 }] }}>
+			<View style={[isRtl && { transform: [{ scaleX: -1 }] }, { overflow: 'hidden' }]}>
 				<Zoomable
 					ref={zoomableRef}
 					minScale={1}
@@ -309,9 +340,13 @@ const PageSet = React.memo(
 						if (zoomType === 'ZOOM_OUT') {
 							setTimeout(() => {
 								zoomableRef.current?.reset()
+								setAllowPagerIfChanged(true)
 							}, 0)
 						}
 					}}
+					onProgrammaticZoom={checkScale}
+					onPanEnd={checkScale}
+					onPinchEnd={checkScale}
 				>
 					<View
 						className="relative flex-row items-center justify-center"
