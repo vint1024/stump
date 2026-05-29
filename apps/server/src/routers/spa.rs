@@ -9,7 +9,9 @@ use axum::{
 	routing::get,
 	Router,
 };
+use tower::ServiceBuilder;
 use tower_http::services::{ServeDir, ServeFile};
+use tower_http::set_header::SetResponseHeaderLayer;
 
 use crate::{
 	config::state::AppState,
@@ -21,17 +23,55 @@ const SW: &str = "/sw.js";
 const INDEX: &str = "/";
 const INDEX_HTML: &str = "/index.html";
 const ASSETS: &str = "/assets";
+const DIST: &str = "/dist";
 
 pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
 	let dist_path = Path::new(&app_state.config.client_dir);
+	let static_assets = ServiceBuilder::new()
+		.layer(SetResponseHeaderLayer::if_not_present(
+			header::VARY,
+			HeaderValue::from_static("Accept-Encoding"),
+		))
+		.layer(SetResponseHeaderLayer::overriding(
+			header::CACHE_CONTROL,
+			HeaderValue::from_static("public, max-age=31536000, immutable, no-transform"),
+		))
+		.service(
+			ServeDir::new(dist_path.join("assets"))
+				.precompressed_br()
+				.precompressed_gzip(),
+		);
+
+	let dist_files = ServiceBuilder::new()
+		.layer(SetResponseHeaderLayer::if_not_present(
+			header::VARY,
+			HeaderValue::from_static("Accept-Encoding"),
+		))
+		.layer(SetResponseHeaderLayer::if_not_present(
+			header::CACHE_CONTROL,
+			HeaderValue::from_static("no-cache"),
+		))
+		.service(
+			ServeDir::new(dist_path)
+				.precompressed_br()
+				.precompressed_gzip(),
+		);
+
+	let spa_fallback = ServiceBuilder::new()
+		.layer(SetResponseHeaderLayer::if_not_present(
+			header::CACHE_CONTROL,
+			HeaderValue::from_static("no-cache"),
+		))
+		.service(ServeFile::new(dist_path.join("index.html")));
 
 	Router::new()
 		.route(INDEX, get(index_html))
 		.route(INDEX_HTML, get(index_html))
 		.route(FAVICON, get(favicon))
 		.route(SW, get(serve_sw))
-		.nest_service(ASSETS, ServeDir::new(dist_path.join("assets")))
-		.fallback(index_html)
+		.nest_service(ASSETS, static_assets)
+		.nest_service(DIST, dist_files)
+		.fallback_service(spa_fallback)
 }
 
 pub(crate) fn relative_favicon_path() -> String {
