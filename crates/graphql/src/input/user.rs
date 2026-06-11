@@ -1,4 +1,5 @@
 use async_graphql::InputObject;
+use models::shared::enums::{ContentRuleDimension, ContentRuleMode};
 use models::shared::{
 	arrangement::ArrangementSection,
 	enums::{InterfaceLayout, SupportedFont, ThumbnailPlaceholderStyle, UserPermission},
@@ -7,6 +8,15 @@ use models::shared::{
 #[derive(InputObject)]
 pub struct AgeRestrictionInput {
 	pub age: i32,
+	pub restrict_on_unset: bool,
+}
+
+#[derive(InputObject, Debug)]
+pub struct ContentAccessRuleInput {
+	pub dimension: ContentRuleDimension,
+	pub mode: ContentRuleMode,
+	pub values: Vec<String>,
+	#[graphql(default)]
 	pub restrict_on_unset: bool,
 }
 

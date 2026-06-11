@@ -1,4 +1,7 @@
-use models::entity::user::{AuthUser, LoginUser};
+use models::entity::{
+	content_access_rule,
+	user::{AuthUser, LoginUser},
+};
 use sea_orm::DatabaseConnection;
 use stump_core::config::StumpConfig;
 use tower_sessions::Session;
@@ -47,6 +50,18 @@ pub fn decode_base64_credentials(
 	}
 }
 
+
+/// Load the user's content access rules so every downstream query can filter
+/// restricted content. Attached at authentication time, like the age restriction
+pub async fn attach_content_rules(
+	conn: &DatabaseConnection,
+	mut user: AuthUser,
+) -> Result<AuthUser, APIError> {
+	user.content_rules =
+		content_access_rule::Entity::fetch_for_user(conn, &user.id).await?;
+	Ok(user)
+}
+
 pub async fn fetch_session_user(
 	session: &Session,
 	conn: &DatabaseConnection,
@@ -62,7 +77,7 @@ pub async fn fetch_session_user(
 			return Err(APIError::AccountLocked);
 		}
 
-		Ok(Some(user.into()))
+		Ok(Some(attach_content_rules(conn, user.into()).await?))
 	} else {
 		tracing::debug!("No user found in session");
 		Ok(None)

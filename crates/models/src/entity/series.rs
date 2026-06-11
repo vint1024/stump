@@ -15,7 +15,7 @@ use crate::{
 	},
 };
 
-use super::{library_exclusion, series_metadata, user::AuthUser};
+use super::{content_access_rule, library_exclusion, series_metadata, user::AuthUser};
 
 // TODO: Properly support soft deletion
 
@@ -70,15 +70,25 @@ impl Entity {
 					age_restriction.restrict_on_unset,
 				)
 			});
+		let content_rules_filter =
+			content_access_rule::series_filter(&user.content_rules);
 
-		Entity::find()
+		let mut query = Entity::find()
 			.filter(Column::DeletedAt.is_null())
 			.filter(Column::LibraryId.not_in_subquery(
 				library_exclusion::Entity::library_hidden_to_user_query(user),
-			))
-			.apply_if(age_restriction_filter, |query, filter| {
-				query.left_join(series_metadata::Entity).filter(filter)
-			})
+			));
+		// Both filters reference series_metadata columns
+		if age_restriction_filter.is_some() || content_rules_filter.is_some() {
+			query = query.left_join(series_metadata::Entity);
+		}
+		if let Some(filter) = age_restriction_filter {
+			query = query.filter(filter);
+		}
+		if let Some(filter) = content_rules_filter {
+			query = query.filter(filter);
+		}
+		query
 	}
 
 	pub fn find_series_ident_for_user_and_id(
@@ -173,11 +183,13 @@ impl ModelWithMetadata {
 
 	pub fn find_for_user(user: &AuthUser) -> Select<Entity> {
 		let select = ModelWithMetadata::find();
+		let select = apply_content_rules_filter(user, select);
 		apply_age_restriction_filter(user, apply_hidden_library_filter(user, select))
 	}
 
 	pub fn find_by_id_for_user(id: String, user: &AuthUser) -> Select<Entity> {
 		let select = ModelWithMetadata::find_by_id(id);
+		let select = apply_content_rules_filter(user, select);
 		apply_age_restriction_filter(user, apply_hidden_library_filter(user, select))
 	}
 }
@@ -197,6 +209,15 @@ fn apply_hidden_library_filter(
 			),
 		)
 		.to_owned()
+}
+
+fn apply_content_rules_filter(user: &AuthUser, select: Select<Entity>) -> Select<Entity> {
+	// Note: the callers join series_metadata, which the filter may reference
+	if let Some(filter) = content_access_rule::series_filter(&user.content_rules) {
+		select.filter(filter)
+	} else {
+		select
+	}
 }
 
 fn apply_age_restriction_filter(

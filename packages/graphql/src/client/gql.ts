@@ -227,7 +227,7 @@ type Documents = {
     "\n\tquery SeriesLibrayLink($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.SeriesLibrayLinkDocument,
     "\n\tquery SeriesBooksScene(\n\t\t$filter: MediaFilterInput!\n\t\t$orderBy: [MediaOrderBy!]!\n\t\t$pagination: Pagination!\n\t) {\n\t\tmedia(filter: $filter, orderBy: $orderBy, pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...BookCard\n\t\t\t\t...BookMetadata\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on OffsetPaginationInfo {\n\t\t\t\t\tcurrentPage\n\t\t\t\t\ttotalPages\n\t\t\t\t\tpageSize\n\t\t\t\t\tpageOffset\n\t\t\t\t\tzeroBased\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.SeriesBooksSceneDocument,
     "\n\tquery MergeSeriesSection($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tid\n\t\t\tlibrary {\n\t\t\t\tid\n\t\t\t}\n\t\t\tmergedSources {\n\t\t\t\tname\n\t\t\t\tpath\n\t\t\t}\n\t\t}\n\t}\n": typeof types.MergeSeriesSectionDocument,
-    "\n\tquery MergeSeriesSectionCandidates($libraryId: String!) {\n\t\tseries(\n\t\t\tfilter: { libraryId: { eq: $libraryId } }\n\t\t\tpagination: { none: { unpaginated: true } }\n\t\t) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tname: resolvedName\n\t\t\t\tpath\n\t\t\t}\n\t\t}\n\t}\n": typeof types.MergeSeriesSectionCandidatesDocument,
+    "\n\tquery MergeSeriesSectionCandidates($libraryId: String!) {\n\t\tseries(filter: { libraryId: { eq: $libraryId } }, pagination: { none: { unpaginated: true } }) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tname: resolvedName\n\t\t\t\tpath\n\t\t\t}\n\t\t}\n\t}\n": typeof types.MergeSeriesSectionCandidatesDocument,
     "\n\tmutation MergeSeriesSectionMerge($targetId: ID!, $sourceIds: [ID!]!) {\n\t\tmergeSeries(targetId: $targetId, sourceIds: $sourceIds) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.MergeSeriesSectionMergeDocument,
     "\n\tmutation MergeSeriesSectionUnmerge($id: ID!) {\n\t\tunmergeSeries(id: $id) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.MergeSeriesSectionUnmergeDocument,
     "\n\tquery SeriesBookGrid($id: String!, $pagination: Pagination) {\n\t\tmedia(filter: { seriesId: { eq: $id } }, pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tthumbnail {\n\t\t\t\t\turl\n\t\t\t\t}\n\t\t\t\tpages\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\tcurrentCursor\n\t\t\t\t\tnextCursor\n\t\t\t\t\tlimit\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.SeriesBookGridDocument,
@@ -292,6 +292,8 @@ type Documents = {
     "\n\tmutation RenameTagModal($id: Int!, $name: String!) {\n\t\trenameTag(id: $id, name: $name) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.RenameTagModalDocument,
     "\n\tquery TagTable {\n\t\ttags {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.TagTableDocument,
     "\n\tquery UserStats {\n\t\tuserCount\n\t\ttopReaders(take: 1) {\n\t\t\tid\n\t\t\tusername\n\t\t\tfinishedReadingSessionsCount\n\t\t}\n\t\tactiveReadingSessionCount\n\t\tfinishedReadingSessionCount\n\t}\n": typeof types.UserStatsDocument,
+    "\n\tquery ContentAccessRulesSection($id: ID!) {\n\t\tuserById(id: $id) {\n\t\t\tid\n\t\t\tcontentAccessRules {\n\t\t\t\tid\n\t\t\t\tdimension\n\t\t\t\tmode\n\t\t\t\tvalues\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t}\n\t}\n": typeof types.ContentAccessRulesSectionDocument,
+    "\n\tmutation ContentAccessRulesSectionSave($userId: ID!, $rules: [ContentAccessRuleInput!]!) {\n\t\tsetUserContentAccessRules(userId: $userId, rules: $rules) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.ContentAccessRulesSectionSaveDocument,
     "\n\tmutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {\n\t\tupdateUser(id: $id, input: $input) {\n\t\t\tid\n\t\t\tusername\n\t\t\tageRestriction {\n\t\t\t\tage\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t\tpermissions\n\t\t\tmaxSessionsAllowed\n\t\t}\n\t}\n": typeof types.CreateOrUpdateUserFormUpdateUserDocument,
     "\n\tmutation CreateOrUpdateUserFormCreateUser($input: CreateUserInput!) {\n\t\tcreateUser(input: $input) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.CreateOrUpdateUserFormCreateUserDocument,
     "\n\tquery CreateUserScene {\n\t\tusers(pagination: { none: { unpaginated: true } }) {\n\t\t\tnodes {\n\t\t\t\tusername\n\t\t\t}\n\t\t}\n\t}\n": typeof types.CreateUserSceneDocument,
@@ -530,7 +532,7 @@ const documents: Documents = {
     "\n\tquery SeriesLibrayLink($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.SeriesLibrayLinkDocument,
     "\n\tquery SeriesBooksScene(\n\t\t$filter: MediaFilterInput!\n\t\t$orderBy: [MediaOrderBy!]!\n\t\t$pagination: Pagination!\n\t) {\n\t\tmedia(filter: $filter, orderBy: $orderBy, pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\t...BookCard\n\t\t\t\t...BookMetadata\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on OffsetPaginationInfo {\n\t\t\t\t\tcurrentPage\n\t\t\t\t\ttotalPages\n\t\t\t\t\tpageSize\n\t\t\t\t\tpageOffset\n\t\t\t\t\tzeroBased\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.SeriesBooksSceneDocument,
     "\n\tquery MergeSeriesSection($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tid\n\t\t\tlibrary {\n\t\t\t\tid\n\t\t\t}\n\t\t\tmergedSources {\n\t\t\t\tname\n\t\t\t\tpath\n\t\t\t}\n\t\t}\n\t}\n": types.MergeSeriesSectionDocument,
-    "\n\tquery MergeSeriesSectionCandidates($libraryId: String!) {\n\t\tseries(\n\t\t\tfilter: { libraryId: { eq: $libraryId } }\n\t\t\tpagination: { none: { unpaginated: true } }\n\t\t) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tname: resolvedName\n\t\t\t\tpath\n\t\t\t}\n\t\t}\n\t}\n": types.MergeSeriesSectionCandidatesDocument,
+    "\n\tquery MergeSeriesSectionCandidates($libraryId: String!) {\n\t\tseries(filter: { libraryId: { eq: $libraryId } }, pagination: { none: { unpaginated: true } }) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tname: resolvedName\n\t\t\t\tpath\n\t\t\t}\n\t\t}\n\t}\n": types.MergeSeriesSectionCandidatesDocument,
     "\n\tmutation MergeSeriesSectionMerge($targetId: ID!, $sourceIds: [ID!]!) {\n\t\tmergeSeries(targetId: $targetId, sourceIds: $sourceIds) {\n\t\t\tid\n\t\t}\n\t}\n": types.MergeSeriesSectionMergeDocument,
     "\n\tmutation MergeSeriesSectionUnmerge($id: ID!) {\n\t\tunmergeSeries(id: $id) {\n\t\t\tid\n\t\t}\n\t}\n": types.MergeSeriesSectionUnmergeDocument,
     "\n\tquery SeriesBookGrid($id: String!, $pagination: Pagination) {\n\t\tmedia(filter: { seriesId: { eq: $id } }, pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tthumbnail {\n\t\t\t\t\turl\n\t\t\t\t}\n\t\t\t\tpages\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\tcurrentCursor\n\t\t\t\t\tnextCursor\n\t\t\t\t\tlimit\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.SeriesBookGridDocument,
@@ -595,6 +597,8 @@ const documents: Documents = {
     "\n\tmutation RenameTagModal($id: Int!, $name: String!) {\n\t\trenameTag(id: $id, name: $name) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.RenameTagModalDocument,
     "\n\tquery TagTable {\n\t\ttags {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.TagTableDocument,
     "\n\tquery UserStats {\n\t\tuserCount\n\t\ttopReaders(take: 1) {\n\t\t\tid\n\t\t\tusername\n\t\t\tfinishedReadingSessionsCount\n\t\t}\n\t\tactiveReadingSessionCount\n\t\tfinishedReadingSessionCount\n\t}\n": types.UserStatsDocument,
+    "\n\tquery ContentAccessRulesSection($id: ID!) {\n\t\tuserById(id: $id) {\n\t\t\tid\n\t\t\tcontentAccessRules {\n\t\t\t\tid\n\t\t\t\tdimension\n\t\t\t\tmode\n\t\t\t\tvalues\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t}\n\t}\n": types.ContentAccessRulesSectionDocument,
+    "\n\tmutation ContentAccessRulesSectionSave($userId: ID!, $rules: [ContentAccessRuleInput!]!) {\n\t\tsetUserContentAccessRules(userId: $userId, rules: $rules) {\n\t\t\tid\n\t\t}\n\t}\n": types.ContentAccessRulesSectionSaveDocument,
     "\n\tmutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {\n\t\tupdateUser(id: $id, input: $input) {\n\t\t\tid\n\t\t\tusername\n\t\t\tageRestriction {\n\t\t\t\tage\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t\tpermissions\n\t\t\tmaxSessionsAllowed\n\t\t}\n\t}\n": types.CreateOrUpdateUserFormUpdateUserDocument,
     "\n\tmutation CreateOrUpdateUserFormCreateUser($input: CreateUserInput!) {\n\t\tcreateUser(input: $input) {\n\t\t\tid\n\t\t}\n\t}\n": types.CreateOrUpdateUserFormCreateUserDocument,
     "\n\tquery CreateUserScene {\n\t\tusers(pagination: { none: { unpaginated: true } }) {\n\t\t\tnodes {\n\t\t\t\tusername\n\t\t\t}\n\t\t}\n\t}\n": types.CreateUserSceneDocument,
@@ -1472,7 +1476,7 @@ export function graphql(source: "\n\tquery MergeSeriesSection($id: ID!) {\n\t\ts
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n\tquery MergeSeriesSectionCandidates($libraryId: String!) {\n\t\tseries(\n\t\t\tfilter: { libraryId: { eq: $libraryId } }\n\t\t\tpagination: { none: { unpaginated: true } }\n\t\t) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tname: resolvedName\n\t\t\t\tpath\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').MergeSeriesSectionCandidatesDocument;
+export function graphql(source: "\n\tquery MergeSeriesSectionCandidates($libraryId: String!) {\n\t\tseries(filter: { libraryId: { eq: $libraryId } }, pagination: { none: { unpaginated: true } }) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tname: resolvedName\n\t\t\t\tpath\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').MergeSeriesSectionCandidatesDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -1729,6 +1733,14 @@ export function graphql(source: "\n\tquery TagTable {\n\t\ttags {\n\t\t\tid\n\t\
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n\tquery UserStats {\n\t\tuserCount\n\t\ttopReaders(take: 1) {\n\t\t\tid\n\t\t\tusername\n\t\t\tfinishedReadingSessionsCount\n\t\t}\n\t\tactiveReadingSessionCount\n\t\tfinishedReadingSessionCount\n\t}\n"): typeof import('./graphql').UserStatsDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tquery ContentAccessRulesSection($id: ID!) {\n\t\tuserById(id: $id) {\n\t\t\tid\n\t\t\tcontentAccessRules {\n\t\t\t\tid\n\t\t\t\tdimension\n\t\t\t\tmode\n\t\t\t\tvalues\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').ContentAccessRulesSectionDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tmutation ContentAccessRulesSectionSave($userId: ID!, $rules: [ContentAccessRuleInput!]!) {\n\t\tsetUserContentAccessRules(userId: $userId, rules: $rules) {\n\t\t\tid\n\t\t}\n\t}\n"): typeof import('./graphql').ContentAccessRulesSectionSaveDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
