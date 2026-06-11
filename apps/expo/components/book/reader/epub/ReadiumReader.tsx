@@ -214,7 +214,9 @@ export default function ReadiumReader({
 
 			const result = await downloadImmediate({
 				...book,
-				url: sdkCtx.sdk.media.downloadURL(book.id),
+				// The read-gated epub file route: reading a book must not require
+				// the DownloadFile permission (the media download URL does)
+				url: sdkCtx.sdk.epub.fileURL(book.id),
 				bookName: book.name,
 				libraryId: book.library?.id,
 				libraryName: book.library?.name,

@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 
 use axum::{
-	extract::{Path, State},
-	http::header,
+	body::Body,
+	extract::{Path, Request, State},
+	http::{header, HeaderMap},
 	middleware,
 	response::IntoResponse,
 	routing::get,
@@ -12,6 +13,7 @@ use graphql::data::AuthContext;
 use models::entity::media;
 use sea_orm::prelude::*;
 use stump_core::filesystem::media::{EpubProcessor, ReadiumManifestGenerator};
+use tower_http::services::ServeFile;
 
 use crate::{
 	config::state::AppState,
@@ -29,6 +31,7 @@ pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
 				.route("/manifest.json", get(get_epub_manifest))
 				.route("/positions.json", get(get_epub_positions))
 				.route("/resource/{*path}", get(get_epub_resource))
+				.route("/file", get(get_epub_file))
 				.route("/{root}/{resource}", get(get_epub_meta)),
 		)
 		.layer(middleware::from_fn_with_state(app_state, auth_middleware))
@@ -36,6 +39,56 @@ pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
 
 // TODO(readium): Can probably kill the get_epub_meta and get_epub_resource endpoints now that I am
 // implementing rwpm, also, conveniently, this kinda solves the epub streaming features which is sick
+
+/// Serve the entire epub file for READING purposes. Unlike /media/{id}/file, this
+/// route does not require the DownloadFile permission and serves the file inline —
+/// reading a book is not downloading it. Native readers (Readium on mobile) consume
+/// the whole file to open a publication, so a per-resource route alone isn't enough
+async fn get_epub_file(
+	Path(id): Path<String>,
+	State(ctx): State<AppState>,
+	Extension(req): Extension<AuthContext>,
+	headers: HeaderMap,
+) -> APIResult<impl IntoResponse> {
+	let AuthContext { user, .. } = req;
+
+	let ebook = media::Entity::find_for_user(&user)
+		.filter(media::Column::Id.eq(id.clone()))
+		.into_model::<media::MediaIdentSelect>()
+		.one(ctx.conn.as_ref())
+		.await?
+		.ok_or_else(|| APIError::NotFound("Book not found".to_string()))?;
+
+	// This route is for ebooks only — everything else keeps the stricter
+	// download-gated route
+	if !ebook.path.to_lowercase().ends_with(".epub") {
+		return Err(APIError::BadRequest(
+			"Only epub files can be streamed through this endpoint".to_string(),
+		));
+	}
+
+	// Reuse the original headers to support range requests
+	let mut serve_request = Request::new(Body::empty());
+	*serve_request.headers_mut() = headers;
+
+	match ServeFile::new(&ebook.path).try_call(serve_request).await {
+		Ok(mut response) => {
+			response.headers_mut().insert(
+				header::CONTENT_DISPOSITION,
+				"inline"
+					.parse()
+					.expect("static header value should always parse"),
+			);
+			Ok(response)
+		},
+		Err(error) => {
+			tracing::error!(?error, path = %ebook.path, "Error serving epub file");
+			Err(APIError::InternalServerError(format!(
+				"Failed to serve file: {error}",
+			)))
+		},
+	}
+}
 
 /// Get a resource from an epub file. META-INF is a reserved `root` query parameter, which will
 /// grab a resource by resource ID (e.g. `META-INF/container.xml`, where `container.xml` is the
