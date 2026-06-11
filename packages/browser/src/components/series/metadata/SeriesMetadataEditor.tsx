@@ -300,7 +300,9 @@ export default function SeriesMetadataEditor({ seriesId, data }: Props) {
 					onCancel: onCancelEdits,
 					onSave: () => form.handleSubmit(onSaveMetadata),
 					lockedFields,
-					onToggleLock,
+					onToggleLock: checkPermission(UserPermission.EditMetadata)
+						? onToggleLock
+						: undefined,
 				}}
 			>
 				<form onSubmit={form.handleSubmit(onSaveMetadata)}>
