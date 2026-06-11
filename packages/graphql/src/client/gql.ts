@@ -173,6 +173,7 @@ type Documents = {
     "\n\tmutation UpdateReadProgress($id: ID!, $input: MediaProgressInput!) {\n\t\tupdateMediaProgress(id: $id, input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": typeof types.UpdateReadProgressDocument,
     "\n\tquery BookManagementScene($id: ID!) {\n\t\tmediaById(id: $id) {\n\t\t\tid\n\t\t\tresolvedName\n\t\t\tlibrary {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\tseries {\n\t\t\t\tid\n\t\t\t\tresolvedName\n\t\t\t}\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\t...BookThumbnailSelector\n\t\t}\n\t}\n": typeof types.BookManagementSceneDocument,
     "\n\tmutation BookManagementSceneAnalyze($id: ID!) {\n\t\tanalyzeMedia(id: $id)\n\t}\n": typeof types.BookManagementSceneAnalyzeDocument,
+    "\n\tmutation BookManagementSceneWriteMetadata($id: ID!, $backup: Boolean!) {\n\t\twriteMediaMetadataToFile(id: $id, backup: $backup)\n\t}\n": typeof types.BookManagementSceneWriteMetadataDocument,
     "\n\tmutation BookTagEditorSetTags($id: ID!, $tags: [String!]!) {\n\t\tsetMediaTags(id: $id, tags: $tags) {\n\t\t\tid\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t}\n\t}\n": typeof types.BookTagEditorSetTagsDocument,
     "\n\tfragment BookThumbnailSelector on Media {\n\t\tid\n\t\tthumbnail {\n\t\t\turl\n\t\t}\n\t\tpages\n\t}\n": typeof types.BookThumbnailSelectorFragmentDoc,
     "\n\tmutation BookThumbnailSelectorUpdate($id: ID!, $input: PageBasedThumbnailInput!) {\n\t\tupdateMediaThumbnail(id: $id, input: $input) {\n\t\t\tid\n\t\t\tthumbnail {\n\t\t\t\turl\n\t\t\t}\n\t\t}\n\t}\n": typeof types.BookThumbnailSelectorUpdateDocument,
@@ -211,6 +212,8 @@ type Documents = {
     "\n\tquery LibraryExclusionsQuery($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\texcludedUsers {\n\t\t\t\tid\n\t\t\t\tusername\n\t\t\t}\n\t\t}\n\t}\n": typeof types.LibraryExclusionsQueryDocument,
     "\n\tmutation UpdateLibraryExclusions($id: ID!, $userIds: [String!]!) {\n\t\tupdateLibraryExcludedUsers(id: $id, userIds: $userIds) {\n\t\t\tid\n\t\t\texcludedUsers {\n\t\t\t\tid\n\t\t\t\tusername\n\t\t\t}\n\t\t}\n\t}\n": typeof types.UpdateLibraryExclusionsDocument,
     "\n\tmutation CleanLibrary($id: ID!) {\n\t\tcleanLibrary(id: $id) {\n\t\t\tdeletedMediaCount\n\t\t\tdeletedSeriesCount\n\t\t\tisEmpty\n\t\t}\n\t}\n": typeof types.CleanLibraryDocument,
+    "\n\tmutation LibraryMetadataWriteback($id: ID!, $backup: Boolean!) {\n\t\twriteLibraryMetadataToFiles(id: $id, backup: $backup)\n\t}\n": typeof types.LibraryMetadataWritebackDocument,
+    "\n\tmutation LibraryMetadataWritebackCleanBackups($id: ID!) {\n\t\tcleanMetadataBackups(id: $id)\n\t}\n": typeof types.LibraryMetadataWritebackCleanBackupsDocument,
     "\n\tquery LibraryMissingEntities($libraryId: ID!, $pagination: Pagination!) {\n\t\tlibraryMissingEntities(libraryId: $libraryId, pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tpath\n\t\t\t\ttype\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on OffsetPaginationInfo {\n\t\t\t\t\ttotalPages\n\t\t\t\t\tcurrentPage\n\t\t\t\t\tpageSize\n\t\t\t\t\tpageOffset\n\t\t\t\t\tpageOffset\n\t\t\t\t\tzeroBased\n\t\t\t\t\ttotalItems\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.LibraryMissingEntitiesDocument,
     "\n\tmutation AnalyzeLibraryMedia($id: ID!) {\n\t\tanalyzeLibrary(id: $id)\n\t}\n": typeof types.AnalyzeLibraryMediaDocument,
     "\n\tquery InitFetchJobCheckProviders {\n\t\tmetadataProviderConfigs {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.InitFetchJobCheckProvidersDocument,
@@ -478,6 +481,7 @@ const documents: Documents = {
     "\n\tmutation UpdateReadProgress($id: ID!, $input: MediaProgressInput!) {\n\t\tupdateMediaProgress(id: $id, input: $input) {\n\t\t\t__typename\n\t\t}\n\t}\n": types.UpdateReadProgressDocument,
     "\n\tquery BookManagementScene($id: ID!) {\n\t\tmediaById(id: $id) {\n\t\t\tid\n\t\t\tresolvedName\n\t\t\tlibrary {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\tseries {\n\t\t\t\tid\n\t\t\t\tresolvedName\n\t\t\t}\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\t...BookThumbnailSelector\n\t\t}\n\t}\n": types.BookManagementSceneDocument,
     "\n\tmutation BookManagementSceneAnalyze($id: ID!) {\n\t\tanalyzeMedia(id: $id)\n\t}\n": types.BookManagementSceneAnalyzeDocument,
+    "\n\tmutation BookManagementSceneWriteMetadata($id: ID!, $backup: Boolean!) {\n\t\twriteMediaMetadataToFile(id: $id, backup: $backup)\n\t}\n": types.BookManagementSceneWriteMetadataDocument,
     "\n\tmutation BookTagEditorSetTags($id: ID!, $tags: [String!]!) {\n\t\tsetMediaTags(id: $id, tags: $tags) {\n\t\t\tid\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t}\n\t}\n": types.BookTagEditorSetTagsDocument,
     "\n\tfragment BookThumbnailSelector on Media {\n\t\tid\n\t\tthumbnail {\n\t\t\turl\n\t\t}\n\t\tpages\n\t}\n": types.BookThumbnailSelectorFragmentDoc,
     "\n\tmutation BookThumbnailSelectorUpdate($id: ID!, $input: PageBasedThumbnailInput!) {\n\t\tupdateMediaThumbnail(id: $id, input: $input) {\n\t\t\tid\n\t\t\tthumbnail {\n\t\t\t\turl\n\t\t\t}\n\t\t}\n\t}\n": types.BookThumbnailSelectorUpdateDocument,
@@ -516,6 +520,8 @@ const documents: Documents = {
     "\n\tquery LibraryExclusionsQuery($id: ID!) {\n\t\tlibraryById(id: $id) {\n\t\t\texcludedUsers {\n\t\t\t\tid\n\t\t\t\tusername\n\t\t\t}\n\t\t}\n\t}\n": types.LibraryExclusionsQueryDocument,
     "\n\tmutation UpdateLibraryExclusions($id: ID!, $userIds: [String!]!) {\n\t\tupdateLibraryExcludedUsers(id: $id, userIds: $userIds) {\n\t\t\tid\n\t\t\texcludedUsers {\n\t\t\t\tid\n\t\t\t\tusername\n\t\t\t}\n\t\t}\n\t}\n": types.UpdateLibraryExclusionsDocument,
     "\n\tmutation CleanLibrary($id: ID!) {\n\t\tcleanLibrary(id: $id) {\n\t\t\tdeletedMediaCount\n\t\t\tdeletedSeriesCount\n\t\t\tisEmpty\n\t\t}\n\t}\n": types.CleanLibraryDocument,
+    "\n\tmutation LibraryMetadataWriteback($id: ID!, $backup: Boolean!) {\n\t\twriteLibraryMetadataToFiles(id: $id, backup: $backup)\n\t}\n": types.LibraryMetadataWritebackDocument,
+    "\n\tmutation LibraryMetadataWritebackCleanBackups($id: ID!) {\n\t\tcleanMetadataBackups(id: $id)\n\t}\n": types.LibraryMetadataWritebackCleanBackupsDocument,
     "\n\tquery LibraryMissingEntities($libraryId: ID!, $pagination: Pagination!) {\n\t\tlibraryMissingEntities(libraryId: $libraryId, pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tpath\n\t\t\t\ttype\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on OffsetPaginationInfo {\n\t\t\t\t\ttotalPages\n\t\t\t\t\tcurrentPage\n\t\t\t\t\tpageSize\n\t\t\t\t\tpageOffset\n\t\t\t\t\tpageOffset\n\t\t\t\t\tzeroBased\n\t\t\t\t\ttotalItems\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.LibraryMissingEntitiesDocument,
     "\n\tmutation AnalyzeLibraryMedia($id: ID!) {\n\t\tanalyzeLibrary(id: $id)\n\t}\n": types.AnalyzeLibraryMediaDocument,
     "\n\tquery InitFetchJobCheckProviders {\n\t\tmetadataProviderConfigs {\n\t\t\tid\n\t\t}\n\t}\n": types.InitFetchJobCheckProvidersDocument,
@@ -1260,6 +1266,10 @@ export function graphql(source: "\n\tmutation BookManagementSceneAnalyze($id: ID
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n\tmutation BookManagementSceneWriteMetadata($id: ID!, $backup: Boolean!) {\n\t\twriteMediaMetadataToFile(id: $id, backup: $backup)\n\t}\n"): typeof import('./graphql').BookManagementSceneWriteMetadataDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n\tmutation BookTagEditorSetTags($id: ID!, $tags: [String!]!) {\n\t\tsetMediaTags(id: $id, tags: $tags) {\n\t\t\tid\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').BookTagEditorSetTagsDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -1409,6 +1419,14 @@ export function graphql(source: "\n\tmutation UpdateLibraryExclusions($id: ID!, 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n\tmutation CleanLibrary($id: ID!) {\n\t\tcleanLibrary(id: $id) {\n\t\t\tdeletedMediaCount\n\t\t\tdeletedSeriesCount\n\t\t\tisEmpty\n\t\t}\n\t}\n"): typeof import('./graphql').CleanLibraryDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tmutation LibraryMetadataWriteback($id: ID!, $backup: Boolean!) {\n\t\twriteLibraryMetadataToFiles(id: $id, backup: $backup)\n\t}\n"): typeof import('./graphql').LibraryMetadataWritebackDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tmutation LibraryMetadataWritebackCleanBackups($id: ID!) {\n\t\tcleanMetadataBackups(id: $id)\n\t}\n"): typeof import('./graphql').LibraryMetadataWritebackCleanBackupsDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
