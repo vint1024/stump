@@ -475,6 +475,11 @@ input CreateMetadataProviderConfigInput {
 input CreateOrUpdateLibraryInput {
 	name: String!
 	path: String!
+	"""
+	Additional root folders for the library, beyond the primary path. A
+	library spans every folder in `[path] + extra_paths`
+	"""
+	extraPaths: [String!]
 	description: String
 	emoji: String
 	tags: [String!]
@@ -1074,6 +1079,8 @@ type Library {
 	emoji: String
 	configId: Int!
 	lastScannedAt: DateTime
+	"Additional root folders this library spans, beyond its primary path"
+	extraPaths: [String!]!
 	authors: [Author!]!
 	config: LibraryConfig!
 	excludedUsers: [User!]!

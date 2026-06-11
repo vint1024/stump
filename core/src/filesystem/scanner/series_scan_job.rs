@@ -5,7 +5,7 @@ use std::{
 
 use async_graphql::SimpleObject;
 use models::{
-	entity::{library, library_config, media, series},
+	entity::{library, library_config, library_path, media, series},
 	shared::enums::FileStatus,
 };
 use sea_orm::{prelude::*, sea_query::Query, Condition, UpdateResult};
@@ -142,10 +142,19 @@ impl JobLifecycle for SeriesScanJob {
 		// Therefore, we only scan one level deep when walking a series whose library is not
 		// collection-priority to avoid scanning duplicates which are part of other series
 		let mut max_depth = (!config.is_collection_based()).then_some(1);
-		if path_buf.as_path() == Path::new(&library.path) {
-			// The exception is when the series "is" the libray (i.e. the root of the library contains
-			// books). This is kind of an anti-pattern wrt collection-priority, but it needs to be handled
-			// in order to avoid the scanner re-scanning the entire library...
+		// The exception is when the series "is" one of the library roots (primary
+		// path or any extra root — i.e. a root folder contains books directly).
+		// This is kind of an anti-pattern wrt collection-priority, but it needs to
+		// be handled in order to avoid the scanner re-scanning the entire library...
+		let is_library_root = if path_buf.as_path() == Path::new(&library.path) {
+			true
+		} else {
+			library_path::Entity::fetch_for_library(ctx.conn(), &library.id)
+				.await?
+				.iter()
+				.any(|root| path_buf.as_path() == Path::new(root))
+		};
+		if is_library_root {
 			max_depth = Some(1);
 		}
 

@@ -1,10 +1,11 @@
-import { Button, Input, TextArea } from '@stump/components'
+import { Button, Input, Label, Text, TextArea } from '@stump/components'
 import { UserPermission } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
-import { Folder } from 'lucide-react'
-import { Suspense } from 'react'
+import { Folder, FolderPlus, X } from 'lucide-react'
+import { Suspense, useState } from 'react'
 import { useFormContext, useFormState, useWatch } from 'react-hook-form'
 
+import DirectoryPickerModal from '@/components/DirectoryPickerModal'
 import TagSelect from '@/components/TagSelect'
 import { useAppContext } from '@/context'
 import { useLibraryContextSafe } from '@/scenes/library/context'
@@ -25,6 +26,9 @@ export default function BasicLibraryInformation({ onSetShowDirectoryPicker }: Pr
 
 	const isCreatingLibrary = !ctx?.library
 	const tags = useWatch({ control: form.control, name: 'tags' })
+	const extraPaths = useWatch({ control: form.control, name: 'extraPaths' }) ?? []
+	// Index of the extra path currently picking a directory, if any
+	const [pickingExtraPathIndex, setPickingExtraPathIndex] = useState<number | null>(null)
 
 	const { t } = useLocaleContext()
 	const { errors } = useFormState({
@@ -63,6 +67,81 @@ export default function BasicLibraryInformation({ onSetShowDirectoryPicker }: Pr
 					errorMessage={errors.path?.message}
 					{...form.register('path')}
 				/>
+			</div>
+
+			<div className="gap-y-3 flex flex-col">
+				<div>
+					<Label>Additional folders</Label>
+					<Text size="sm" variant="muted">
+						Optional extra folders this library spans, in addition to the main path
+					</Text>
+				</div>
+
+				{extraPaths.map((_, index) => (
+					<div key={index} className="gap-2 md:max-w-sm flex max-w-full items-center">
+						<Input
+							variant="primary"
+							containerClassName="flex-1"
+							errorMessage={errors.extraPaths?.[index]?.message}
+							rightDecoration={
+								checkPermission(UserPermission.FileExplorer) && (
+									<Button size="icon" type="button" onClick={() => setPickingExtraPathIndex(index)}>
+										<Folder className="h-4 w-4 text-foreground-muted" />
+									</Button>
+								)
+							}
+							{...form.register(`extraPaths.${index}`)}
+						/>
+						<Button
+							size="icon"
+							type="button"
+							title="Remove folder"
+							onClick={() =>
+								form.setValue(
+									'extraPaths',
+									extraPaths.filter((_, i) => i !== index),
+									{ shouldDirty: true },
+								)
+							}
+						>
+							<X className="h-4 w-4 text-foreground-muted" />
+						</Button>
+					</div>
+				))}
+				{errors.extraPaths?.message && (
+					<Text size="sm" className="text-fill-danger">
+						{errors.extraPaths.message}
+					</Text>
+				)}
+
+				<div>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() => form.setValue('extraPaths', [...extraPaths, ''], { shouldDirty: true })}
+					>
+						<FolderPlus className="mr-2 h-4 w-4" />
+						Add folder
+					</Button>
+				</div>
+
+				{checkPermission(UserPermission.FileExplorer) && (
+					<DirectoryPickerModal
+						isOpen={pickingExtraPathIndex !== null}
+						onClose={() => setPickingExtraPathIndex(null)}
+						startingPath={
+							pickingExtraPathIndex !== null ? extraPaths[pickingExtraPathIndex] : undefined
+						}
+						onPathChange={(path) => {
+							if (path && pickingExtraPathIndex !== null) {
+								form.setValue(`extraPaths.${pickingExtraPathIndex}`, path, {
+									shouldDirty: true,
+								})
+							}
+						}}
+					/>
+				)}
 			</div>
 
 			<TextArea

@@ -523,6 +523,11 @@ export type CreateOrUpdateLibraryInput = {
   config?: InputMaybe<LibraryConfigInput>;
   description?: InputMaybe<Scalars['String']['input']>;
   emoji?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Additional root folders for the library, beyond the primary path. A
+   * library spans every folder in `[path] + extra_paths`
+   */
+  extraPaths?: InputMaybe<Array<Scalars['String']['input']>>;
   name: Scalars['String']['input'];
   path: Scalars['String']['input'];
   scanAfterPersist?: Scalars['Boolean']['input'];
@@ -1131,6 +1136,8 @@ export type Library = {
   description?: Maybe<Scalars['String']['output']>;
   emoji?: Maybe<Scalars['String']['output']>;
   excludedUsers: Array<User>;
+  /** Additional root folders this library spans, beyond its primary path */
+  extraPaths: Array<Scalars['String']['output']>;
   genres: Array<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   isFavorite: Scalars['Boolean']['output'];
@@ -6032,7 +6039,7 @@ export type LibraryLayoutQueryVariables = Exact<{
 
 
 export type LibraryLayoutQuery = { __typename?: 'Query', libraryById?: (
-    { __typename?: 'Library', id: string, name: string, description?: string | null, path: string, genres: Array<string>, publishers: Array<string>, stats: { __typename?: 'LibraryStats', seriesCount: number, bookCount: number, completedBooks: number, inProgressBooks: number, totalBytes: number, totalReadingTimeSeconds: number }, tags: Array<{ __typename?: 'Tag', id: number, name: string }>, thumbnail: { __typename?: 'ImageRef', url: string, metadata?: { __typename?: 'ImageMetadata', averageColor?: string | null, thumbhash?: string | null, colors: Array<{ __typename?: 'ImageColor', color: string, percentage: any }> } | null }, config: { __typename?: 'LibraryConfig', defaultLibraryViewMode: LibraryViewMode, hideSeriesView: boolean } }
+    { __typename?: 'Library', id: string, name: string, description?: string | null, path: string, extraPaths: Array<string>, genres: Array<string>, publishers: Array<string>, stats: { __typename?: 'LibraryStats', seriesCount: number, bookCount: number, completedBooks: number, inProgressBooks: number, totalBytes: number, totalReadingTimeSeconds: number }, tags: Array<{ __typename?: 'Tag', id: number, name: string }>, thumbnail: { __typename?: 'ImageRef', url: string, metadata?: { __typename?: 'ImageMetadata', averageColor?: string | null, thumbhash?: string | null, colors: Array<{ __typename?: 'ImageColor', color: string, percentage: any }> } | null }, config: { __typename?: 'LibraryConfig', defaultLibraryViewMode: LibraryViewMode, hideSeriesView: boolean } }
     & { ' $fragmentRefs'?: { 'LibrarySettingsConfigFragment': LibrarySettingsConfigFragment } }
   ) | null };
 
@@ -11647,6 +11654,7 @@ export const LibraryLayoutDocument = new TypedDocumentString(`
     name
     description
     path
+    extraPaths
     stats {
       seriesCount
       bookCount

@@ -154,6 +154,25 @@ export const buildSchema = (
 					message: `You already have a library named ${val}.`,
 				}),
 			),
+		extraPaths: z
+			.array(
+				z
+					.string()
+					.min(1, { message: 'Folder path cannot be empty' })
+					.transform((val) => normalizePath(val)),
+			)
+			.default([])
+			.superRefine((paths, ctx) => {
+				// Light client-side checks; the server enforces the full rules
+				// (existence, nesting, cross-library overlap)
+				const unique = new Set(paths)
+				if (unique.size !== paths.length) {
+					ctx.addIssue({
+						code: 'custom',
+						message: 'The same folder was provided more than once',
+					})
+				}
+			}),
 		path: z
 			.string()
 			.min(1, { message: 'Library path is required' })
@@ -229,6 +248,7 @@ export const formDefaults = (
 	watch: library?.config.watch ?? true,
 	ignoreRules: toFormIgnoreRules(library?.config.ignoreRules || []),
 	libraryPattern: library?.config.libraryPattern || LibraryPattern.SeriesBased,
+	extraPaths: library?.extraPaths ?? [],
 	name: library?.name || '',
 	path: library?.path || '',
 	processMetadata: library?.config.processMetadata ?? true,

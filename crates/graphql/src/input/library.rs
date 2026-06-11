@@ -16,6 +16,9 @@ use sea_orm::{prelude::*, Set};
 pub struct CreateOrUpdateLibraryInput {
 	pub name: String,
 	pub path: String,
+	/// Additional root folders for the library, beyond the primary path. A
+	/// library spans every folder in `[path] + extra_paths`
+	pub extra_paths: Option<Vec<String>>,
 	pub description: Option<String>,
 	pub emoji: Option<String>,
 	pub tags: Option<Vec<String>>,

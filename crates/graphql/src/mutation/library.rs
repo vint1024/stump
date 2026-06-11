@@ -6,7 +6,8 @@ use models::{
 	entity::{
 		last_library_visit,
 		library::{self, LibraryIdentSelect},
-		library_config, library_exclusion, library_scan_record, library_tag, media,
+		library_config, library_exclusion, library_path, library_scan_record,
+		library_tag, media,
 		media_metadata, metadata_provider_config, series, series_metadata, tag, user,
 	},
 	shared::enums::{FileStatus, MetadataResetImpact, UserPermission},
@@ -212,7 +213,9 @@ impl LibraryMutation {
 	) -> Result<Library> {
 		let core = ctx.data::<CoreContext>()?;
 
-		enforce_valid_library_path(core.conn.as_ref(), &input.path, None).await?;
+		let extra_paths = input.extra_paths.take().unwrap_or_default();
+		enforce_valid_library_roots(core.conn.as_ref(), &input.path, &extra_paths, None)
+			.await?;
 
 		let scan_after_creation = input.scan_after_persist;
 		let add_watcher = input.config.as_ref().is_some_and(|config| config.watch);
@@ -262,6 +265,21 @@ impl LibraryMutation {
 			}
 		}
 
+		if !extra_paths.is_empty() {
+			library_path::Entity::insert_many(
+				extra_paths
+					.iter()
+					.map(|path| library_path::ActiveModel {
+						library_id: Set(created_library.id.clone()),
+						path: Set(path.clone()),
+						..Default::default()
+					})
+					.collect::<Vec<library_path::ActiveModel>>(),
+			)
+			.exec(&txn)
+			.await?;
+		}
+
 		txn.commit().await?;
 
 		if scan_after_creation {
@@ -274,9 +292,15 @@ impl LibraryMutation {
 		}
 
 		if add_watcher {
-			core.library_watcher
-				.add_watcher(created_library.path.clone().into())
-				.await?;
+			// Watcher registration is best-effort: a failure must not fail the
+			// library creation itself
+			for root in std::iter::once(&created_library.path).chain(extra_paths.iter()) {
+				if let Err(error) =
+					core.library_watcher.add_watcher(root.clone().into()).await
+				{
+					tracing::warn!(?error, ?root, "Failed to add library watcher");
+				}
+			}
 		}
 
 		Ok(Library::from(created_library))
@@ -383,10 +407,22 @@ impl LibraryMutation {
 			return Err("Library is missing associated config!".into());
 		};
 
-		enforce_valid_library_path(
+		// None means "leave the extra paths unchanged"; Some(vec) replaces them
+		let extra_paths_update = input.extra_paths.take();
+		let old_extra_paths = library_path::Entity::fetch_for_library(
+			core.conn.as_ref(),
+			&existing_library.id,
+		)
+		.await?;
+		let effective_extra_paths = extra_paths_update
+			.clone()
+			.unwrap_or_else(|| old_extra_paths.clone());
+
+		enforce_valid_library_roots(
 			core.conn.as_ref(),
 			&input.path,
-			Some(&existing_library.path),
+			&effective_extra_paths,
+			Some(&existing_library.id),
 		)
 		.await?;
 
@@ -460,6 +496,28 @@ impl LibraryMutation {
 			}
 		}
 
+		// Replace the set of extra roots, but only when one was provided
+		if let Some(new_extra_paths) = &extra_paths_update {
+			library_path::Entity::delete_many()
+				.filter(library_path::Column::LibraryId.eq(updated_library.id.clone()))
+				.exec(&txn)
+				.await?;
+			if !new_extra_paths.is_empty() {
+				library_path::Entity::insert_many(
+					new_extra_paths
+						.iter()
+						.map(|path| library_path::ActiveModel {
+							library_id: Set(updated_library.id.clone()),
+							path: Set(path.clone()),
+							..Default::default()
+						})
+						.collect::<Vec<library_path::ActiveModel>>(),
+				)
+				.exec(&txn)
+				.await?;
+			}
+		}
+
 		txn.commit().await?;
 
 		if scan_after_update {
@@ -471,14 +529,43 @@ impl LibraryMutation {
 			.await?;
 		}
 
+		// Watcher (de)registration is best-effort: a failure must not fail the
+		// library update itself
 		if add_watcher {
-			core.library_watcher
-				.add_watcher(updated_library.path.clone().into())
-				.await?;
+			for root in
+				std::iter::once(&updated_library.path).chain(effective_extra_paths.iter())
+			{
+				if let Err(error) =
+					core.library_watcher.add_watcher(root.clone().into()).await
+				{
+					tracing::warn!(?error, ?root, "Failed to add library watcher");
+				}
+			}
+			// Stop watching roots that were removed from the library
+			for old_path in old_extra_paths
+				.iter()
+				.filter(|old_path| !effective_extra_paths.contains(old_path))
+			{
+				if let Err(error) = core
+					.library_watcher
+					.remove_watcher(old_path.clone().into())
+					.await
+				{
+					tracing::warn!(?error, ?old_path, "Failed to remove library watcher");
+				}
+			}
 		} else {
-			core.library_watcher
-				.remove_watcher(existing_library.path.clone().into())
-				.await?;
+			for root in
+				std::iter::once(&existing_library.path).chain(old_extra_paths.iter())
+			{
+				if let Err(error) = core
+					.library_watcher
+					.remove_watcher(root.clone().into())
+					.await
+				{
+					tracing::warn!(?error, ?root, "Failed to remove library watcher");
+				}
+			}
 		}
 
 		Ok(Library::from(updated_library))
@@ -1067,62 +1154,87 @@ fn add_trailing_slash(path: &str) -> String {
 		format!("{}\\", path)
 	}
 }
-/// A helper function to enforce that a library path is valid and does not conflict with
-/// other libraries.
-async fn enforce_valid_library_path(
+/// A helper function to enforce that every root folder of a library (the primary
+/// path plus any extra paths) is valid: each must exist on disk, roots must not
+/// nest within one another, and none may overlap with another library's roots.
+async fn enforce_valid_library_roots(
 	conn: &DatabaseConnection,
-	path: &str,
-	existing_path: Option<&str>,
+	primary: &str,
+	extra_paths: &[String],
+	existing_library_id: Option<&str>,
 ) -> Result<()> {
-	// TODO: Move this to the core, Ideally we avoid pulling tokio for this crate
-	match fs::metadata(path).await {
-		Ok(metadata) => {
-			if !metadata.is_dir() {
-				return Err("Path is not a directory".into());
-			}
-		},
-		Err(error) => {
-			return Err(error.to_string().into());
-		},
+	let candidates = std::iter::once(primary)
+		.chain(extra_paths.iter().map(String::as_str))
+		.map(|path| normalize_path(path).to_string())
+		.collect::<Vec<_>>();
+
+	let unique = candidates.iter().collect::<std::collections::HashSet<_>>();
+	if unique.len() != candidates.len() {
+		return Err("The same folder was provided more than once".into());
 	}
 
-	if let Some(existing_path) = existing_path {
-		if existing_path == path {
-			return Ok(());
+	// TODO: Move this to the core, Ideally we avoid pulling tokio for this crate
+	for path in &candidates {
+		match fs::metadata(path).await {
+			Ok(metadata) => {
+				if !metadata.is_dir() {
+					return Err(format!("Path is not a directory: {path}").into());
+				}
+			},
+			Err(error) => {
+				return Err(format!("{path}: {error}").into());
+			},
 		}
 	}
 
-	// example: new_path = "/books", existing_library = "/books/fiction"
-	// check if any libraries start with "/books/" (can't use "/books" else it flags e.g. "/books2")
-	let mut child_query = library::Entity::find().filter(
-		library::Column::Path.starts_with(add_trailing_slash(normalize_path(path))),
+	// Roots of the same library must not nest within one another, e.g. /books
+	// and /books/fiction would double-scan everything under fiction
+	for parent in &candidates {
+		for child in &candidates {
+			if parent != child && child.starts_with(&add_trailing_slash(parent)) {
+				return Err(format!(
+					"Folder {child} is nested inside {parent} — library folders cannot contain one another"
+				)
+				.into());
+			}
+		}
+	}
+
+	// Collect every root of every OTHER library (primary paths + extra paths)
+	let mut other_roots: Vec<(String, String)> = library::Entity::find()
+		.into_partial_model::<library::LibraryIdentSelect>()
+		.all(conn)
+		.await?
+		.into_iter()
+		.map(|library| (library.id, library.path))
+		.collect();
+	other_roots.extend(
+		library_path::Entity::find()
+			.all(conn)
+			.await?
+			.into_iter()
+			.map(|row| (row.library_id, row.path)),
 	);
-
-	if let Some(existing_path) = existing_path {
-		child_query =
-			child_query.filter(library::Column::Path.ne(normalize_path(existing_path)));
+	if let Some(existing_library_id) = existing_library_id {
+		other_roots.retain(|(library_id, _)| library_id != existing_library_id);
 	}
 
-	let child_libraries_count = child_query.count(conn).await?;
-
-	if child_libraries_count > 0 {
-		return Err("Path is a parent of another library on the filesystem".into());
-	}
-
-	// example: new_path = "/data/books/fiction", existing_library = "/data/books"
-	// check if new_path matches the pattern "/data/books/_%".
-	let values: [sea_orm::Value; 1] = [path.into()];
-	let mut parent_query = library::Entity::find()
-		.filter(Expr::cust_with_values("? LIKE path || '/_%'", values));
-
-	if let Some(existing_path) = existing_path {
-		parent_query = parent_query.filter(library::Column::Path.ne(existing_path));
-	}
-
-	let parent_libraries_count = parent_query.count(conn).await?;
-
-	if parent_libraries_count > 0 {
-		return Err("Path is a child of another library on the filesystem".into());
+	for (_, other) in &other_roots {
+		let other = normalize_path(other);
+		for candidate in &candidates {
+			let is_same = candidate == other;
+			// example: candidate = "/books", other = "/books/fiction" (parent of another root);
+			// the trailing slash avoids flagging e.g. "/books2"
+			let is_parent = other.starts_with(&add_trailing_slash(candidate));
+			// example: candidate = "/data/books/fiction", other = "/data/books"
+			let is_child = candidate.starts_with(&add_trailing_slash(other));
+			if is_same || is_parent || is_child {
+				return Err(format!(
+					"Folder {candidate} overlaps with another library's folder on the filesystem"
+				)
+				.into());
+			}
+		}
 	}
 
 	Ok(())
