@@ -1,3 +1,4 @@
+mod cover_placeholder;
 mod error;
 mod generic;
 mod process;
@@ -5,6 +6,7 @@ mod thumbnail;
 mod webp;
 
 pub use self::webp::WebpProcessor;
+pub use cover_placeholder::generate_cover_placeholder;
 pub use error::ProcessorError;
 pub use generic::GenericImageProcessor;
 use image::ImageFormat;
