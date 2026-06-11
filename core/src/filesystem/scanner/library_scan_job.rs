@@ -7,7 +7,7 @@ use async_graphql::SimpleObject;
 use models::{
 	entity::{
 		library, library_config, library_path, library_scan_record, media,
-		metadata_provider_config, series,
+		metadata_provider_config, series, series_merge,
 	},
 	shared::enums::FileStatus,
 };
@@ -215,6 +215,20 @@ impl JobLifecycle for LibraryScanJob {
 
 		// Only consider the library missing when EVERY root is gone
 		let library_is_missing = missing_root_count == all_roots.len();
+
+		// Folders that were merged into another series must not be re-created
+		// as their own series — instead they are visited so their books are
+		// scanned into the merge target (resolved during the walk task)
+		let merge_map =
+			series_merge::Entity::fetch_map_for_library(ctx.conn(), &self.id).await?;
+		if !merge_map.is_empty() {
+			let (merged, to_create): (Vec<_>, Vec<_>) =
+				series_to_create.into_iter().partition(|path| {
+					merge_map.contains_key(path.to_string_lossy().as_ref())
+				});
+			series_to_create = to_create;
+			series_to_visit.extend(merged);
+		}
 
 		tracing::debug!(
 			series_to_create = series_to_create.len(),
@@ -673,12 +687,38 @@ impl JobLifecycle for LibraryScanJob {
 
 				let series_path_str = path_buf.to_str().unwrap_or_default().to_string();
 
-				let series = series::Entity::find()
+				let series = match series::Entity::find()
 					.filter(series::Column::Path.eq(series_path_str.clone()))
 					.into_model::<series::SeriesIdentSelect>()
 					.one(ctx.conn())
 					.await?
-					.ok_or(JobError::TaskFailed("Series not found".to_string()))?;
+				{
+					Some(series) => series,
+					None => {
+						// The folder may have been merged into another series —
+						// route its books to the merge target instead
+						let merge_target = series_merge::Entity::find()
+							.filter(
+								series_merge::Column::SourcePath
+									.eq(series_path_str.clone()),
+							)
+							.one(ctx.conn())
+							.await?
+							.ok_or(JobError::TaskFailed(
+								"Series not found".to_string(),
+							))?;
+						series::Entity::find()
+							.filter(
+								series::Column::Id.eq(merge_target.target_series_id),
+							)
+							.into_model::<series::SeriesIdentSelect>()
+							.one(ctx.conn())
+							.await?
+							.ok_or(JobError::TaskFailed(
+								"Merge target series not found".to_string(),
+							))?
+					},
+				};
 
 				subtasks = chain_optional_iter(
 					[],

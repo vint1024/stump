@@ -1655,6 +1655,14 @@ enum MergeStrategy {
 	FILL_AND_MERGE_LISTS
 }
 
+"A folder that was merged into a series and can be restored via unmerge"
+type MergedSeriesSource {
+	"The name the source series had before the merge"
+	name: String!
+	"The folder on disk that was absorbed"
+	path: String!
+}
+
 type MetadataFetchJobOutput {
 	"Total number of entities processed"
 	totalProcessed: Int!
@@ -1998,6 +2006,18 @@ type Mutation {
 	of a full sweep — this gives the series page its own regenerate action
 	"""
 	generateSeriesThumbnail(id: ID!, forceRegenerate: Boolean! = true): Boolean!
+	"""
+	Merge one or more series into a target series: their books move to the
+	target and the source series are removed. A persistent merge map keeps
+	the scanner from re-creating the source folders as series, and allows
+	the merge to be undone later. All series must be in the same library
+	"""
+	mergeSeries(targetId: ID!, sourceIds: [ID!]!): Series!
+	"""
+	Undo every merge into the given series: each absorbed folder becomes its
+	own series again (with its original name) and its books move back
+	"""
+	unmergeSeries(id: ID!): Series!
 	"Create a bookmark for a user"
 	createBookmark(input: BookmarkInput!): Bookmark!
 	"Delete a bookmark by ID, only if the user created it"
@@ -2767,6 +2787,8 @@ type Series {
 	thumbnailPath: String
 	libraryId: String
 	metadata: SeriesMetadata
+	"Folders that were merged into this series (empty when it is not a merge target)"
+	mergedSources: [MergedSeriesSource!]!
 	isFavorite: Boolean!
 	resolvedName: String!
 	resolvedDescription: String
