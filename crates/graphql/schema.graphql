@@ -457,7 +457,7 @@ enum ContentRuleMode {
 "An event that is emitted by the core and consumed by a client"
 union CoreEvent = JobStarted | JobUpdate | JobOutput | DiscoveredMissingLibrary | CreatedMedia | CreatedManySeries | CreatedOrUpdatedManyMedia
 
-union CoreJobOutput = LibraryScanOutput | SeriesScanOutput | ThumbnailGenerationOutput | PlaceholderGenerationOutput | MetadataFetchJobOutput | AnalyzeMediaOutput
+union CoreJobOutput = LibraryScanOutput | SeriesScanOutput | ThumbnailGenerationOutput | PlaceholderGenerationOutput | MetadataFetchJobOutput | AnalyzeMediaOutput | MetadataWritebackOutput
 
 input CreateAnnotationInput {
 	mediaId: String!
@@ -1854,6 +1854,15 @@ input MetadataRetryConfigInput {
 	statuses: [MetadataFetchStatus!]!
 }
 
+type MetadataWritebackOutput {
+	"Books whose files were updated"
+	written: Int!
+	"Books skipped (not epub, no metadata, or nothing to write)"
+	skipped: Int!
+	"Books that failed to write (see logs)"
+	failed: Int!
+}
+
 type MissingEntity {
 	id: String!
 	path: String!
@@ -1914,6 +1923,12 @@ type Mutation {
 	updateSuggestionStatus(suggestionId: ID!, status: BookClubSuggestionStatus!, notes: String): BookClubBookSuggestion!
 	analyzeMedia(id: ID!, forceReanalysis: Boolean! = false): Boolean!
 	convertMedia(id: ID!): Boolean!
+	"""
+	Write the book's stored metadata back into its epub file. The archive is
+	rebuilt atomically; with `backup` set, the original is kept as `<file>.bak`.
+	Returns true when the file was updated (false = nothing to write)
+	"""
+	writeMediaMetadataToFile(id: ID!, backup: Boolean! = false): Boolean!
 	deleteMedia(id: ID!): Media!
 	favoriteMedia(id: ID!, isFavorite: Boolean!): Media!
 	"""
@@ -1996,6 +2011,17 @@ type Mutation {
 	operation cannot be undone.
 	"""
 	deleteLibrary(id: ID!): Library!
+	"""
+	Enqueue a background job which writes the stored metadata of every epub
+	in the library back into the files. With `backup`, each original is kept
+	as `<file>.bak` next to it
+	"""
+	writeLibraryMetadataToFiles(id: ID!, backup: Boolean! = false): Boolean!
+	"""
+	Delete every `*.epub.bak` backup file (created by metadata writeback)
+	inside the library's folders. Returns the number of removed files
+	"""
+	cleanMetadataBackups(id: ID!): Int!
 	generateLibraryThumbnails(id: ID!, forceRegenerate: Boolean! = false): Boolean!
 	processLibraryThumbnails(id: ID!, forceRegenerate: Boolean! = false): Boolean!
 	deleteLibraryThumbnails(id: ID!): Boolean!

@@ -4,6 +4,7 @@ use apalis::prelude::Data;
 use models::shared::enums::JobStatus;
 use uuid::Uuid;
 
+use crate::filesystem::metadata::writeback_job::MetadataWritebackJob;
 use crate::{
 	event::JobStarted,
 	filesystem::{
@@ -148,6 +149,9 @@ pub async fn dispatch_job(
 		},
 		StumpJob::AnalyzeMedia { config } => {
 			run_job(&job_ctx, &mut AnalyzeMediaJob { config }).await
+		},
+		StumpJob::MetadataWriteback { params } => {
+			run_job(&job_ctx, &mut MetadataWritebackJob { params }).await
 		},
 	};
 
