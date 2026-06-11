@@ -6,8 +6,8 @@ use async_graphql::{
 
 use models::{
 	entity::{
-		finished_reading_session, library, media, reading_session, series,
-		series_merge, series_tag, tag,
+		finished_reading_session, library, media, reading_session, series, series_merge,
+		series_tag, tag,
 	},
 	shared::{
 		alphabet::{AvailableAlphabet, EntityLetter},
