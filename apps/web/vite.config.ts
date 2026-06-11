@@ -33,7 +33,10 @@ export default defineConfig({
 				enabled: false,
 			},
 			workbox: {
-				maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+				// The main chunk bundles every locale and crossed 5 MiB once the
+				// Russian locale was fully translated (5.31 MB). Splitting locales
+				// out of the main bundle would be the real fix
+				maximumFileSizeToCacheInBytes: 6 * 1024 * 1024, // 6MB
 			},
 			outDir: '../dist/assets/',
 			base: '/',
