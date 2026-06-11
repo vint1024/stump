@@ -53,11 +53,13 @@ fn split_list(value: &Option<String>) -> Vec<String> {
 
 impl From<&media_metadata::Model> for OpfWriteback {
 	fn from(metadata: &media_metadata::Model) -> Self {
-		let date = metadata.year.map(|year| match (metadata.month, metadata.day) {
-			(Some(month), Some(day)) => format!("{year:04}-{month:02}-{day:02}"),
-			(Some(month), None) => format!("{year:04}-{month:02}"),
-			_ => format!("{year:04}"),
-		});
+		let date = metadata
+			.year
+			.map(|year| match (metadata.month, metadata.day) {
+				(Some(month), Some(day)) => format!("{year:04}-{month:02}-{day:02}"),
+				(Some(month), None) => format!("{year:04}-{month:02}"),
+				_ => format!("{year:04}"),
+			});
 
 		Self {
 			title: metadata.title.clone(),
@@ -347,7 +349,9 @@ pub fn write_metadata_to_epub(
 		}
 
 		for index in 0..archive.len() {
-			let entry = archive.by_index_raw(index).map_err(FileError::ZipFileError)?;
+			let entry = archive
+				.by_index_raw(index)
+				.map_err(FileError::ZipFileError)?;
 			let name = entry.name().to_string();
 			if name == "mimetype" || name == opf_path {
 				continue;
@@ -386,7 +390,9 @@ pub fn write_metadata_to_epub(
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::filesystem::media::{process::FileProcessor, tests::get_test_epub_path, EpubProcessor};
+	use crate::filesystem::media::{
+		process::FileProcessor, tests::get_test_epub_path, EpubProcessor,
+	};
 
 	fn temp_copy_of_fixture(test_name: &str) -> PathBuf {
 		let dir = std::env::temp_dir().join("stump-writeback-tests");

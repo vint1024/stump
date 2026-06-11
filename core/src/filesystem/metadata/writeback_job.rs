@@ -155,7 +155,9 @@ impl JobLifecycle for MetadataWritebackJob {
 			.column(media::Column::Id)
 			.inner_join(series::Entity)
 			.filter(series::Column::LibraryId.eq(self.params.library_id.clone()))
-			.filter(media::Column::Extension.eq("epub"))
+			// Case-insensitive: extension is stored verbatim, so a file named
+			// "Book.EPUB" has extension "EPUB" (the single-book mutation lowercases too)
+			.filter(Expr::cust("lower(\"media\".\"extension\") = 'epub'"))
 			.into_tuple()
 			.all(ctx.conn())
 			.await

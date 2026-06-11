@@ -251,7 +251,9 @@ async fn get_epub_resource(
 	}
 
 	let resource = PathBuf::from(&path);
-	Ok(EpubProcessor::get_resource_by_path(ebook.path.as_str(), "", resource)
-		.map_err(map_missing)?
-		.into())
+	Ok(
+		EpubProcessor::get_resource_by_path(ebook.path.as_str(), "", resource)
+			.map_err(map_missing)?
+			.into(),
+	)
 }

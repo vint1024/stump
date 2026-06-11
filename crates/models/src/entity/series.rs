@@ -73,15 +73,17 @@ impl Entity {
 		let content_rules_filter =
 			content_access_rule::series_filter(&user.content_rules);
 
+		// Always join series_metadata (1:1, row-count-safe). The age-restriction
+		// and content-rule filters reference its columns, and callers (e.g. OPDS
+		// search) reference them too — a single unconditional join here means no
+		// caller has to add its own, which previously double-joined and produced
+		// "ambiguous column" errors for restricted users.
 		let mut query = Entity::find()
+			.left_join(series_metadata::Entity)
 			.filter(Column::DeletedAt.is_null())
 			.filter(Column::LibraryId.not_in_subquery(
 				library_exclusion::Entity::library_hidden_to_user_query(user),
 			));
-		// Both filters reference series_metadata columns
-		if age_restriction_filter.is_some() || content_rules_filter.is_some() {
-			query = query.left_join(series_metadata::Entity);
-		}
 		if let Some(filter) = age_restriction_filter {
 			query = query.filter(filter);
 		}
@@ -322,9 +324,11 @@ mod tests {
 		let user = get_default_user();
 		let select = Entity::find_for_user(&user);
 		let stmt_str = select_no_cols_to_string(select);
+		// series_metadata is now always joined (1:1, row-count-safe) so callers
+		// referencing it (OPDS search, content rules) don't double-join
 		assert_eq!(
 			stmt_str,
-			r#"SELECT  FROM "series" WHERE "series"."deleted_at" IS NULL AND "series"."library_id" NOT IN (SELECT "library_id" FROM "library_exclusions" WHERE "library_exclusions"."user_id" = '42')"#
+			r#"SELECT  FROM "series" LEFT JOIN "series_metadata" ON "series"."id" = "series_metadata"."series_id" WHERE "series"."deleted_at" IS NULL AND "series"."library_id" NOT IN (SELECT "library_id" FROM "library_exclusions" WHERE "library_exclusions"."user_id" = '42')"#
 		);
 	}
 
@@ -369,7 +373,7 @@ mod tests {
 		let stmt_str = select_no_cols_to_string(select);
 		assert_eq!(
 			stmt_str,
-			r#"SELECT  FROM "series" WHERE "series"."deleted_at" IS NULL AND "series"."library_id" NOT IN (SELECT "library_id" FROM "library_exclusions" WHERE "library_exclusions"."user_id" = '42') AND "series"."id" = '123'"#.to_string()
+			r#"SELECT  FROM "series" LEFT JOIN "series_metadata" ON "series"."id" = "series_metadata"."series_id" WHERE "series"."deleted_at" IS NULL AND "series"."library_id" NOT IN (SELECT "library_id" FROM "library_exclusions" WHERE "library_exclusions"."user_id" = '42') AND "series"."id" = '123'"#.to_string()
 		);
 	}
 

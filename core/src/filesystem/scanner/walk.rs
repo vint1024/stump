@@ -138,13 +138,26 @@ pub async fn walk_library(
 
 	let computation_start = std::time::Instant::now();
 	let (series_to_create, missing_series, recovered_series, series_to_visit) = {
+		// Scope to series at OR under this root. A bare starts_with(root) would
+		// also match a sibling root that shares a string prefix (e.g. root
+		// "/books" matching "/books-extra/..."), pulling another root's series in
+		// and marking them missing. Match the root itself or paths under it.
+		let path_str = path.to_string();
+		let mut path_prefix = path_str.clone();
+		if !path_prefix.ends_with(std::path::MAIN_SEPARATOR) {
+			path_prefix.push(std::path::MAIN_SEPARATOR);
+		}
 		let existing_records = series::Entity::find()
 			.columns(vec![
 				series::Column::Id,
 				series::Column::Path,
 				series::Column::Status,
 			])
-			.filter(series::Column::Path.starts_with(path))
+			.filter(
+				series::Column::Path
+					.eq(path_str)
+					.or(series::Column::Path.starts_with(path_prefix)),
+			)
 			.all(db.as_ref())
 			.await?;
 
