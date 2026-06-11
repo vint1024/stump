@@ -326,6 +326,15 @@ pub async fn walk_series(
 
 	tracing::trace!("Fetching existing media...");
 	let fetch_start = std::time::Instant::now();
+	// Match existing media by their OWN path rather than via their series'
+	// path: a merged folder feeds a series rooted elsewhere, and the old
+	// series-path join made those books invisible (re-created as duplicates
+	// on every scan). The trailing separator avoids sibling-prefix collisions
+	// (e.g. /books/Foo vs /books/Foobar)
+	let mut media_path_prefix = path.to_string_lossy().to_string();
+	if !media_path_prefix.ends_with(std::path::MAIN_SEPARATOR) {
+		media_path_prefix.push(std::path::MAIN_SEPARATOR);
+	}
 	let existing_media = media::Entity::find()
 		.columns(vec![
 			media::Column::Id,
@@ -333,8 +342,7 @@ pub async fn walk_series(
 			media::Column::ModifiedAt,
 			media::Column::Status,
 		])
-		.inner_join(series::Entity)
-		.filter(series::Column::Path.starts_with(path.to_string_lossy().to_string()))
+		.filter(media::Column::Path.starts_with(media_path_prefix))
 		.all(db.as_ref())
 		.await?;
 	tracing::trace!(

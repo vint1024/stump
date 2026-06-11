@@ -13,6 +13,7 @@ import { useAppContext } from '@/context'
 import paths from '@/paths'
 
 import { useSeriesContext } from '../../context'
+import MergeSeriesSection from './MergeSeriesSection'
 import SeriesTagEditor from './SeriesTagEditor'
 import SeriesThumbnailSelector from './SeriesThumbnailSelector'
 
@@ -160,6 +161,12 @@ export default function SeriesSettingsScene() {
 						)}
 					</div>
 				</div>
+
+				{checkPermission(UserPermission.ManageLibrary) && (
+					<Suspense>
+						<MergeSeriesSection seriesId={seriesById.id} />
+					</Suspense>
+				)}
 
 				<div className="gap-y-2 flex w-full flex-col">
 					<div className="flex items-end justify-between">
