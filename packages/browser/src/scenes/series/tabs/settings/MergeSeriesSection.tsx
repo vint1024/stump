@@ -1,9 +1,13 @@
-import { useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
-import { Button, Heading, NativeSelect, Text } from '@stump/components'
+import { useGraphQL, useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
+import { Button, Heading, Input, NativeSelect, Text } from '@stump/components'
 import { graphql } from '@stump/graphql'
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useDebouncedValue } from 'rooks'
 import { toast } from 'sonner'
+
+/** The merge target picker fetches at most this many matches per search */
+const CANDIDATE_LIMIT = 50
 
 const query = graphql(`
 	query MergeSeriesSection($id: ID!) {
@@ -21,8 +25,11 @@ const query = graphql(`
 `)
 
 const candidatesQuery = graphql(`
-	query MergeSeriesSectionCandidates($libraryId: String!) {
-		series(filter: { libraryId: { eq: $libraryId } }, pagination: { none: { unpaginated: true } }) {
+	query MergeSeriesSectionCandidates($libraryId: String!, $search: String!, $limit: Int!) {
+		series(
+			filter: { libraryId: { eq: $libraryId }, name: { contains: $search } }
+			pagination: { offset: { page: 1, pageSize: $limit } }
+		) {
 			nodes {
 				id
 				name: resolvedName
@@ -68,13 +75,23 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 	})
 	const libraryId = seriesById?.library?.id ?? ''
 
-	const {
-		data: {
-			series: { nodes: candidates },
+	// Server-side search instead of fetching every series in the library —
+	// large libraries would otherwise pull thousands of rows for a picker
+	const [search, setSearch] = useState('')
+	const [debouncedSearch] = useDebouncedValue(search, 300)
+	const { data: candidatesData } = useGraphQL(
+		candidatesQuery,
+		sdk.cacheKey('series', [libraryId, 'mergeCandidates', debouncedSearch ?? '']),
+		{
+			libraryId,
+			search: debouncedSearch ?? '',
+			limit: CANDIDATE_LIMIT,
 		},
-	} = useSuspenseGraphQL(candidatesQuery, sdk.cacheKey('series', [libraryId, 'mergeCandidates']), {
-		libraryId,
-	})
+	)
+	const candidates = useMemo(
+		() => candidatesData?.series.nodes ?? [],
+		[candidatesData],
+	)
 
 	const [targetId, setTargetId] = useState<string>('')
 
@@ -82,6 +99,14 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 		() => candidates.filter(({ id }) => id !== seriesId),
 		[candidates, seriesId],
 	)
+
+	// A narrowed search can drop the picked target from the list — clear the
+	// selection rather than keep an invisible one armed behind the button
+	useEffect(() => {
+		if (targetId && !otherSeries.some(({ id }) => id === targetId)) {
+			setTargetId('')
+		}
+	}, [otherSeries, targetId])
 	const mergedSources = seriesById?.mergedSources ?? []
 
 	const invalidate = useCallback(() => {
@@ -128,21 +153,33 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 				</Text>
 			</div>
 
-			<div className="gap-2 md:max-w-md flex max-w-full items-center">
-				<NativeSelect
-					value={targetId}
-					onChange={(e) => setTargetId(e.target.value)}
-					options={otherSeries.map(({ id, name }) => ({ label: name, value: id }))}
-					emptyOption={{ label: 'Select a target series…', value: '' }}
+			<div className="gap-2 md:max-w-md flex max-w-full flex-col">
+				<Input
+					placeholder="Search series…"
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
 				/>
-				<Button
-					type="button"
-					variant="outline"
-					disabled={!targetId || isMerging}
-					onClick={handleMerge}
-				>
-					Merge into
-				</Button>
+				<div className="gap-2 flex items-center">
+					<NativeSelect
+						value={targetId}
+						onChange={(e) => setTargetId(e.target.value)}
+						options={otherSeries.map(({ id, name }) => ({ label: name, value: id }))}
+						emptyOption={{ label: 'Select a target series…', value: '' }}
+					/>
+					<Button
+						type="button"
+						variant="outline"
+						disabled={!targetId || isMerging}
+						onClick={handleMerge}
+					>
+						Merge into
+					</Button>
+				</div>
+				{otherSeries.length >= CANDIDATE_LIMIT - 1 && (
+					<Text size="xs" variant="muted">
+						Showing the first {CANDIDATE_LIMIT} matches — refine the search to find others
+					</Text>
+				)}
 			</div>
 
 			{mergedSources.length > 0 && (
