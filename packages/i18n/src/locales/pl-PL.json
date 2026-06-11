@@ -445,6 +445,12 @@
 						"description": "Każdy folder na dowolnym poziomie jest pojedynczą serią"
 					}
 				}
+			},
+			"extraPaths": {
+				"label": "Additional folders",
+				"description": "Optional extra folders this library spans, in addition to the main path",
+				"addFolder": "Add folder",
+				"removeFolder": "Remove folder"
 			}
 		},
 		"scan": {
@@ -742,6 +748,25 @@
 						"Trwale usuń tę bibliotekę i całą jej zawartość.",
 						"Tej czynności nie można cofnąć"
 					]
+				},
+				"metadataWriteback": {
+					"heading": "Write metadata to files",
+					"description": "Embed the metadata stored in Stump into every epub file of this library (OPF), so it travels with the files. Archives are rewritten atomically; this modifies your files on disk",
+					"keepBackup": "Keep a .bak copy of each original file",
+					"writeAll": "Write metadata to all files",
+					"cleanBackups": "Delete .bak backups",
+					"confirm": {
+						"title": "Write metadata into every epub?",
+						"withBackup": "Every epub in this library will be rewritten with the metadata stored in Stump. Originals are kept as .bak files next to the books.",
+						"withoutBackup": "Every epub in this library will be rewritten with the metadata stored in Stump. No backups will be kept.",
+						"confirm": "Start writeback"
+					},
+					"toasts": {
+						"started": "Metadata writeback job started",
+						"startFailed": "Failed to start metadata writeback",
+						"cleaned": "Removed {{removed}} backup file(s)",
+						"cleanFailed": "Failed to clean backups"
+					}
 				}
 			}
 		}
@@ -2149,7 +2174,29 @@
 					"usernameAlreadyExists": "Użytkownik o takiej nazwie już istnieje"
 				},
 				"createSubmitButton": "Dodaj użytkownika",
-				"updateSubmitButton": "Aktualizuj użytkownika"
+				"updateSubmitButton": "Aktualizuj użytkownika",
+				"contentRules": {
+					"heading": "Content restrictions",
+					"description": "Hide content from this user by tag, publisher or genre. Rules combine — an item must pass every rule. Tags are inherited from the series and library",
+					"dimensions": {
+						"tag": "Tag",
+						"publisher": "Publisher",
+						"genre": "Genre"
+					},
+					"modes": {
+						"exclude": "Exclude listed",
+						"only": "Only listed"
+					},
+					"valuesPlaceholder": "Values, comma separated",
+					"restrictOnUnset": "Hide items without a value",
+					"removeRule": "Remove rule",
+					"addRule": "Add rule",
+					"save": "Save restrictions",
+					"toasts": {
+						"saved": "Content restrictions saved",
+						"saveFailed": "Failed to save content restrictions"
+					}
+				}
 			},
 			"loginActivity": {
 				"deleteConfirmation": {
@@ -3222,5 +3269,74 @@
 				"DESC": "10 → 1"
 			}
 		}
+	},
+	"seriesSettingsScene": {
+		"developmentAlert": "Series management is currently under development and has very limited functionality",
+		"analysis": {
+			"heading": "Analysis",
+			"description": "Re-analyze this series to update metadata from its files",
+			"button": "Analyze series",
+			"buttonTitle": "Analyze this series",
+			"inProgress": "Analysis already in progress"
+		},
+		"thumbnail": {
+			"heading": "Thumbnail",
+			"description": "Change the cover image for this series",
+			"regenerate": "Regenerate from books",
+			"regenerateTitle": "Regenerate the thumbnail for this series from its first book",
+			"toasts": {
+				"started": "Thumbnail regeneration started",
+				"failed": "Failed to regenerate thumbnail"
+			}
+		},
+		"metadata": {
+			"heading": "Metadata",
+			"description": "Extra information about your series"
+		},
+		"merge": {
+			"heading": "Merge",
+			"description": "Move every book of this series into another series in the same library. The folder on disk is not touched, and future scans keep feeding the target series. Merges can be undone from the target series",
+			"searchPlaceholder": "Search series…",
+			"selectTarget": "Select a target series…",
+			"button": "Merge into",
+			"limitHint": "Showing the first {{limit}} matches — refine the search to find others",
+			"mergedSources": "Folders merged into this series:",
+			"unmergeAll": "Unmerge all",
+			"toasts": {
+				"merged": "Series merged",
+				"mergeFailed": "Failed to merge series",
+				"restored": "Series restored",
+				"restoreFailed": "Failed to unmerge series"
+			}
+		}
+	},
+	"bookManagementScene": {
+		"heading": "Manage",
+		"subtitle": "Make changes to this book",
+		"developmentAlert": "Book management is currently under development and has very limited functionality",
+		"analysis": {
+			"heading": "Analysis",
+			"description": "Re-analyze this book to update metadata from its file",
+			"button": "Analyze Media",
+			"buttonTitle": "Analyze this book",
+			"inProgress": "Analysis already in progress"
+		},
+		"writeback": {
+			"heading": "Write metadata to file",
+			"description": "Embed the metadata stored in Stump into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
+			"button": "Write metadata to file",
+			"toasts": {
+				"written": "Metadata written into the file",
+				"nothingToWrite": "Nothing to write — the book has no stored metadata",
+				"failed": "Failed to write metadata to file"
+			}
+		},
+		"thumbnail": {
+			"heading": "Thumbnail",
+			"description": "Change the cover image for this book"
+		}
+	},
+	"epubReader": {
+		"failedToLoad": "Failed to load the book"
 	}
 }

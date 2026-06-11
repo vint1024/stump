@@ -8,6 +8,7 @@ import {
 	ReadingMode,
 	SupportedFont,
 } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import { Book, Contents, Rendition } from 'epubjs'
 import uniqby from 'lodash/uniqBy'
@@ -187,6 +188,7 @@ const injectFontStylesheet = (rendition: Rendition) => {
  */
 export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 	const { sdk } = useSDK()
+	const { t } = useLocaleContext()
 	const { isDarkVariant } = useTheme()
 
 	const {
@@ -403,7 +405,7 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 			// otherwise leave the reader stuck on an infinite spinner
 			epubjsBook.on('openFailed', (error: unknown) => {
 				console.error('Failed to open epub', error)
-				setBookError('Failed to load the book')
+				setBookError(t('epubReader.failedToLoad'))
 			})
 			setBook(epubjsBook)
 		}
@@ -557,7 +559,7 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 			})
 			.catch((error: unknown) => {
 				console.error('Failed to initialize epub', error)
-				setBookError('Failed to load the book')
+				setBookError(t('epubReader.failedToLoad'))
 			})
 	}, [
 		book,
