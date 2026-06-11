@@ -21,6 +21,7 @@ const query = graphql(`
 			name
 			description
 			path
+			extraPaths
 			stats {
 				seriesCount
 				bookCount

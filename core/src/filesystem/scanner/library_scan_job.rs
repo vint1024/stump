@@ -6,8 +6,8 @@ use std::{
 use async_graphql::SimpleObject;
 use models::{
 	entity::{
-		library, library_config, library_scan_record, media, metadata_provider_config,
-		series,
+		library, library_config, library_path, library_scan_record, media,
+		metadata_provider_config, series,
 	},
 	shared::enums::FileStatus,
 };
@@ -163,34 +163,68 @@ impl JobLifecycle for LibraryScanJob {
 		self.config = Some(config);
 
 		ctx.report_progress(JobProgress::msg("Performing task discovery"));
-		let WalkedLibrary {
-			series_to_create,
-			recovered_series,
-			series_to_visit,
-			missing_series,
-			library_is_missing,
-			ignored_directories,
-			seen_directories,
-		} = walk_library(
-			&self.path,
-			WalkerCtx {
-				db: ctx.apalis_state.conn.clone(),
-				ignore_rules,
-				max_depth: is_collection_based.then_some(1),
-				options: self.options,
-			},
-		)
-		.await?;
+
+		// A library may span multiple folders: the primary path on the library
+		// itself plus any extra roots configured in library_paths. Walk each
+		// root and merge the results
+		let extra_paths =
+			library_path::Entity::fetch_for_library(ctx.conn(), &self.id).await?;
+		let all_roots = std::iter::once(self.path.clone())
+			.chain(extra_paths)
+			.collect::<Vec<_>>();
+
+		let mut series_to_create = Vec::new();
+		let mut recovered_series = Vec::new();
+		let mut series_to_visit = Vec::new();
+		let mut missing_series = Vec::new();
+		let mut missing_root_count = 0usize;
+
+		for root in &all_roots {
+			let WalkedLibrary {
+				series_to_create: root_series_to_create,
+				recovered_series: root_recovered_series,
+				series_to_visit: root_series_to_visit,
+				missing_series: root_missing_series,
+				library_is_missing: root_is_missing,
+				ignored_directories,
+				seen_directories,
+			} = walk_library(
+				root,
+				WalkerCtx {
+					db: ctx.apalis_state.conn.clone(),
+					ignore_rules: ignore_rules.clone(),
+					max_depth: is_collection_based.then_some(1),
+					options: self.options,
+				},
+			)
+			.await?;
+
+			if root_is_missing {
+				tracing::warn!(?root, "Library root is missing on disk");
+				missing_root_count += 1;
+				continue;
+			}
+
+			series_to_create.extend(root_series_to_create);
+			recovered_series.extend(root_recovered_series);
+			series_to_visit.extend(root_series_to_visit);
+			missing_series.extend(root_missing_series);
+			output.total_directories += seen_directories + ignored_directories;
+			output.ignored_directories += ignored_directories;
+		}
+
+		// Only consider the library missing when EVERY root is gone
+		let library_is_missing = missing_root_count == all_roots.len();
+
 		tracing::debug!(
 			series_to_create = series_to_create.len(),
 			series_to_visit = series_to_visit.len(),
 			missing_series = missing_series.len(),
 			recovered_series = recovered_series.len(),
 			library_is_missing,
+			roots = all_roots.len(),
 			"Walked library"
 		);
-		output.total_directories = seen_directories + ignored_directories;
-		output.ignored_directories = ignored_directories;
 
 		if library_is_missing {
 			handle_missing_library(ctx.conn(), self.id.as_str()).await?;
@@ -536,10 +570,19 @@ impl JobLifecycle for LibraryScanJob {
 					.config
 					.as_ref()
 					.and_then(|o| (!o.is_collection_based()).then_some(1));
-				if path_buf.as_path() == Path::new(&self.path) {
-					// The exception is when the series "is" the libray (i.e. the root of the library contains
-					// books). This is kind of an anti-pattern wrt collection-priority, but it needs to be handled
-					// in order to avoid the scanner re-scanning the entire library...
+				// The exception is when the series "is" one of the library roots (i.e.
+				// a root folder contains books directly). This is kind of an anti-pattern
+				// wrt collection-priority, but it needs to be handled in order to avoid
+				// the scanner re-scanning the entire library...
+				let is_library_root = if path_buf.as_path() == Path::new(&self.path) {
+					true
+				} else {
+					library_path::Entity::fetch_for_library(ctx.conn(), &self.id)
+						.await?
+						.iter()
+						.any(|root| path_buf.as_path() == Path::new(root))
+				};
+				if is_library_root {
 					max_depth = Some(1);
 				}
 
