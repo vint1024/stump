@@ -71,9 +71,9 @@ export default function BasicLibraryInformation({ onSetShowDirectoryPicker }: Pr
 
 			<div className="gap-y-3 flex flex-col">
 				<div>
-					<Label>Additional folders</Label>
+					<Label>{t(getKey('extraPaths.label'))}</Label>
 					<Text size="sm" variant="muted">
-						Optional extra folders this library spans, in addition to the main path
+						{t(getKey('extraPaths.description'))}
 					</Text>
 				</div>
 
@@ -95,7 +95,7 @@ export default function BasicLibraryInformation({ onSetShowDirectoryPicker }: Pr
 						<Button
 							size="icon"
 							type="button"
-							title="Remove folder"
+							title={t(getKey('extraPaths.removeFolder'))}
 							onClick={() =>
 								form.setValue(
 									'extraPaths',
@@ -122,7 +122,7 @@ export default function BasicLibraryInformation({ onSetShowDirectoryPicker }: Pr
 						onClick={() => form.setValue('extraPaths', [...extraPaths, ''], { shouldDirty: true })}
 					>
 						<FolderPlus className="mr-2 h-4 w-4" />
-						Add folder
+						{t(getKey('extraPaths.addFolder'))}
 					</Button>
 				</div>
 

@@ -1,6 +1,7 @@
 import { useGraphQL, useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Button, Heading, Input, NativeSelect, Text } from '@stump/components'
 import { graphql } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDebouncedValue } from 'rooks'
@@ -8,6 +9,8 @@ import { toast } from 'sonner'
 
 /** The merge target picker fetches at most this many matches per search */
 const CANDIDATE_LIMIT = 50
+
+const LOCALE_BASE = 'seriesSettingsScene.merge'
 
 const query = graphql(`
 	query MergeSeriesSection($id: ID!) {
@@ -66,6 +69,7 @@ type Props = {
  */
 export default function MergeSeriesSection({ seriesId }: Props) {
 	const { sdk } = useSDK()
+	const { t } = useLocaleContext()
 	const client = useQueryClient()
 
 	const {
@@ -88,10 +92,7 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 			limit: CANDIDATE_LIMIT,
 		},
 	)
-	const candidates = useMemo(
-		() => candidatesData?.series.nodes ?? [],
-		[candidatesData],
-	)
+	const candidates = useMemo(() => candidatesData?.series.nodes ?? [], [candidatesData])
 
 	const [targetId, setTargetId] = useState<string>('')
 
@@ -117,23 +118,23 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 
 	const { mutate: mergeSeries, isPending: isMerging } = useGraphQLMutation(mergeMutation, {
 		onSuccess: () => {
-			toast.success('Series merged')
+			toast.success(t(`${LOCALE_BASE}.toasts.merged`))
 			invalidate()
 		},
 		onError: (error) => {
 			console.error('Failed to merge series', error)
-			toast.error('Failed to merge series')
+			toast.error(t(`${LOCALE_BASE}.toasts.mergeFailed`))
 		},
 	})
 
 	const { mutate: unmergeSeries, isPending: isUnmerging } = useGraphQLMutation(unmergeMutation, {
 		onSuccess: () => {
-			toast.success('Series restored')
+			toast.success(t(`${LOCALE_BASE}.toasts.restored`))
 			invalidate()
 		},
 		onError: (error) => {
 			console.error('Failed to unmerge series', error)
-			toast.error('Failed to unmerge series')
+			toast.error(t(`${LOCALE_BASE}.toasts.restoreFailed`))
 		},
 	})
 
@@ -145,17 +146,15 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 	return (
 		<div className="gap-y-4 flex w-full flex-col">
 			<div>
-				<Heading size="sm">Merge</Heading>
+				<Heading size="sm">{t(`${LOCALE_BASE}.heading`)}</Heading>
 				<Text size="sm" variant="muted">
-					Move every book of this series into another series in the same library. The folder on disk
-					is not touched, and future scans keep feeding the target series. Merges can be undone from
-					the target series
+					{t(`${LOCALE_BASE}.description`)}
 				</Text>
 			</div>
 
 			<div className="gap-2 md:max-w-md flex max-w-full flex-col">
 				<Input
-					placeholder="Search series…"
+					placeholder={t(`${LOCALE_BASE}.searchPlaceholder`)}
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
 				/>
@@ -164,7 +163,7 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 						value={targetId}
 						onChange={(e) => setTargetId(e.target.value)}
 						options={otherSeries.map(({ id, name }) => ({ label: name, value: id }))}
-						emptyOption={{ label: 'Select a target series…', value: '' }}
+						emptyOption={{ label: t(`${LOCALE_BASE}.selectTarget`), value: '' }}
 					/>
 					<Button
 						type="button"
@@ -172,12 +171,12 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 						disabled={!targetId || isMerging}
 						onClick={handleMerge}
 					>
-						Merge into
+						{t(`${LOCALE_BASE}.button`)}
 					</Button>
 				</div>
 				{otherSeries.length >= CANDIDATE_LIMIT - 1 && (
 					<Text size="xs" variant="muted">
-						Showing the first {CANDIDATE_LIMIT} matches — refine the search to find others
+						{t(`${LOCALE_BASE}.limitHint`, { limit: CANDIDATE_LIMIT })}
 					</Text>
 				)}
 			</div>
@@ -185,7 +184,7 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 			{mergedSources.length > 0 && (
 				<div className="gap-y-2 flex flex-col">
 					<Text size="sm" variant="muted">
-						Folders merged into this series:
+						{t(`${LOCALE_BASE}.mergedSources`)}
 					</Text>
 					<ul className="list-inside list-disc">
 						{mergedSources.map(({ name, path }) => (
@@ -203,7 +202,7 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 							disabled={isUnmerging}
 							onClick={() => unmergeSeries({ id: seriesId })}
 						>
-							Unmerge all
+							{t(`${LOCALE_BASE}.unmergeAll`)}
 						</Button>
 					</div>
 				</div>
