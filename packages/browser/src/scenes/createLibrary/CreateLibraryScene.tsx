@@ -74,6 +74,7 @@ export default function CreateLibraryScene() {
 			const {
 				name,
 				path,
+				extraPaths,
 				description,
 				tags,
 				scanAfterPersist,
@@ -90,6 +91,7 @@ export default function CreateLibraryScene() {
 					thumbnailConfig: intoThumbnailConfig(thumbnailConfig),
 				} as CreateOrUpdateLibraryInput['config'],
 				description,
+				extraPaths: extraPaths.filter(Boolean),
 				name,
 				path,
 				scanAfterPersist,

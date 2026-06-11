@@ -6,8 +6,8 @@ use async_graphql::{
 
 use models::{
 	entity::{
-		library, library_config, library_exclusion, library_scan_record, library_tag,
-		media, media_metadata, series, tag, user,
+		library, library_config, library_exclusion, library_path, library_scan_record,
+		library_tag, media, media_metadata, series, tag, user,
 	},
 	shared::{
 		alphabet::{AvailableAlphabet, EntityLetter},
@@ -47,6 +47,12 @@ impl From<library::Model> for Library {
 
 #[ComplexObject]
 impl Library {
+	/// Additional root folders this library spans, beyond its primary path
+	async fn extra_paths(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+		Ok(library_path::Entity::fetch_for_library(conn, &self.model.id).await?)
+	}
+
 	async fn authors(&self, ctx: &Context<'_>) -> Result<Vec<Author>> {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 

@@ -106,6 +106,8 @@ pub enum Relation {
 		on_delete = "Restrict"
 	)]
 	LibraryConfig,
+	#[sea_orm(has_many = "super::library_path::Entity")]
+	LibraryPaths,
 	#[sea_orm(has_many = "super::library_scan_record::Entity")]
 	LibraryScanRecords,
 	#[sea_orm(has_many = "super::series::Entity")]
@@ -127,6 +129,12 @@ impl Related<super::library_exclusion::Entity> for Entity {
 impl Related<super::library_config::Entity> for Entity {
 	fn to() -> RelationDef {
 		Relation::LibraryConfig.def()
+	}
+}
+
+impl Related<super::library_path::Entity> for Entity {
+	fn to() -> RelationDef {
+		Relation::LibraryPaths.def()
 	}
 }
 

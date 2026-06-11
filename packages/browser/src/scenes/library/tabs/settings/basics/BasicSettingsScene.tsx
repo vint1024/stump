@@ -48,32 +48,43 @@ export default function BasicSettingsScene() {
 	})
 
 	const [showDirectoryPicker, setShowDirectoryPicker] = useState(false)
-	const [path, name, description, tags] = useWatch({
+	const [path, name, description, tags, extraPaths] = useWatch({
 		control: form.control,
-		name: ['path', 'name', 'description', 'tags'],
+		name: ['path', 'name', 'description', 'tags', 'extraPaths'],
 	})
 
 	const hasChanges = useMemo(() => {
 		const currentTagSet = new Set(tags?.map(({ label }) => label) || [])
 		const libraryTagSet = new Set(library?.tags?.map(({ name }) => name) || [])
+		const currentExtraPaths = (extraPaths ?? []).filter(Boolean).map(normalizePath)
+		const libraryExtraPaths = library?.extraPaths ?? []
 
 		return (
 			library?.path !== normalizePath(path) ||
 			library?.name !== name ||
 			library?.description !== description ||
+			currentExtraPaths.length !== libraryExtraPaths.length ||
+			currentExtraPaths.some((p) => !libraryExtraPaths.includes(p)) ||
 			[...currentTagSet].some((tag) => !libraryTagSet.has(tag)) ||
 			[...libraryTagSet].some((tag) => !currentTagSet.has(tag))
 		)
-	}, [library, path, name, description, tags])
+	}, [library, path, name, description, tags, extraPaths])
 
 	const handleSubmit = useCallback(
 		(values: CreateOrUpdateLibrarySchema) => {
+			const newExtraPaths = values.extraPaths.filter(Boolean)
+			const oldExtraPaths = library.extraPaths ?? []
+			const extraPathsChanged =
+				newExtraPaths.length !== oldExtraPaths.length ||
+				newExtraPaths.some((p) => !oldExtraPaths.includes(p))
+
 			patch({
 				config: { thumbnailConfig: intoThumbnailConfig(values.thumbnailConfig) },
 				description: values.description,
+				extraPaths: newExtraPaths,
 				name: values.name,
 				path: values.path,
-				scanAfterPersist: library.path !== values.path,
+				scanAfterPersist: library.path !== values.path || extraPathsChanged,
 				tags: values.tags?.map(({ label }) => label),
 			})
 		},
