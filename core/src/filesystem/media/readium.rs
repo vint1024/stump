@@ -370,6 +370,57 @@ impl ReadiumManifestGenerator {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::filesystem::media::tests::get_test_epub_path;
+
+	#[test]
+	fn test_generate_manifest_from_real_epub() {
+		let generator = ReadiumManifestGenerator::new(
+			get_test_epub_path(),
+			"http://localhost:10801/api/v2/epub/test-id",
+		);
+		let manifest = generator.generate_manifest().expect("manifest generated");
+
+		assert!(!manifest.metadata.title.is_empty());
+		assert!(!manifest.reading_order.is_empty());
+		// Every reading order href must point at the resource endpoint
+		for link in &manifest.reading_order {
+			assert!(
+				link.href
+					.starts_with("http://localhost:10801/api/v2/epub/test-id/resource/"),
+				"unexpected href: {}",
+				link.href
+			);
+		}
+		// The self link must point at the manifest route
+		assert!(manifest
+			.links
+			.iter()
+			.any(|l| l.href.ends_with("/manifest.json")));
+	}
+
+	#[test]
+	fn test_generate_positions_from_real_epub() {
+		let generator = ReadiumManifestGenerator::new(
+			get_test_epub_path(),
+			"http://localhost:10801/api/v2/epub/test-id",
+		);
+		let positions = generator.generate_positions().expect("positions generated");
+
+		assert!(positions.total > 0);
+		assert_eq!(positions.total as usize, positions.positions.len());
+		// Positions are 1-based and monotonically increasing
+		for (index, position) in positions.positions.iter().enumerate() {
+			assert_eq!(position.locations.position, (index + 1) as u32);
+		}
+		// total_progression must be monotonically non-decreasing within [0, 1]
+		let mut last = 0.0f64;
+		for position in &positions.positions {
+			let progression = position.locations.total_progression;
+			assert!((0.0..=1.0).contains(&progression));
+			assert!(progression >= last);
+			last = progression;
+		}
+	}
 
 	#[test]
 	fn test_rwpm_link_builder() {
