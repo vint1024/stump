@@ -17,7 +17,10 @@ use stump_core::job::stump_job::StumpJob;
 use stump_core::{
 	database::SQLITE_BIND_LIMIT,
 	filesystem::{
-		image::{generate_book_thumbnail, GenerateThumbnailOptions},
+		image::{
+			generate_book_thumbnail, GenerateThumbnailOptions,
+			ThumbnailGenerationJobParams,
+		},
 		media::analysis::{AnalysisJobConfig, MediaAnalysisJobScope},
 	},
 };
@@ -223,6 +226,44 @@ impl SeriesMutation {
 
 		core.enqueue(StumpJob::series_scan(model.id, model.path, None))
 			.await?;
+
+		Ok(true)
+	}
+
+	/// Enqueue a job which (re)generates the thumbnail for a single series from
+	/// its first book. The library-level job covers series too, but only as part
+	/// of a full sweep — this gives the series page its own regenerate action
+	#[graphql(guard = "PermissionGuard::one(UserPermission::EditThumbnails)")]
+	async fn generate_series_thumbnail(
+		&self,
+		ctx: &Context<'_>,
+		id: ID,
+		#[graphql(default = true)] force_regenerate: bool,
+	) -> Result<bool> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let core = ctx.data::<CoreContext>()?;
+		let conn = core.conn.as_ref();
+
+		let model = series::Entity::find_for_user(user)
+			.filter(series::Column::Id.eq(id.to_string()))
+			.one(conn)
+			.await?
+			.ok_or("Series not found")?;
+
+		let library_id = model.library_id.clone().ok_or("Series has no library")?;
+		let config = library::Entity::find()
+			.filter(library::Column::Id.eq(library_id))
+			.find_also_related(library_config::Entity)
+			.one(conn)
+			.await?
+			.and_then(|(_, config)| config)
+			.ok_or("Library config not found")?;
+
+		core.enqueue(StumpJob::thumbnail_generation(
+			config.thumbnail_config.unwrap_or_default(),
+			ThumbnailGenerationJobParams::series(vec![model.id], force_regenerate),
+		))
+		.await?;
 
 		Ok(true)
 	}
