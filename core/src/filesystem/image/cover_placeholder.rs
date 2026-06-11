@@ -31,14 +31,14 @@ const TEXT_COLOR: Rgb<u8> = Rgb([242, 240, 235]);
 /// Muted, book-ish background palette. One entry is picked deterministically
 /// per title so the same book always renders the same placeholder.
 const PALETTE: [Rgb<u8>; 8] = [
-	Rgb([52, 73, 94]),   // slate blue
-	Rgb([84, 56, 71]),   // plum
-	Rgb([47, 89, 70]),   // forest
-	Rgb([105, 72, 49]),  // leather brown
-	Rgb([61, 64, 91]),   // indigo grey
-	Rgb([112, 66, 65]),  // brick
-	Rgb([44, 95, 95]),   // teal
-	Rgb([90, 70, 100]),  // violet grey
+	Rgb([52, 73, 94]),  // slate blue
+	Rgb([84, 56, 71]),  // plum
+	Rgb([47, 89, 70]),  // forest
+	Rgb([105, 72, 49]), // leather brown
+	Rgb([61, 64, 91]),  // indigo grey
+	Rgb([112, 66, 65]), // brick
+	Rgb([44, 95, 95]),  // teal
+	Rgb([90, 70, 100]), // violet grey
 ];
 
 /// Generate a PNG placeholder cover for a book without a usable embedded
@@ -69,7 +69,8 @@ pub fn generate_cover_placeholder(
 	let center_x = SPINE_WIDTH as f32 / 2.0 + PLACEHOLDER_WIDTH as f32 / 2.0;
 
 	let title_scale = PxScale::from(TITLE_SCALE);
-	let title_lines = wrap_text(&font, title_scale, title, max_text_width, MAX_TITLE_LINES);
+	let title_lines =
+		wrap_text(&font, title_scale, title, max_text_width, MAX_TITLE_LINES);
 	let title_line_height = font.as_scaled(title_scale).height() * LINE_SPACING;
 	let title_block_height = title_lines.len() as f32 * title_line_height;
 	// Center the title block slightly above the vertical middle, like a real cover
@@ -82,15 +83,21 @@ pub fn generate_cover_placeholder(
 
 	if let Some(author) = author {
 		let author_scale = PxScale::from(AUTHOR_SCALE);
-		let author_lines =
-			wrap_text(&font, author_scale, author, max_text_width, MAX_AUTHOR_LINES);
+		let author_lines = wrap_text(
+			&font,
+			author_scale,
+			author,
+			max_text_width,
+			MAX_AUTHOR_LINES,
+		);
 		let author_line_height = font.as_scaled(author_scale).height() * LINE_SPACING;
 		let block_height = author_lines.len() as f32 * author_line_height;
 		let mut author_baseline = PLACEHOLDER_HEIGHT as f32 - 90.0 - block_height
 			+ font.as_scaled(author_scale).ascent();
 
 		// A small separator rule between the title block and the author block
-		let rule_y = (author_baseline - font.as_scaled(author_scale).ascent() - 24.0) as u32;
+		let rule_y =
+			(author_baseline - font.as_scaled(author_scale).ascent() - 24.0) as u32;
 		if rule_y > 0 && rule_y < PLACEHOLDER_HEIGHT - 2 {
 			let rule_half = 30u32;
 			for y in rule_y..rule_y + 2 {
@@ -103,7 +110,14 @@ pub fn generate_cover_placeholder(
 		}
 
 		for line in &author_lines {
-			draw_line_centered(&mut image, &font, author_scale, line, center_x, author_baseline);
+			draw_line_centered(
+				&mut image,
+				&font,
+				author_scale,
+				line,
+				center_x,
+				author_baseline,
+			);
 			author_baseline += author_line_height;
 		}
 	}
@@ -268,7 +282,8 @@ mod tests {
 
 	fn count_text_pixels(png: &[u8]) -> usize {
 		let decoded = image::load_from_memory(png).expect("valid png").to_rgb8();
-		let (background, accent) = (decoded.get_pixel(300, 10), decoded.get_pixel(5, 450));
+		let (background, accent) =
+			(decoded.get_pixel(300, 10), decoded.get_pixel(5, 450));
 		let background = *background;
 		let accent = *accent;
 		decoded
@@ -279,8 +294,11 @@ mod tests {
 
 	#[test]
 	fn generates_valid_png_with_expected_dimensions() {
-		let bytes = generate_cover_placeholder("The Fellowship of the Ring", Some("J.R.R. Tolkien"))
-			.expect("placeholder generated");
+		let bytes = generate_cover_placeholder(
+			"The Fellowship of the Ring",
+			Some("J.R.R. Tolkien"),
+		)
+		.expect("placeholder generated");
 		let decoded = image::load_from_memory(&bytes).expect("decodable png");
 		assert_eq!(decoded.width(), PLACEHOLDER_WIDTH);
 		assert_eq!(decoded.height(), PLACEHOLDER_HEIGHT);
@@ -288,8 +306,9 @@ mod tests {
 
 	#[test]
 	fn renders_cyrillic_titles() {
-		let bytes = generate_cover_placeholder("Оборотень на Рождество", Some("Джиджи Риверс"))
-			.expect("placeholder generated");
+		let bytes =
+			generate_cover_placeholder("Оборотень на Рождество", Some("Джиджи Риверс"))
+				.expect("placeholder generated");
 		// If the font lacked Cyrillic glyphs nothing (or only .notdef boxes)
 		// would be drawn; require a substantial number of anti-aliased pixels
 		assert!(count_text_pixels(&bytes) > 2_000);
@@ -298,20 +317,23 @@ mod tests {
 	#[test]
 	fn is_deterministic_for_the_same_input() {
 		let first = generate_cover_placeholder("Same Book", Some("Same Author")).unwrap();
-		let second = generate_cover_placeholder("Same Book", Some("Same Author")).unwrap();
+		let second =
+			generate_cover_placeholder("Same Book", Some("Same Author")).unwrap();
 		assert_eq!(first, second);
 	}
 
 	#[test]
 	fn handles_empty_title_and_missing_author() {
-		let bytes = generate_cover_placeholder("  ", None).expect("placeholder generated");
+		let bytes =
+			generate_cover_placeholder("  ", None).expect("placeholder generated");
 		assert!(image::load_from_memory(&bytes).is_ok());
 	}
 
 	#[test]
 	fn truncates_very_long_titles_with_ellipsis() {
 		let long_title = "word ".repeat(120);
-		let bytes = generate_cover_placeholder(&long_title, None).expect("placeholder generated");
+		let bytes =
+			generate_cover_placeholder(&long_title, None).expect("placeholder generated");
 		assert!(image::load_from_memory(&bytes).is_ok());
 	}
 }

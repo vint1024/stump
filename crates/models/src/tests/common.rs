@@ -30,6 +30,7 @@ pub fn get_default_user() -> AuthUser {
 		is_locked: false,
 		permissions: vec![],
 		age_restriction: None,
+		content_rules: vec![],
 		preferences: None,
 	}
 }

@@ -50,7 +50,6 @@ pub fn decode_base64_credentials(
 	}
 }
 
-
 /// Load the user's content access rules so every downstream query can filter
 /// restricted content. Attached at authentication time, like the age restriction
 pub async fn attach_content_rules(
