@@ -470,6 +470,38 @@ export type ConfidenceFactor = {
   weight: Scalars['Float']['output'];
 };
 
+/** A content access rule as exposed over the API */
+export type ContentAccessRule = {
+  __typename?: 'ContentAccessRule';
+  dimension: ContentRuleDimension;
+  id: Scalars['Int']['output'];
+  mode: ContentRuleMode;
+  restrictOnUnset: Scalars['Boolean']['output'];
+  values: Array<Scalars['String']['output']>;
+};
+
+export type ContentAccessRuleInput = {
+  dimension: ContentRuleDimension;
+  mode: ContentRuleMode;
+  restrictOnUnset?: Scalars['Boolean']['input'];
+  values: Array<Scalars['String']['input']>;
+};
+
+/** The dimension a content access rule applies to */
+export enum ContentRuleDimension {
+  Genre = 'GENRE',
+  Publisher = 'PUBLISHER',
+  Tag = 'TAG'
+}
+
+/** Whether a content access rule allows only the listed values or excludes them */
+export enum ContentRuleMode {
+  /** Hide items matching at least one listed value */
+  Exclude = 'EXCLUDE',
+  /** Show only items matching at least one listed value */
+  Only = 'ONLY'
+}
+
 /** An event that is emitted by the core and consumed by a client */
 export type CoreEvent = CreatedManySeries | CreatedMedia | CreatedOrUpdatedManyMedia | DiscoveredMissingLibrary | JobOutput | JobStarted | JobUpdate;
 
@@ -2155,6 +2187,12 @@ export type Mutation = {
    * and unlinks removed ones. Returns the updated series.
    */
   setSeriesTags: Series;
+  /**
+   * Replace the full set of content access rules for a user. Rules combine
+   * with AND; each rule allows only (or excludes) items matching at least
+   * one of its values in the given dimension (tag/publisher/genre)
+   */
+  setUserContentAccessRules: Array<ContentAccessRule>;
   /** Suggest a book for the book club */
   suggestBook: BookClubBookSuggestion;
   /** Send a test email to verify the SMTP configuration is working */
@@ -2789,6 +2827,12 @@ export type MutationSetSeriesLockedFieldsArgs = {
 export type MutationSetSeriesTagsArgs = {
   id: Scalars['ID']['input'];
   tags: Array<Scalars['String']['input']>;
+};
+
+
+export type MutationSetUserContentAccessRulesArgs = {
+  rules: Array<ContentAccessRuleInput>;
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -4632,6 +4676,8 @@ export type User = {
   ageRestriction?: Maybe<AgeRestriction>;
   avatarPath?: Maybe<Scalars['String']['output']>;
   avatarUrl?: Maybe<Scalars['String']['output']>;
+  /** The user's content access rules (tag/publisher/genre allow- or deny-lists) */
+  contentAccessRules: Array<ContentAccessRule>;
   continueReading: PaginatedMediaResponse;
   createdAt: Scalars['DateTime']['output'];
   deletedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -6753,6 +6799,21 @@ export type UserStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type UserStatsQuery = { __typename?: 'Query', userCount: number, activeReadingSessionCount: number, finishedReadingSessionCount: number, topReaders: Array<{ __typename?: 'User', id: string, username: string, finishedReadingSessionsCount: number }> };
+
+export type ContentAccessRulesSectionQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type ContentAccessRulesSectionQuery = { __typename?: 'Query', userById: { __typename?: 'User', id: string, contentAccessRules: Array<{ __typename?: 'ContentAccessRule', id: number, dimension: ContentRuleDimension, mode: ContentRuleMode, values: Array<string>, restrictOnUnset: boolean }> } };
+
+export type ContentAccessRulesSectionSaveMutationVariables = Exact<{
+  userId: Scalars['ID']['input'];
+  rules: Array<ContentAccessRuleInput> | ContentAccessRuleInput;
+}>;
+
+
+export type ContentAccessRulesSectionSaveMutation = { __typename?: 'Mutation', setUserContentAccessRules: Array<{ __typename?: 'ContentAccessRule', id: number }> };
 
 export type CreateOrUpdateUserFormUpdateUserMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -12966,6 +13027,27 @@ export const UserStatsDocument = new TypedDocumentString(`
   finishedReadingSessionCount
 }
     `) as unknown as TypedDocumentString<UserStatsQuery, UserStatsQueryVariables>;
+export const ContentAccessRulesSectionDocument = new TypedDocumentString(`
+    query ContentAccessRulesSection($id: ID!) {
+  userById(id: $id) {
+    id
+    contentAccessRules {
+      id
+      dimension
+      mode
+      values
+      restrictOnUnset
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<ContentAccessRulesSectionQuery, ContentAccessRulesSectionQueryVariables>;
+export const ContentAccessRulesSectionSaveDocument = new TypedDocumentString(`
+    mutation ContentAccessRulesSectionSave($userId: ID!, $rules: [ContentAccessRuleInput!]!) {
+  setUserContentAccessRules(userId: $userId, rules: $rules) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<ContentAccessRulesSectionSaveMutation, ContentAccessRulesSectionSaveMutationVariables>;
 export const CreateOrUpdateUserFormUpdateUserDocument = new TypedDocumentString(`
     mutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {
   updateUser(id: $id, input: $input) {
