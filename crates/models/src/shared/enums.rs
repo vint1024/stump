@@ -98,6 +98,65 @@ pub enum EntityVisibility {
 	Private,
 }
 
+/// The dimension a content access rule applies to
+#[derive(
+	Eq,
+	Copy,
+	Hash,
+	Debug,
+	Clone,
+	EnumIter,
+	PartialEq,
+	Serialize,
+	Deserialize,
+	DeriveActiveEnum,
+	EnumString,
+	Display,
+	Enum,
+)]
+#[sea_orm(
+	rs_type = "String",
+	rename_all = "SCREAMING_SNAKE_CASE",
+	db_type = "String(StringLen::None)"
+)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+pub enum ContentRuleDimension {
+	Tag,
+	Publisher,
+	Genre,
+}
+
+/// Whether a content access rule allows only the listed values or excludes them
+#[derive(
+	Eq,
+	Copy,
+	Hash,
+	Debug,
+	Clone,
+	EnumIter,
+	PartialEq,
+	Serialize,
+	Deserialize,
+	DeriveActiveEnum,
+	EnumString,
+	Display,
+	Enum,
+)]
+#[sea_orm(
+	rs_type = "String",
+	rename_all = "SCREAMING_SNAKE_CASE",
+	db_type = "String(StringLen::None)"
+)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+pub enum ContentRuleMode {
+	/// Hide items matching at least one listed value
+	Exclude,
+	/// Show only items matching at least one listed value
+	Only,
+}
+
 /// The different statuses a file reference can have
 #[derive(
 	Eq,

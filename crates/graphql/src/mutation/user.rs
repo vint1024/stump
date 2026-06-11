@@ -3,16 +3,19 @@ use crate::{
 	error_message::FORBIDDEN_ACTION,
 	guard::{OptionalFeature, OptionalFeatureGuard, PermissionGuard, ServerOwnerGuard},
 	input::user::{
-		AgeRestrictionInput, CreateUserInput, NavigationArrangementInput,
-		UpdateUserInput, UpdateUserPreferencesInput,
+		AgeRestrictionInput, ContentAccessRuleInput, CreateUserInput,
+		NavigationArrangementInput, UpdateUserInput, UpdateUserPreferencesInput,
 	},
-	object::{user::User, user_preferences::UserPreferences},
+	object::{
+		user::{ContentAccessRule, User},
+		user_preferences::UserPreferences,
+	},
 	utils::save_user_session,
 };
 use async_graphql::{Context, Object, Result, Upload, ID};
 use models::{
 	entity::{
-		age_restriction, session,
+		age_restriction, content_access_rule, session,
 		user::{self, AuthUser},
 		user_login_activity, user_preferences,
 	},
@@ -175,6 +178,60 @@ impl UserMutation {
 		let result = active.update(conn).await?;
 
 		Ok(User::from(result))
+	}
+
+	/// Replace the full set of content access rules for a user. Rules combine
+	/// with AND; each rule allows only (or excludes) items matching at least
+	/// one of its values in the given dimension (tag/publisher/genre)
+	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageUsers)")]
+	async fn set_user_content_access_rules(
+		&self,
+		ctx: &Context<'_>,
+		user_id: ID,
+		rules: Vec<ContentAccessRuleInput>,
+	) -> Result<Vec<ContentAccessRule>> {
+		let core_ctx = ctx.data::<CoreContext>()?;
+		let conn = core_ctx.conn.as_ref();
+
+		let target = user::Entity::find_by_id(user_id.to_string())
+			.one(conn)
+			.await?
+			.ok_or("User not found")?;
+		if target.is_server_owner {
+			return Err("The server owner cannot be restricted".into());
+		}
+
+		let txn = conn.begin().await?;
+		content_access_rule::Entity::delete_many()
+			.filter(content_access_rule::Column::UserId.eq(target.id.clone()))
+			.exec(&txn)
+			.await?;
+		for rule in &rules {
+			let values = rule
+				.values
+				.iter()
+				.map(|value| value.trim().to_string())
+				.filter(|value| !value.is_empty())
+				.collect::<Vec<_>>();
+			if values.is_empty() {
+				continue;
+			}
+			content_access_rule::ActiveModel {
+				user_id: Set(target.id.clone()),
+				dimension: Set(rule.dimension),
+				mode: Set(rule.mode),
+				values: Set(serde_json::to_value(values)?),
+				restrict_on_unset: Set(rule.restrict_on_unset),
+				..Default::default()
+			}
+			.insert(&txn)
+			.await?;
+		}
+		txn.commit().await?;
+
+		let saved =
+			content_access_rule::Entity::fetch_for_user(conn, &target.id).await?;
+		Ok(saved.into_iter().map(ContentAccessRule::from).collect())
 	}
 
 	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageUsers)")]

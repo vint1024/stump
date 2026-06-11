@@ -423,6 +423,37 @@ type ConfidenceFactor {
 	matched: Boolean!
 }
 
+"A content access rule as exposed over the API"
+type ContentAccessRule {
+	id: Int!
+	dimension: ContentRuleDimension!
+	mode: ContentRuleMode!
+	values: [String!]!
+	restrictOnUnset: Boolean!
+}
+
+input ContentAccessRuleInput {
+	dimension: ContentRuleDimension!
+	mode: ContentRuleMode!
+	values: [String!]!
+	restrictOnUnset: Boolean! = false
+}
+
+"The dimension a content access rule applies to"
+enum ContentRuleDimension {
+	TAG
+	PUBLISHER
+	GENRE
+}
+
+"Whether a content access rule allows only the listed values or excludes them"
+enum ContentRuleMode {
+	"Hide items matching at least one listed value"
+	EXCLUDE
+	"Show only items matching at least one listed value"
+	ONLY
+}
+
 "An event that is emitted by the core and consumed by a client"
 union CoreEvent = JobStarted | JobUpdate | JobOutput | DiscoveredMissingLibrary | CreatedMedia | CreatedManySeries | CreatedOrUpdatedManyMedia
 
@@ -2087,6 +2118,12 @@ type Mutation {
 	called by a server owner (by passing `id`).
 	"""
 	deleteUserAvatar(id: ID): User!
+	"""
+	Replace the full set of content access rules for a user. Rules combine
+	with AND; each rule allows only (or excludes) items matching at least
+	one of its values in the given dimension (tag/publisher/genre)
+	"""
+	setUserContentAccessRules(userId: ID!, rules: [ContentAccessRuleInput!]!): [ContentAccessRule!]!
 	createUser(input: CreateUserInput!): User!
 	updateViewer(input: UpdateUserInput!): User!
 	updateViewerPreferences(input: UpdateUserPreferencesInput!): UserPreferences!
@@ -3429,6 +3466,8 @@ type User {
 	maxSessionsAllowed: Int
 	oidcEmail: String
 	avatarUrl: String
+	"The user's content access rules (tag/publisher/genre allow- or deny-lists)"
+	contentAccessRules: [ContentAccessRule!]!
 	ageRestriction: AgeRestriction
 	continueReading(pagination: Pagination! = {offset: {page: 1, pageSize: 20, zeroBased: false}}): PaginatedMediaResponse!
 	permissions: [UserPermission!]!

@@ -2,6 +2,7 @@ import { useSDK, useSuspenseGraphQL } from '@stump/client'
 import { graphql, UserPermission } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
 import { useEffect, useMemo } from 'react'
+import { Suspense } from 'react'
 import { Helmet } from 'react-helmet'
 import { useNavigate, useParams } from 'react-router'
 
@@ -10,6 +11,7 @@ import { SceneContainer } from '@/components/container'
 import { useAppContext } from '@/context'
 import paths from '@/paths'
 
+import ContentAccessRulesSection from './ContentAccessRulesSection'
 import CreateOrUpdateUserForm from './CreateOrUpdateUserForm'
 
 const query = graphql(`
@@ -83,6 +85,11 @@ export default function UpdateUserScene() {
 
 			<ContentContainer>
 				{user && <CreateOrUpdateUserForm user={user} existingUsernames={existingUsernames} />}
+				{user && (
+					<Suspense>
+						<ContentAccessRulesSection userId={user.id} />
+					</Suspense>
+				)}
 			</ContentContainer>
 		</SceneContainer>
 	)

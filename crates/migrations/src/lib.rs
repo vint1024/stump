@@ -24,6 +24,7 @@ mod m20260406_000000_add_kobo_sync_sessions;
 mod m20260505_231341_jwt_secrets;
 mod m20260611_000000_library_extra_paths;
 mod m20260611_000001_series_merges;
+mod m20260611_000002_content_access_rules;
 
 pub struct Migrator;
 
@@ -54,6 +55,7 @@ impl MigratorTrait for Migrator {
 			Box::new(m20260505_231341_jwt_secrets::Migration),
 			Box::new(m20260611_000000_library_extra_paths::Migration),
 			Box::new(m20260611_000001_series_merges::Migration),
+			Box::new(m20260611_000002_content_access_rules::Migration),
 		]
 	}
 }

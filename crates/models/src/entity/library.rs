@@ -12,7 +12,7 @@ use crate::shared::{
 	ordering::{OrderBy, OrderDirection},
 };
 
-use super::{library_exclusion, user::AuthUser};
+use super::{content_access_rule, library_exclusion, user::AuthUser};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, SimpleObject, Ordering)]
 #[graphql(name = "LibraryModel")]
@@ -45,9 +45,15 @@ pub struct Model {
 
 impl Entity {
 	pub fn find_for_user(user: &AuthUser) -> Select<Entity> {
-		Entity::find().filter(Column::Id.not_in_subquery(
+		let mut query = Entity::find().filter(Column::Id.not_in_subquery(
 			library_exclusion::Entity::library_hidden_to_user_query(user),
-		))
+		));
+		if let Some(filter) =
+			content_access_rule::library_filter(&user.content_rules)
+		{
+			query = query.filter(filter);
+		}
+		query
 	}
 }
 
