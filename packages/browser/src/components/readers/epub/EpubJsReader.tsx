@@ -203,6 +203,7 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 
 	const [currentLocation, setCurrentLocation] = useState<EpubLocationState>()
 	const [isInitialLoading, setIsInitialLoading] = useState(true)
+	const [bookError, setBookError] = useState<string | null>(null)
 
 	const {
 		bookPreferences: { fontSize, lineHeight, fontFamily, readingMode, readingDirection },
@@ -376,19 +377,26 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 	 * this component's state. It will only run once when media entity is fetched from the
 	 * Stump server.
 	 *
-	 * Note: epubjs uses the download endpoint from the Stump server to locally load the
-	 * epub file. This is why the requestCredentials option is set to true, as it would
-	 * otherwise not be able to authenticate with the server.
+	 * Note: epubjs streams the book through the epub resource endpoint ("directory"
+	 * input), fetching container.xml/OPF/chapters individually instead of downloading
+	 * the whole file. That endpoint only requires read access — NOT the DownloadFile
+	 * permission — so read-only users can read books. The requestCredentials option is
+	 * set to true so requests authenticate with the server.
 	 */
 	useEffect(() => {
 		if (!book && ebook && ebook.media) {
-			setBook(
-				new Book(sdk.media.downloadURL(id), {
-					openAs: 'epub',
-					// @ts-expect-error: epubjs has incorrect types
-					requestCredentials: true,
-				}),
-			)
+			const epubjsBook = new Book(sdk.epub.resourceBaseURL(id), {
+				openAs: 'directory',
+				// @ts-expect-error: epubjs has incorrect types
+				requestCredentials: true,
+			})
+			// epubjs emits openFailed without rejecting `ready`, which would
+			// otherwise leave the reader stuck on an infinite spinner
+			epubjsBook.on('openFailed', (error: unknown) => {
+				console.error('Failed to open epub', error)
+				setBookError('Failed to load the book')
+			})
+			setBook(epubjsBook)
 		}
 	}, [book, ebook, id, sdk])
 
@@ -479,8 +487,11 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 	useEffect(() => {
 		if (!book || !ref.current) return
 
-		book.ready.then(async () => {
-			if (book.spine && !didRenderToScreen.current) {
+		book.ready
+			.then(async () => {
+				if (!book.spine || didRenderToScreen.current) {
+					return
+				}
 				didRenderToScreen.current = true
 				const defaultLoc = book.rendition?.location?.start?.cfi
 
@@ -534,8 +545,11 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 				}
 
 				createSectionLengths(book, setSectionLengths)
-			}
-		})
+			})
+			.catch((error: unknown) => {
+				console.error('Failed to initialize epub', error)
+				setBookError('Failed to load the book')
+			})
 	}, [
 		book,
 		applyEpubPreferences,
@@ -889,7 +903,16 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 					}}
 				</AutoSizer>
 
-				{isInitialLoading && (
+				{bookError && (
+					<div className="gap-1.5 p-4 flex h-full flex-1 flex-col items-center justify-center text-center">
+						<span className="text-base font-medium text-foreground">{bookError}</span>
+						<span className="text-sm text-foreground-muted">
+							You may not have permission to read this book, or the file may be missing or corrupt
+						</span>
+					</div>
+				)}
+
+				{isInitialLoading && !bookError && (
 					<div className="flex h-full flex-1 items-center justify-center">
 						<Spinner />
 					</div>
