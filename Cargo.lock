@@ -4892,6 +4892,7 @@ dependencies = [
  "filter-gen",
  "globset",
  "itertools 0.14.0",
+ "libsqlite3-sys",
  "pretty_assertions",
  "sea-orm",
  "serde",

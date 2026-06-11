@@ -18,6 +18,9 @@ tracing.workspace = true
 uuid.workspace = true
 
 filter-gen = { path = "../../crates/macros/filter-gen" }
+# Raw FFI to register custom SQLite functions (Unicode-aware lower); the
+# version must stay in lockstep with the one sqlx-sqlite links against
+libsqlite3-sys = "0.30"
 
 [dev-dependencies]
 tokio-test.workspace = true

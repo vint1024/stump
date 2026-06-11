@@ -385,8 +385,17 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 	 */
 	useEffect(() => {
 		if (!book && ebook && ebook.media) {
-			const epubjsBook = new Book(sdk.epub.resourceBaseURL(id), {
+			const resourceBaseURL = sdk.epub.resourceBaseURL(id)
+			// Chapter subresources (images, CSS) are fetched by the reader iframe
+			// itself, and cross-origin those requests do not carry credentials. In
+			// that case let epubjs fetch them (authenticated, with credentials) and
+			// swap in blob URLs. Same-origin keeps direct streaming — no upfront
+			// resource fetching, faster time-to-first-page
+			const apiOrigin = new URL(resourceBaseURL, window.location.href).origin
+			const isCrossOrigin = apiOrigin !== window.location.origin
+			const epubjsBook = new Book(resourceBaseURL, {
 				openAs: 'directory',
+				replacements: isCrossOrigin ? 'blobUrl' : 'none',
 				// @ts-expect-error: epubjs has incorrect types
 				requestCredentials: true,
 			})
