@@ -12,6 +12,7 @@ pub mod book_club_member;
 pub mod book_club_member_favorite_book;
 pub mod bookmark;
 pub mod collection;
+pub mod content_access_rule;
 pub mod custom_emoji;
 pub mod emailer;
 pub mod emailer_send_record;

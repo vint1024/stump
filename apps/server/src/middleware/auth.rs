@@ -42,7 +42,8 @@ use crate::{
 	errors::{api_error_message, APIError, APIResult},
 	routers::{enforce_max_sessions, relative_favicon_path},
 	utils::{
-		current_utc_time, decode_base64_credentials, fetch_session_user, verify_password,
+		attach_content_rules, current_utc_time, decode_base64_credentials,
+		fetch_session_user, verify_password,
 	},
 };
 
@@ -288,7 +289,7 @@ pub async fn validate_api_key(
 		},
 	};
 
-	Ok(constructed_user)
+	Ok(attach_content_rules(conn, constructed_user).await?)
 }
 
 /// A function to handle bearer token authentication. This function will verify the token and
@@ -334,7 +335,7 @@ async fn handle_bearer_auth(
 	}
 
 	Ok(AuthContext {
-		user: AuthUser::from(user),
+		user: attach_content_rules(conn, AuthUser::from(user)).await?,
 		api_key: None,
 	})
 }
@@ -398,7 +399,7 @@ async fn handle_basic_auth(
 	}
 
 	Ok(AuthContext {
-		user: AuthUser::from(user.clone()),
+		user: attach_content_rules(conn, AuthUser::from(user.clone())).await?,
 		api_key: None,
 	})
 }

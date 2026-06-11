@@ -16,7 +16,7 @@ use crate::{
 	},
 };
 
-use super::{library_exclusion, media_metadata, series, series_metadata, user::AuthUser};
+use super::{content_access_rule, library_exclusion, media_metadata, series, series_metadata, user::AuthUser};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, SimpleObject, Ordering)]
 #[graphql(name = "MediaModel")]
@@ -134,6 +134,17 @@ pub fn get_age_restriction_filter(min_age: i32, restrict_on_unset: bool) -> Cond
 	}
 }
 
+fn apply_content_rules_filter(
+	query: Select<Entity>,
+	rules: &[content_access_rule::Model],
+) -> Select<Entity> {
+	if let Some(condition) = content_access_rule::media_filter(rules) {
+		query.filter(condition)
+	} else {
+		query
+	}
+}
+
 fn apply_age_restriction_filter(
 	query: Select<Entity>,
 	age_restriction: Option<age_restriction::Model>,
@@ -169,12 +180,14 @@ impl Entity {
 		let select = Entity::find().left_join(media_metadata::Entity);
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
+		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
 	pub fn apply_for_user(user: &AuthUser, select: Select<Entity>) -> Select<Entity> {
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
+		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
@@ -232,6 +245,7 @@ impl ModelWithMetadata {
 		let select = ModelWithMetadata::find();
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
+		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
@@ -239,6 +253,7 @@ impl ModelWithMetadata {
 		let select = ModelWithMetadata::find_by_id(id);
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
+		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 }

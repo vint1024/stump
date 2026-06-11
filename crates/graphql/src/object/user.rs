@@ -2,8 +2,10 @@ use async_graphql::{ComplexObject, Context, Result, SimpleObject};
 
 use chrono::{DateTime, FixedOffset, Utc};
 use models::{
+	shared::enums::{ContentRuleDimension, ContentRuleMode},
 	entity::{
-		age_restriction, finished_reading_session, session, user, user_login_activity,
+		age_restriction, content_access_rule, finished_reading_session, session, user,
+		user_login_activity,
 		user_preferences,
 	},
 	shared::{enums::UserPermission, permission_set::PermissionSet},
@@ -50,6 +52,17 @@ impl User {
 	#[graphql(
 		guard = "SelfGuard::new(&self.model.id).or(PermissionGuard::one(UserPermission::ManageUsers)).or(ServerOwnerGuard)"
 	)]
+	/// The user's content access rules (tag/publisher/genre allow- or deny-lists)
+	async fn content_access_rules(
+		&self,
+		ctx: &Context<'_>,
+	) -> Result<Vec<ContentAccessRule>> {
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+		let rules =
+			content_access_rule::Entity::fetch_for_user(conn, &self.model.id).await?;
+		Ok(rules.into_iter().map(ContentAccessRule::from).collect())
+	}
+
 	async fn age_restriction(
 		&self,
 		ctx: &Context<'_>,
@@ -163,5 +176,28 @@ impl User {
 			.await?;
 
 		Ok(count.try_into()?)
+	}
+}
+
+/// A content access rule as exposed over the API
+#[derive(Clone, Debug, SimpleObject)]
+pub struct ContentAccessRule {
+	pub id: i32,
+	pub dimension: ContentRuleDimension,
+	pub mode: ContentRuleMode,
+	pub values: Vec<String>,
+	pub restrict_on_unset: bool,
+}
+
+impl From<content_access_rule::Model> for ContentAccessRule {
+	fn from(model: content_access_rule::Model) -> Self {
+		let values = model.values_vec();
+		Self {
+			id: model.id,
+			dimension: model.dimension,
+			mode: model.mode,
+			values,
+			restrict_on_unset: model.restrict_on_unset,
+		}
 	}
 }

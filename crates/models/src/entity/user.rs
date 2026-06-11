@@ -58,6 +58,10 @@ pub struct AuthUser {
 	pub is_locked: bool,
 	pub permissions: Vec<UserPermission>,
 	pub age_restriction: Option<super::age_restriction::Model>,
+	/// Per-user content access rules (tag/publisher/genre allow- or deny-lists).
+	/// Default keeps sessions serialized before this field existed deserializable
+	#[serde(default)]
+	pub content_rules: Vec<super::content_access_rule::Model>,
 	pub preferences: Option<user_preferences::Model>,
 }
 
@@ -114,6 +118,7 @@ impl FromQueryResult for AuthUser {
 			is_locked,
 			permissions,
 			age_restriction,
+			content_rules: vec![],
 			preferences,
 		})
 	}
@@ -203,6 +208,7 @@ impl From<LoginUser> for AuthUser {
 			is_locked: user.is_locked,
 			permissions: user.permissions,
 			age_restriction: user.age_restriction,
+			content_rules: vec![],
 			preferences: user.preferences,
 		}
 	}
