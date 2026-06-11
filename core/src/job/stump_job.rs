@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use crate::filesystem::metadata::writeback_job::MetadataWritebackJobParams;
 use crate::filesystem::{
 	image::{PlaceholderGenerationJobConfig, ThumbnailGenerationJobParams},
 	media::analysis::AnalysisJobConfig,
@@ -40,6 +41,9 @@ pub enum StumpJob {
 	AnalyzeMedia {
 		config: AnalysisJobConfig,
 	},
+	MetadataWriteback {
+		params: MetadataWritebackJobParams,
+	},
 }
 
 impl StumpJob {
@@ -52,6 +56,7 @@ impl StumpJob {
 			StumpJob::PlaceholderGeneration { .. } => "placeholder_generation",
 			StumpJob::MetadataFetch { .. } => "metadata_fetch",
 			StumpJob::AnalyzeMedia { .. } => "analyze_media",
+			StumpJob::MetadataWriteback { .. } => "metadata_writeback",
 		}
 	}
 
@@ -69,6 +74,9 @@ impl StumpJob {
 			),
 			StumpJob::MetadataFetch { params } => {
 				Some(format!("Metadata fetch: {:?}", params.scope))
+			},
+			StumpJob::MetadataWriteback { params } => {
+				Some(format!("library {}", params.library_id))
 			},
 			StumpJob::AnalyzeMedia { config } => {
 				Some(format!("Analyze media: {:?}", config.scope))
@@ -89,6 +97,10 @@ impl StumpJob {
 		params: ThumbnailGenerationJobParams,
 	) -> Self {
 		StumpJob::ThumbnailGeneration { options, params }
+	}
+
+	pub fn metadata_writeback(params: MetadataWritebackJobParams) -> Self {
+		StumpJob::MetadataWriteback { params }
 	}
 
 	pub fn placeholder_generation(config: PlaceholderGenerationJobConfig) -> Self {

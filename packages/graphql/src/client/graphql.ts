@@ -505,7 +505,7 @@ export enum ContentRuleMode {
 /** An event that is emitted by the core and consumed by a client */
 export type CoreEvent = CreatedManySeries | CreatedMedia | CreatedOrUpdatedManyMedia | DiscoveredMissingLibrary | JobOutput | JobStarted | JobUpdate;
 
-export type CoreJobOutput = AnalyzeMediaOutput | LibraryScanOutput | MetadataFetchJobOutput | PlaceholderGenerationOutput | SeriesScanOutput | ThumbnailGenerationOutput;
+export type CoreJobOutput = AnalyzeMediaOutput | LibraryScanOutput | MetadataFetchJobOutput | MetadataWritebackOutput | PlaceholderGenerationOutput | SeriesScanOutput | ThumbnailGenerationOutput;
 
 export type CreateAnnotationInput = {
   annotationText?: InputMaybe<Scalars['String']['input']>;
@@ -1963,6 +1963,16 @@ export type MetadataRetryConfigInput = {
   statuses: Array<MetadataFetchStatus>;
 };
 
+export type MetadataWritebackOutput = {
+  __typename?: 'MetadataWritebackOutput';
+  /** Books that failed to write (see logs) */
+  failed: Scalars['Int']['output'];
+  /** Books skipped (not epub, no metadata, or nothing to write) */
+  skipped: Scalars['Int']['output'];
+  /** Books whose files were updated */
+  written: Scalars['Int']['output'];
+};
+
 export type MissingEntity = {
   __typename?: 'MissingEntity';
   id: Scalars['String']['output'];
@@ -2002,6 +2012,11 @@ export type Mutation = {
    * This operation will also remove any associated thumbnails of the deleted media and series.
    */
   cleanLibrary: CleanLibraryResponse;
+  /**
+   * Delete every `*.epub.bak` backup file (created by metadata writeback)
+   * inside the library's folders. Returns the number of removed files
+   */
+  cleanMetadataBackups: Scalars['Int']['output'];
   /** Clear the scan history for a specific library */
   clearScanHistory: Scalars['Int']['output'];
   /** Mark the current book as completed */
@@ -2313,6 +2328,18 @@ export type Mutation = {
    * This is used to inform the UI of the last library which was visited by the user
    */
   visitLibrary: Library;
+  /**
+   * Enqueue a background job which writes the stored metadata of every epub
+   * in the library back into the files. With `backup`, each original is kept
+   * as `<file>.bak` next to it
+   */
+  writeLibraryMetadataToFiles: Scalars['Boolean']['output'];
+  /**
+   * Write the book's stored metadata back into its epub file. The archive is
+   * rebuilt atomically; with `backup` set, the original is kept as `<file>.bak`.
+   * Returns true when the file was updated (false = nothing to write)
+   */
+  writeMediaMetadataToFile: Scalars['Boolean']['output'];
 };
 
 
@@ -2376,6 +2403,11 @@ export type MutationCancelJobArgs = {
 
 
 export type MutationCleanLibraryArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCleanMetadataBackupsArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -3092,6 +3124,18 @@ export type MutationUploadUserAvatarArgs = {
 
 
 export type MutationVisitLibraryArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationWriteLibraryMetadataToFilesArgs = {
+  backup?: Scalars['Boolean']['input'];
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationWriteMediaMetadataToFileArgs = {
+  backup?: Scalars['Boolean']['input'];
   id: Scalars['ID']['input'];
 };
 
@@ -5844,7 +5888,7 @@ export type SeriesEditorSetLockedFieldsMutation = { __typename?: 'Mutation', set
 export type UseCoreEventSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UseCoreEventSubscription = { __typename?: 'Subscription', readEvents: { __typename: 'CreatedManySeries', count: number, libraryId: string } | { __typename: 'CreatedMedia', id: string, seriesId: string } | { __typename: 'CreatedOrUpdatedManyMedia', count: number, seriesId: string } | { __typename: 'DiscoveredMissingLibrary', id: string } | { __typename: 'JobOutput', id: string, output: { __typename: 'AnalyzeMediaOutput' } | { __typename: 'LibraryScanOutput', createdMedia: number, createdSeries: number, updatedMedia: number, updatedSeries: number } | { __typename: 'MetadataFetchJobOutput' } | { __typename: 'PlaceholderGenerationOutput' } | { __typename: 'SeriesScanOutput', createdMedia: number, updatedMedia: number } | { __typename: 'ThumbnailGenerationOutput' } } | { __typename: 'JobStarted', id: string } | { __typename: 'JobUpdate', id: string, status?: JobStatus | null, message?: string | null, completedTasks?: number | null, remainingTasks?: number | null, completedSubtasks?: number | null, totalSubtasks?: number | null } };
+export type UseCoreEventSubscription = { __typename?: 'Subscription', readEvents: { __typename: 'CreatedManySeries', count: number, libraryId: string } | { __typename: 'CreatedMedia', id: string, seriesId: string } | { __typename: 'CreatedOrUpdatedManyMedia', count: number, seriesId: string } | { __typename: 'DiscoveredMissingLibrary', id: string } | { __typename: 'JobOutput', id: string, output: { __typename: 'AnalyzeMediaOutput' } | { __typename: 'LibraryScanOutput', createdMedia: number, createdSeries: number, updatedMedia: number, updatedSeries: number } | { __typename: 'MetadataFetchJobOutput' } | { __typename: 'MetadataWritebackOutput' } | { __typename: 'PlaceholderGenerationOutput' } | { __typename: 'SeriesScanOutput', createdMedia: number, updatedMedia: number } | { __typename: 'ThumbnailGenerationOutput' } } | { __typename: 'JobStarted', id: string } | { __typename: 'JobUpdate', id: string, status?: JobStatus | null, message?: string | null, completedTasks?: number | null, remainingTasks?: number | null, completedSubtasks?: number | null, totalSubtasks?: number | null } };
 
 export type UsePreferencesMutationVariables = Exact<{
   input: UpdateUserPreferencesInput;
@@ -5947,6 +5991,14 @@ export type BookManagementSceneAnalyzeMutationVariables = Exact<{
 
 
 export type BookManagementSceneAnalyzeMutation = { __typename?: 'Mutation', analyzeMedia: boolean };
+
+export type BookManagementSceneWriteMetadataMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  backup: Scalars['Boolean']['input'];
+}>;
+
+
+export type BookManagementSceneWriteMetadataMutation = { __typename?: 'Mutation', writeMediaMetadataToFile: boolean };
 
 export type BookTagEditorSetTagsMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -6209,6 +6261,21 @@ export type CleanLibraryMutationVariables = Exact<{
 
 export type CleanLibraryMutation = { __typename?: 'Mutation', cleanLibrary: { __typename?: 'CleanLibraryResponse', deletedMediaCount: number, deletedSeriesCount: number, isEmpty: boolean } };
 
+export type LibraryMetadataWritebackMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  backup: Scalars['Boolean']['input'];
+}>;
+
+
+export type LibraryMetadataWritebackMutation = { __typename?: 'Mutation', writeLibraryMetadataToFiles: boolean };
+
+export type LibraryMetadataWritebackCleanBackupsMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type LibraryMetadataWritebackCleanBackupsMutation = { __typename?: 'Mutation', cleanMetadataBackups: number };
+
 export type LibraryMissingEntitiesQueryVariables = Exact<{
   libraryId: Scalars['ID']['input'];
   pagination: Pagination;
@@ -6256,7 +6323,7 @@ export type ScanRecordInspectorJobsQueryVariables = Exact<{
 }>;
 
 
-export type ScanRecordInspectorJobsQuery = { __typename?: 'Query', jobById?: { __typename?: 'Job', id: string, outputData?: { __typename: 'AnalyzeMediaOutput' } | { __typename: 'LibraryScanOutput', totalFiles: number, totalDirectories: number, ignoredFiles: number, skippedFiles: number, ignoredDirectories: number, createdMedia: number, updatedMedia: number, createdSeries: number, updatedSeries: number } | { __typename: 'MetadataFetchJobOutput' } | { __typename: 'PlaceholderGenerationOutput' } | { __typename: 'SeriesScanOutput' } | { __typename: 'ThumbnailGenerationOutput' } | null, logs?: Array<{ __typename?: 'Log', id: number }> } | null };
+export type ScanRecordInspectorJobsQuery = { __typename?: 'Query', jobById?: { __typename?: 'Job', id: string, outputData?: { __typename: 'AnalyzeMediaOutput' } | { __typename: 'LibraryScanOutput', totalFiles: number, totalDirectories: number, ignoredFiles: number, skippedFiles: number, ignoredDirectories: number, createdMedia: number, updatedMedia: number, createdSeries: number, updatedSeries: number } | { __typename: 'MetadataFetchJobOutput' } | { __typename: 'MetadataWritebackOutput' } | { __typename: 'PlaceholderGenerationOutput' } | { __typename: 'SeriesScanOutput' } | { __typename: 'ThumbnailGenerationOutput' } | null, logs?: Array<{ __typename?: 'Log', id: number }> } | null };
 
 export type DeleteLibraryThumbnailsMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -6664,13 +6731,15 @@ type JobDataInspector_LibraryScanOutput_Fragment = { __typename: 'LibraryScanOut
 
 type JobDataInspector_MetadataFetchJobOutput_Fragment = { __typename: 'MetadataFetchJobOutput' } & { ' $fragmentName'?: 'JobDataInspector_MetadataFetchJobOutput_Fragment' };
 
+type JobDataInspector_MetadataWritebackOutput_Fragment = { __typename: 'MetadataWritebackOutput' } & { ' $fragmentName'?: 'JobDataInspector_MetadataWritebackOutput_Fragment' };
+
 type JobDataInspector_PlaceholderGenerationOutput_Fragment = { __typename: 'PlaceholderGenerationOutput' } & { ' $fragmentName'?: 'JobDataInspector_PlaceholderGenerationOutput_Fragment' };
 
 type JobDataInspector_SeriesScanOutput_Fragment = { __typename: 'SeriesScanOutput', totalFiles: number, ignoredFiles: number, skippedFiles: number, createdMedia: number, updatedMedia: number } & { ' $fragmentName'?: 'JobDataInspector_SeriesScanOutput_Fragment' };
 
 type JobDataInspector_ThumbnailGenerationOutput_Fragment = { __typename: 'ThumbnailGenerationOutput', visitedFiles: number, skippedFiles: number, generatedThumbnails: number, removedThumbnails: number } & { ' $fragmentName'?: 'JobDataInspector_ThumbnailGenerationOutput_Fragment' };
 
-export type JobDataInspectorFragment = JobDataInspector_AnalyzeMediaOutput_Fragment | JobDataInspector_LibraryScanOutput_Fragment | JobDataInspector_MetadataFetchJobOutput_Fragment | JobDataInspector_PlaceholderGenerationOutput_Fragment | JobDataInspector_SeriesScanOutput_Fragment | JobDataInspector_ThumbnailGenerationOutput_Fragment;
+export type JobDataInspectorFragment = JobDataInspector_AnalyzeMediaOutput_Fragment | JobDataInspector_LibraryScanOutput_Fragment | JobDataInspector_MetadataFetchJobOutput_Fragment | JobDataInspector_MetadataWritebackOutput_Fragment | JobDataInspector_PlaceholderGenerationOutput_Fragment | JobDataInspector_SeriesScanOutput_Fragment | JobDataInspector_ThumbnailGenerationOutput_Fragment;
 
 export type ScheduledJobsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -6701,6 +6770,9 @@ export type JobTableQuery = { __typename?: 'Query', jobs: { __typename?: 'Pagina
       ) | (
         { __typename?: 'MetadataFetchJobOutput' }
         & { ' $fragmentRefs'?: { 'JobDataInspector_MetadataFetchJobOutput_Fragment': JobDataInspector_MetadataFetchJobOutput_Fragment } }
+      ) | (
+        { __typename?: 'MetadataWritebackOutput' }
+        & { ' $fragmentRefs'?: { 'JobDataInspector_MetadataWritebackOutput_Fragment': JobDataInspector_MetadataWritebackOutput_Fragment } }
       ) | (
         { __typename?: 'PlaceholderGenerationOutput' }
         & { ' $fragmentRefs'?: { 'JobDataInspector_PlaceholderGenerationOutput_Fragment': JobDataInspector_PlaceholderGenerationOutput_Fragment } }
@@ -11325,6 +11397,11 @@ export const BookManagementSceneAnalyzeDocument = new TypedDocumentString(`
   analyzeMedia(id: $id)
 }
     `) as unknown as TypedDocumentString<BookManagementSceneAnalyzeMutation, BookManagementSceneAnalyzeMutationVariables>;
+export const BookManagementSceneWriteMetadataDocument = new TypedDocumentString(`
+    mutation BookManagementSceneWriteMetadata($id: ID!, $backup: Boolean!) {
+  writeMediaMetadataToFile(id: $id, backup: $backup)
+}
+    `) as unknown as TypedDocumentString<BookManagementSceneWriteMetadataMutation, BookManagementSceneWriteMetadataMutationVariables>;
 export const BookTagEditorSetTagsDocument = new TypedDocumentString(`
     mutation BookTagEditorSetTags($id: ID!, $tags: [String!]!) {
   setMediaTags(id: $id, tags: $tags) {
@@ -12066,6 +12143,16 @@ export const CleanLibraryDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<CleanLibraryMutation, CleanLibraryMutationVariables>;
+export const LibraryMetadataWritebackDocument = new TypedDocumentString(`
+    mutation LibraryMetadataWriteback($id: ID!, $backup: Boolean!) {
+  writeLibraryMetadataToFiles(id: $id, backup: $backup)
+}
+    `) as unknown as TypedDocumentString<LibraryMetadataWritebackMutation, LibraryMetadataWritebackMutationVariables>;
+export const LibraryMetadataWritebackCleanBackupsDocument = new TypedDocumentString(`
+    mutation LibraryMetadataWritebackCleanBackups($id: ID!) {
+  cleanMetadataBackups(id: $id)
+}
+    `) as unknown as TypedDocumentString<LibraryMetadataWritebackCleanBackupsMutation, LibraryMetadataWritebackCleanBackupsMutationVariables>;
 export const LibraryMissingEntitiesDocument = new TypedDocumentString(`
     query LibraryMissingEntities($libraryId: ID!, $pagination: Pagination!) {
   libraryMissingEntities(libraryId: $libraryId, pagination: $pagination) {

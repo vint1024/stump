@@ -220,6 +220,16 @@ impl PathUtils for Path {
 			return true;
 		}
 
+		// Backup copies (e.g. `.epub.bak` left by metadata writeback) would
+		// otherwise be content-sniffed as books and imported
+		if self
+			.to_string_lossy()
+			.to_lowercase()
+			.ends_with(".bak")
+		{
+			return true;
+		}
+
 		!self.is_supported()
 	}
 
