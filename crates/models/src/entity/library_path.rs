@@ -48,4 +48,25 @@ impl Entity {
 			.map(|model| model.path)
 			.collect())
 	}
+
+	/// Fetch the additional root paths for many libraries in one query,
+	/// grouped by library id. Libraries without extra roots are absent
+	pub async fn fetch_for_libraries(
+		conn: &DatabaseConnection,
+		library_ids: &[String],
+	) -> Result<std::collections::HashMap<String, Vec<String>>, DbErr> {
+		let mut by_library: std::collections::HashMap<String, Vec<String>> =
+			std::collections::HashMap::new();
+		for model in Entity::find()
+			.filter(Column::LibraryId.is_in(library_ids.to_vec()))
+			.all(conn)
+			.await?
+		{
+			by_library
+				.entry(model.library_id)
+				.or_default()
+				.push(model.path);
+		}
+		Ok(by_library)
+	}
 }

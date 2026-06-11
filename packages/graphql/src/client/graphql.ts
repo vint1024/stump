@@ -6399,6 +6399,8 @@ export type MergeSeriesSectionQuery = { __typename?: 'Query', seriesById?: { __t
 
 export type MergeSeriesSectionCandidatesQueryVariables = Exact<{
   libraryId: Scalars['String']['input'];
+  search: Scalars['String']['input'];
+  limit: Scalars['Int']['input'];
 }>;
 
 
@@ -12419,10 +12421,10 @@ export const MergeSeriesSectionDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<MergeSeriesSectionQuery, MergeSeriesSectionQueryVariables>;
 export const MergeSeriesSectionCandidatesDocument = new TypedDocumentString(`
-    query MergeSeriesSectionCandidates($libraryId: String!) {
+    query MergeSeriesSectionCandidates($libraryId: String!, $search: String!, $limit: Int!) {
   series(
-    filter: {libraryId: {eq: $libraryId}}
-    pagination: {none: {unpaginated: true}}
+    filter: {libraryId: {eq: $libraryId}, name: {contains: $search}}
+    pagination: {offset: {page: 1, pageSize: $limit}}
   ) {
     nodes {
       id

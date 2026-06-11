@@ -1,7 +1,8 @@
 use crate::{job::stump_job::StumpJob, CoreError, CoreResult};
 use apalis::prelude::MemoryStorage;
 use async_trait::async_trait;
-use models::entity::{library, library_config, library_path};
+use models::entity::{job, library, library_config, library_path};
+use models::shared::enums::JobStatus;
 use notify::{Event, RecommendedWatcher, Watcher};
 use sea_orm::prelude::*;
 use std::collections::{HashMap, HashSet};
@@ -103,6 +104,19 @@ impl LibraryWatcherInternal {
 		self.wait_thread = None;
 		std::mem::take(&mut self.accumulated_paths)
 	}
+
+	/// Keep the accumulated paths and try flushing again one interval later.
+	/// Used while a metadata writeback job is running: its file rewrites are
+	/// the very events we are seeing, and scanning mid-job could observe a
+	/// file already rewritten whose DB row is not yet refreshed
+	fn delay_flush(&mut self) {
+		let sender = self.sender.clone();
+		let interval = self.wait_interval;
+		self.wait_thread = Some(tokio::spawn(async move {
+			tokio::time::sleep(interval).await;
+			let _ = sender.send(LibraryWatcherCommand::Flush);
+		}));
+	}
 }
 
 /// A watched library together with every root folder it spans (the primary
@@ -135,16 +149,55 @@ impl LibrariesProvider for LibraryProvider {
 			.all(conn)
 			.await?;
 
+		let library_ids = libraries
+			.iter()
+			.map(|library| library.id.clone())
+			.collect::<Vec<_>>();
+		let mut extra_roots =
+			library_path::Entity::fetch_for_libraries(conn, &library_ids).await?;
+
 		let mut with_roots = Vec::with_capacity(libraries.len());
 		for library in libraries {
 			let mut roots = vec![library.path.clone()];
-			roots.extend(
-				library_path::Entity::fetch_for_library(conn, &library.id).await?,
-			);
+			roots.extend(extra_roots.remove(&library.id).unwrap_or_default());
 			with_roots.push((library, roots));
 		}
 
 		Ok(with_roots)
+	}
+}
+
+/// Decides whether watcher-triggered scans must wait. Scanning while a
+/// metadata writeback job rewrites files can catch a book between its file
+/// write and the matching DB refresh, re-importing it spuriously
+#[async_trait]
+trait ScanGate {
+	async fn defer_scans(&self) -> bool;
+}
+
+#[derive(Debug, Clone)]
+struct WritebackScanGate {
+	conn: Arc<DatabaseConnection>,
+}
+
+#[async_trait]
+impl ScanGate for WritebackScanGate {
+	async fn defer_scans(&self) -> bool {
+		// Stale Running rows cannot wedge this: cancel_islanded_jobs flips
+		// them to Cancelled at startup, and the job runner always finalizes
+		// the status on completion/failure/cancel
+		let running = job::Entity::find()
+			.filter(job::Column::Name.eq("metadata_writeback"))
+			.filter(job::Column::Status.eq(JobStatus::Running.to_string()))
+			.count(self.conn.as_ref())
+			.await;
+		match running {
+			Ok(count) => count > 0,
+			Err(error) => {
+				tracing::error!(?error, "Failed to check for running writeback jobs");
+				false
+			},
+		}
 	}
 }
 
@@ -184,8 +237,9 @@ impl LibraryWatcher {
 		conn: Arc<DatabaseConnection>,
 		storage: MemoryStorage<StumpJob>,
 	) -> LibraryWatcher {
-		let library_provider = LibraryProvider { conn };
+		let library_provider = LibraryProvider { conn: conn.clone() };
 		let job_submitter = ApalisJobSubmitter { storage };
+		let scan_gate = WritebackScanGate { conn };
 		let (tx, rx) = unbounded_channel();
 		let watcher = create_watcher(tx.clone());
 		Self::new_internal(
@@ -194,6 +248,7 @@ impl LibraryWatcher {
 			watcher,
 			library_provider,
 			job_submitter,
+			scan_gate,
 			Duration::from_millis(5000),
 		)
 	}
@@ -204,6 +259,7 @@ impl LibraryWatcher {
 		watcher: RecommendedWatcher,
 		library_provider: impl LibrariesProvider + Send + Sync + 'static,
 		job_submitter: impl SubmitScanJob + Send + Sync + 'static,
+		scan_gate: impl ScanGate + Send + Sync + 'static,
 		wait_duration: Duration,
 	) -> LibraryWatcher {
 		let this = LibraryWatcher {
@@ -218,17 +274,20 @@ impl LibraryWatcher {
 			rx,
 			this.library_provider.clone(),
 			this.job_submitter.clone(),
+			Arc::new(scan_gate),
 			wait_duration,
 		);
 		this
 	}
 
+	#[allow(clippy::too_many_arguments)]
 	fn listen(
 		watcher: RecommendedWatcher,
 		sender: UnboundedSender<LibraryWatcherCommand>,
 		mut receiver: UnboundedReceiver<LibraryWatcherCommand>,
 		library_provider: Arc<dyn LibrariesProvider + Send + Sync>,
 		job_submitter: Arc<dyn SubmitScanJob + Send + Sync>,
+		scan_gate: Arc<dyn ScanGate + Send + Sync>,
 		wait_duration: Duration,
 	) {
 		tokio::spawn(async move {
@@ -260,12 +319,19 @@ impl LibraryWatcher {
 						lib_watcher.handle_changed_files(paths).await;
 					},
 					LibraryWatcherCommand::Flush => {
-						let _ = Self::start_jobs(
-							&library_provider,
-							&job_submitter,
-							lib_watcher.flush().await,
-						)
-						.await;
+						if scan_gate.defer_scans().await {
+							tracing::debug!(
+								"Metadata writeback in progress — delaying watcher-triggered scan"
+							);
+							lib_watcher.delay_flush();
+						} else {
+							let _ = Self::start_jobs(
+								&library_provider,
+								&job_submitter,
+								lib_watcher.flush().await,
+							)
+							.await;
+						}
 					},
 					LibraryWatcherCommand::StopWatchers => {
 						break;
@@ -370,6 +436,16 @@ mod tests {
 	}
 
 	#[allow(dead_code)]
+	struct OpenScanGate;
+
+	#[async_trait]
+	impl ScanGate for OpenScanGate {
+		async fn defer_scans(&self) -> bool {
+			false
+		}
+	}
+
+	#[allow(dead_code)]
 	struct MockJobControllerSubmitter {
 		tx: UnboundedSender<(String, String)>,
 	}
@@ -409,6 +485,7 @@ mod tests {
 			create_watcher(tx.clone()),
 			library_provider,
 			job_submitter,
+			OpenScanGate,
 			Duration::from_millis(10),
 		);
 

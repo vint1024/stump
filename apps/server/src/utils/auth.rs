@@ -56,6 +56,11 @@ pub async fn attach_content_rules(
 	conn: &DatabaseConnection,
 	mut user: AuthUser,
 ) -> Result<AuthUser, APIError> {
+	// The server owner can never be content-restricted (the mutation rejects
+	// such rules), so skip the per-request query entirely
+	if user.is_server_owner {
+		return Ok(user);
+	}
 	user.content_rules =
 		content_access_rule::Entity::fetch_for_user(conn, &user.id).await?;
 	Ok(user)
