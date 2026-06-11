@@ -2,7 +2,14 @@ use merge::Merge;
 use quick_xml::{escape::unescape, events::Event, Reader};
 use std::{collections::HashMap, fs::File, io::BufReader, path::PathBuf};
 
-const ACCEPTED_EPUB_COVER_MIMES: [&str; 2] = ["image/jpeg", "image/png"];
+// Note: svg/avif are intentionally excluded — the thumbnail pipeline can't decode them
+const ACCEPTED_EPUB_COVER_MIMES: [&str; 5] = [
+	"image/jpeg",
+	"image/jpg",
+	"image/png",
+	"image/webp",
+	"image/gif",
+];
 const DEFAULT_EPUB_COVER_ID: &str = "cover";
 
 use crate::{
@@ -11,6 +18,7 @@ use crate::{
 		content_type::ContentType,
 		error::FileError,
 		hash::{self, generate_koreader_hash},
+		image::generate_cover_placeholder,
 		media::{
 			process::{AnalyzedPage, FileProcessor, FileProcessorOptions, ProcessedFile},
 			ProcessedFileHashes, ProcessedMediaMetadata,
@@ -369,20 +377,36 @@ impl EpubProcessor {
 				return Ok((ContentType::from(mime.as_str()), buf));
 			}
 		}
-		tracing::error!("Failed to find cover for epub file");
-		Err(FileError::EpubReadError(
-			"Failed to find cover for epub file".to_string(),
-		))
+
+		// The epub has no usable cover image at all (e.g. a text-only export).
+		// Generate a placeholder cover from its metadata instead of erroring,
+		// which previously surfaced as a 500 on every thumbnail request
+		tracing::debug!("No cover image found in epub, generating a placeholder");
+		let find_meta = |name: &str| {
+			epub_file.metadata.iter().find_map(|item| {
+				let property = item.property.rsplit(':').next().unwrap_or(&item.property);
+				property
+					.eq_ignore_ascii_case(name)
+					.then(|| item.value.clone())
+			})
+		};
+		let title = find_meta("title").unwrap_or_else(|| "Untitled".to_string());
+		let author = find_meta("creator").or_else(|| find_meta("author"));
+		let buffer = generate_cover_placeholder(&title, author.as_deref())?;
+		Ok((ContentType::PNG, buffer))
 	}
 
 	/// Returns the cover image for the epub file. If a cover image cannot be extracted via the
 	/// metadata, it will go through two rounds of fallback methods:
 	///
 	/// 1. Attempt to find a resource with the default ID of "cover"
-	/// 2. Attempt to find a resource with a mime type of "image/jpeg" or "image/png", and weight the
+	/// 2. Attempt to find a resource with an accepted image mime type, and weight the
 	///    results based on how likely they are to be the cover. For example, if the cover is named
 	///    "cover.jpg", it's probably the cover. The entry with the highest weight, if any, will be
 	///    returned.
+	///
+	/// If neither round finds an image, a placeholder cover is generated from the
+	/// book's title/author metadata so the request never hard-fails.
 	pub fn get_cover(path: &str) -> Result<(ContentType, Vec<u8>), FileError> {
 		let mut epub_file = EpubDoc::new(path).map_err(|e| {
 			tracing::error!("Failed to open epub file: {e}");

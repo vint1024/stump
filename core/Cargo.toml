@@ -17,6 +17,7 @@ tokio-util = "0.7.10"
 async-graphql.workspace = true
 data-encoding = "2.5.0"
 rust_decimal.workspace = true
+ab_glyph = "0.2.29"
 derive_builder.workspace = true
 derivative.workspace = true
 dirs = "5.0.1"
