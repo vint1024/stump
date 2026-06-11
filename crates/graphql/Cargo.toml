@@ -8,6 +8,7 @@ name = "graphql-gen"
 path = "bin/main.rs"
 
 [dependencies]
+walkdir = "2.5.0"
 alphanumeric-sort.workspace = true
 async-graphql.workspace = true
 async-stream.workspace = true

@@ -4,6 +4,7 @@ import { graphql, UserPermission } from '@stump/graphql'
 import { Construction } from 'lucide-react'
 import { Suspense, useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { toast } from 'sonner'
 
 import { SceneContainer } from '@/components/container'
 import { useAppContext } from '@/context'
@@ -40,6 +41,12 @@ const analyzeMutation = graphql(`
 	}
 `)
 
+const writeMetadataMutation = graphql(`
+	mutation BookManagementSceneWriteMetadata($id: ID!, $backup: Boolean!) {
+		writeMediaMetadataToFile(id: $id, backup: $backup)
+	}
+`)
+
 export default function BookManagementScene() {
 	const navigate = useNavigate()
 
@@ -55,6 +62,27 @@ export default function BookManagementScene() {
 	})
 
 	const { data, mutate: analyze, isPending } = useGraphQLMutation(analyzeMutation)
+	const { mutate: writeMetadata, isPending: isWritingMetadata } = useGraphQLMutation(
+		writeMetadataMutation,
+		{
+			onSuccess: (result) => {
+				if (result.writeMediaMetadataToFile) {
+					toast.success('Metadata written into the file')
+				} else {
+					toast.info('Nothing to write — the book has no stored metadata')
+				}
+			},
+			onError: (error) => {
+				console.error('Failed to write metadata to file', error)
+				toast.error('Failed to write metadata to file')
+			},
+		},
+	)
+	const handleWriteMetadata = useCallback(() => {
+		if (id) {
+			writeMetadata({ id, backup: false })
+		}
+	}, [writeMetadata, id])
 
 	const breadcrumbs = useMemo(() => {
 		if (!book) return []
@@ -129,6 +157,29 @@ export default function BookManagementScene() {
 								disabled={!!data || isPending}
 							>
 								Analyze Media
+							</Button>
+						</div>
+					</div>
+				)}
+
+				{checkPermission(UserPermission.WriteBackMetadata) && (
+					<div className="gap-y-2 flex flex-col">
+						<div>
+							<Heading size="sm">Write metadata to file</Heading>
+							<Text size="sm" variant="muted">
+								Embed the metadata stored in Stump into the epub file itself (OPF), so it travels
+								with the file. The archive is rewritten atomically
+							</Text>
+						</div>
+
+						<div>
+							<Button
+								size="md"
+								variant="outline"
+								onClick={handleWriteMetadata}
+								disabled={isWritingMetadata}
+							>
+								Write metadata to file
 							</Button>
 						</div>
 					</div>

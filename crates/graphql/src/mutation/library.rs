@@ -24,7 +24,10 @@ use stump_core::filesystem::{
 		PlaceholderGenerationJobScope, ThumbnailGenerationJobParams,
 	},
 	media::analysis::{AnalysisJobConfig, MediaAnalysisJobScope},
-	metadata::{MetadataFetchJobParams, MetadataFetchScope},
+	metadata::{
+		writeback_job::MetadataWritebackJobParams, MetadataFetchJobParams,
+		MetadataFetchScope,
+	},
 	scanner::ScanOptions,
 };
 use stump_core::job::stump_job::StumpJob;
@@ -792,6 +795,84 @@ impl LibraryMutation {
 		// Note: We return the full node so the ID may be pulled to properly update the cache.
 		// For obvious reasons, certain fields will error if accessed.
 		Ok(Library::from(library))
+	}
+
+	/// Enqueue a background job which writes the stored metadata of every epub
+	/// in the library back into the files. With `backup`, each original is kept
+	/// as `<file>.bak` next to it
+	#[graphql(guard = "PermissionGuard::one(UserPermission::WriteBackMetadata)")]
+	async fn write_library_metadata_to_files(
+		&self,
+		ctx: &Context<'_>,
+		id: ID,
+		#[graphql(default = false)] backup: bool,
+	) -> Result<bool> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let core = ctx.data::<CoreContext>()?;
+
+		let library = library::Entity::find_for_user(user)
+			.filter(library::Column::Id.eq(id.to_string()))
+			.into_model::<library::LibraryIdentSelect>()
+			.one(core.conn.as_ref())
+			.await?
+			.ok_or("Library not found")?;
+
+		core.enqueue(StumpJob::metadata_writeback(MetadataWritebackJobParams {
+			library_id: library.id,
+			backup,
+		}))
+		.await?;
+
+		Ok(true)
+	}
+
+	/// Delete every `*.epub.bak` backup file (created by metadata writeback)
+	/// inside the library's folders. Returns the number of removed files
+	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageLibrary)")]
+	async fn clean_metadata_backups(&self, ctx: &Context<'_>, id: ID) -> Result<u64> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let core = ctx.data::<CoreContext>()?;
+		let conn = core.conn.as_ref();
+
+		let library = library::Entity::find_for_user(user)
+			.filter(library::Column::Id.eq(id.to_string()))
+			.into_model::<library::LibraryIdentSelect>()
+			.one(conn)
+			.await?
+			.ok_or("Library not found")?;
+
+		let mut roots = vec![library.path.clone()];
+		roots.extend(library_path::Entity::fetch_for_library(conn, &library.id).await?);
+
+		let removed = tokio::task::spawn_blocking(move || {
+			let mut removed = 0u64;
+			for root in roots {
+				for entry in walkdir::WalkDir::new(&root)
+					.into_iter()
+					.filter_map(|e| e.ok())
+				{
+					let path = entry.path();
+					if path.is_file()
+						&& path
+							.to_string_lossy()
+							.to_lowercase()
+							.ends_with(".epub.bak")
+					{
+						match std::fs::remove_file(path) {
+							Ok(_) => removed += 1,
+							Err(error) => {
+								tracing::warn!(?error, ?path, "Failed to remove backup");
+							},
+						}
+					}
+				}
+			}
+			removed
+		})
+		.await
+		.map_err(|e| async_graphql::Error::new(e.to_string()))?;
+
+		Ok(removed)
 	}
 
 	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageLibrary)")]

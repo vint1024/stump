@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use async_graphql::Union;
 use serde::{de, Deserialize, Serialize};
 
+use crate::filesystem::metadata::writeback_job::MetadataWritebackOutput;
 use crate::filesystem::{
 	image::{PlaceholderGenerationOutput, ThumbnailGenerationOutput},
 	media::analysis::AnalyzeMediaOutput,
@@ -19,6 +20,7 @@ pub enum CoreJobOutput {
 	PlaceholderGeneration(PlaceholderGenerationOutput),
 	MetadataFetch(MetadataFetchJobOutput),
 	AnalyzeMedia(AnalyzeMediaOutput),
+	MetadataWriteback(MetadataWritebackOutput),
 }
 
 /// A trait to extend the output type for a job with a common interface. Job output starts

@@ -16,6 +16,7 @@ use stump_core::{
 	filesystem::{
 		image::{generate_book_thumbnail, GenerateThumbnailOptions},
 		media::analysis::{AnalysisJobConfig, MediaAnalysisJobScope},
+		metadata::writeback_job::write_back_book,
 	},
 	job::stump_job::StumpJob,
 	utils::chain_optional_iter,
@@ -94,6 +95,37 @@ impl MediaMutation {
 		// }
 
 		Err("Not implemented".into())
+	}
+
+	/// Write the book's stored metadata back into its epub file. The archive is
+	/// rebuilt atomically; with `backup` set, the original is kept as `<file>.bak`.
+	/// Returns true when the file was updated (false = nothing to write)
+	#[graphql(guard = "PermissionGuard::one(UserPermission::WriteBackMetadata)")]
+	async fn write_media_metadata_to_file(
+		&self,
+		ctx: &Context<'_>,
+		id: ID,
+		#[graphql(default = false)] backup: bool,
+	) -> Result<bool> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let core = ctx.data::<CoreContext>()?;
+		let conn = core.conn.as_ref();
+
+		let book = media::Entity::find_for_user(user)
+			.filter(media::Column::Id.eq(id.to_string()))
+			.one(conn)
+			.await?
+			.ok_or("Media not found")?;
+
+		if book.extension.to_lowercase() != "epub" {
+			return Err("Metadata writeback currently supports epub files only".into());
+		}
+
+		let did_write = write_back_book(conn, &book, backup)
+			.await
+			.map_err(|e| async_graphql::Error::new(e.to_string()))?;
+
+		Ok(did_write)
 	}
 
 	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageLibrary)")]
