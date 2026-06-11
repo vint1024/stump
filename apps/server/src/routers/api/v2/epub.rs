@@ -12,7 +12,10 @@ use axum::{
 use graphql::data::AuthContext;
 use models::entity::media;
 use sea_orm::prelude::*;
-use stump_core::filesystem::media::{EpubProcessor, ReadiumManifestGenerator};
+use stump_core::filesystem::{
+	media::{EpubProcessor, ReadiumManifestGenerator},
+	FileError,
+};
 use tower_http::services::ServeFile;
 
 use crate::{
@@ -221,6 +224,15 @@ async fn get_epub_resource(
 	// E.g. "OEBPS/chapter1.xhtml" or "chapter1.xhtml"
 	let path_buf = PathBuf::from(&path);
 
+	// A resource missing from the archive is a 404, not a server error — readers
+	// routinely probe for optional files (e.g. Apple display options)
+	let map_missing = |error: FileError| match error {
+		FileError::EpubReadError(_) => {
+			APIError::NotFound(format!("Resource not found in epub: {path}"))
+		},
+		error => APIError::from(error),
+	};
+
 	if let Some(parent) = path_buf.parent() {
 		if let Some(file_name) = path_buf.file_name() {
 			let root = parent.to_string_lossy().to_string();
@@ -232,11 +244,14 @@ async fn get_epub_resource(
 				ebook.path.as_str(),
 				root_str,
 				resource,
-			)?
+			)
+			.map_err(map_missing)?
 			.into());
 		}
 	}
 
 	let resource = PathBuf::from(&path);
-	Ok(EpubProcessor::get_resource_by_path(ebook.path.as_str(), "", resource)?.into())
+	Ok(EpubProcessor::get_resource_by_path(ebook.path.as_str(), "", resource)
+		.map_err(map_missing)?
+		.into())
 }
