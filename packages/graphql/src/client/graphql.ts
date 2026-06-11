@@ -2070,6 +2070,12 @@ export type Mutation = {
   /** Search external metadata providers for a series and return match candidates */
   fetchSeriesMetadata: Array<MatchCandidate>;
   generateLibraryThumbnails: Scalars['Boolean']['output'];
+  /**
+   * Enqueue a job which (re)generates the thumbnail for a single series from
+   * its first book. The library-level job covers series too, but only as part
+   * of a full sweep — this gives the series page its own regenerate action
+   */
+  generateSeriesThumbnail: Scalars['Boolean']['output'];
   /** Deletes the membership of the caller to the target book club */
   leaveBookClub: BookClubMember;
   /** Lock or unlock a discussion (Moderator+) */
@@ -2594,6 +2600,12 @@ export type MutationFetchSeriesMetadataArgs = {
 
 
 export type MutationGenerateLibraryThumbnailsArgs = {
+  forceRegenerate?: Scalars['Boolean']['input'];
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationGenerateSeriesThumbnailArgs = {
   forceRegenerate?: Scalars['Boolean']['input'];
   id: Scalars['ID']['input'];
 };
@@ -6259,6 +6271,14 @@ export type SeriesSettingsSceneResetMetadataMutationVariables = Exact<{
 
 
 export type SeriesSettingsSceneResetMetadataMutation = { __typename?: 'Mutation', resetSeriesMetadata: { __typename?: 'Series', id: string } };
+
+export type SeriesSettingsSceneRegenerateThumbnailMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  forceRegenerate: Scalars['Boolean']['input'];
+}>;
+
+
+export type SeriesSettingsSceneRegenerateThumbnailMutation = { __typename?: 'Mutation', generateSeriesThumbnail: boolean };
 
 export type SeriesTagEditorSetTagsMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -12246,6 +12266,11 @@ export const SeriesSettingsSceneResetMetadataDocument = new TypedDocumentString(
   }
 }
     `) as unknown as TypedDocumentString<SeriesSettingsSceneResetMetadataMutation, SeriesSettingsSceneResetMetadataMutationVariables>;
+export const SeriesSettingsSceneRegenerateThumbnailDocument = new TypedDocumentString(`
+    mutation SeriesSettingsSceneRegenerateThumbnail($id: ID!, $forceRegenerate: Boolean!) {
+  generateSeriesThumbnail(id: $id, forceRegenerate: $forceRegenerate)
+}
+    `) as unknown as TypedDocumentString<SeriesSettingsSceneRegenerateThumbnailMutation, SeriesSettingsSceneRegenerateThumbnailMutationVariables>;
 export const SeriesTagEditorSetTagsDocument = new TypedDocumentString(`
     mutation SeriesTagEditorSetTags($id: ID!, $tags: [String!]!) {
   setSeriesTags(id: $id, tags: $tags) {
