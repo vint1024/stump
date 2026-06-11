@@ -400,7 +400,9 @@ impl SeriesMutation {
 			.insert(&txn)
 			.await?;
 
-			// Books that live under the restored folder move back to it
+			// Books that live under the restored folder move back to it. Build
+			// the LIKE prefix with escaping — folder names routinely contain '_'
+			// (a LIKE wildcard), which would otherwise pull in sibling folders.
 			let mut source_prefix = merge.source_path.clone();
 			if !source_prefix.ends_with('/') && !source_prefix.ends_with('\\') {
 				source_prefix.push(if source_prefix.contains('/') {
@@ -409,10 +411,17 @@ impl SeriesMutation {
 					'\\'
 				});
 			}
+			let escaped_prefix = source_prefix
+				.replace('\\', "\\\\")
+				.replace('%', "\\%")
+				.replace('_', "\\_");
 			media::Entity::update_many()
 				.col_expr(media::Column::SeriesId, Expr::value(restored.id.clone()))
 				.filter(media::Column::SeriesId.eq(target.id.clone()))
-				.filter(media::Column::Path.starts_with(source_prefix))
+				.filter(Expr::cust_with_values(
+					"\"media\".\"path\" LIKE ? ESCAPE '\\'",
+					[format!("{escaped_prefix}%")],
+				))
 				.exec(&txn)
 				.await?;
 		}

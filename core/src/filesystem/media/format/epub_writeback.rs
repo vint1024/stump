@@ -6,6 +6,7 @@
 //! original can be kept.
 
 use std::{
+	collections::HashSet,
 	fs,
 	io::{Read, Write},
 	path::{Path, PathBuf},
@@ -151,6 +152,32 @@ fn is_replaced_meta(writeback: &OpfWriteback, tag: &BytesStart) -> bool {
 		|| (name == "calibre:series_index" && writeback.series_index.is_some())
 }
 
+/// The value of an element's `id` attribute, if any
+fn element_id(tag: &BytesStart) -> Option<String> {
+	tag.attributes().flatten().find_map(|attribute| {
+		(attribute.key.local_name().as_ref() == b"id")
+			.then(|| String::from_utf8_lossy(&attribute.value).to_string())
+	})
+}
+
+/// Whether `tag` is an EPUB3 `<meta refines="#id">` whose target id was dropped.
+/// Such refines would otherwise dangle (epubcheck RSC-005) after we replace the
+/// element they describe. Note: this only catches refines that appear AFTER
+/// their target in document order, which is the conventional layout
+fn is_refines_to_dropped(tag: &BytesStart, dropped_ids: &HashSet<String>) -> bool {
+	if tag.local_name().as_ref() != b"meta" {
+		return false;
+	}
+	tag.attributes().flatten().any(|attribute| {
+		attribute.key.local_name().as_ref() == b"refines" && {
+			let value = String::from_utf8_lossy(&attribute.value);
+			value
+				.strip_prefix('#')
+				.is_some_and(|id| dropped_ids.contains(id))
+		}
+	})
+}
+
 fn write_simple_element(
 	writer: &mut Writer<&mut Vec<u8>>,
 	name: &str,
@@ -189,6 +216,8 @@ fn rewrite_opf(opf: &str, writeback: &OpfWriteback) -> Result<Vec<u8>, FileError
 	let mut inside_metadata = false;
 	// Depth of an element currently being skipped (replaced)
 	let mut skipping_depth = 0usize;
+	// ids of replaced dc:* elements, so we can also drop refines metas targeting them
+	let mut dropped_ids: HashSet<String> = HashSet::new();
 
 	loop {
 		let event = reader
@@ -202,8 +231,12 @@ fn rewrite_opf(opf: &str, writeback: &OpfWriteback) -> Result<Vec<u8>, FileError
 					skipping_depth += 1;
 				} else if inside_metadata
 					&& (is_replaced_element(writeback, &local)
-						|| (local == b"meta" && is_replaced_meta(writeback, tag)))
+						|| (local == b"meta" && is_replaced_meta(writeback, tag))
+						|| is_refines_to_dropped(tag, &dropped_ids))
 				{
+					if let Some(id) = element_id(tag) {
+						dropped_ids.insert(id);
+					}
 					skipping_depth = 1;
 				} else {
 					if local == b"metadata" {
@@ -219,8 +252,13 @@ fn rewrite_opf(opf: &str, writeback: &OpfWriteback) -> Result<Vec<u8>, FileError
 				let replaced = inside_metadata
 					&& skipping_depth == 0
 					&& (is_replaced_element(writeback, &local)
-						|| (local == b"meta" && is_replaced_meta(writeback, tag)));
-				if skipping_depth == 0 && !replaced {
+						|| (local == b"meta" && is_replaced_meta(writeback, tag))
+						|| is_refines_to_dropped(tag, &dropped_ids));
+				if replaced {
+					if let Some(id) = element_id(tag) {
+						dropped_ids.insert(id);
+					}
+				} else if skipping_depth == 0 {
 					writer
 						.write_event(event.clone())
 						.map_err(|e| FileError::EpubReadError(e.to_string()))?;
@@ -400,6 +438,39 @@ mod tests {
 		let dest = dir.join(format!("{test_name}-{}.epub", std::process::id()));
 		fs::copy(get_test_epub_path(), &dest).unwrap();
 		dest
+	}
+
+	#[test]
+	fn drops_refines_targeting_replaced_elements() {
+		// An EPUB3 metadata block where a <meta refines="#t1"> describes a
+		// dc:title we are about to replace, plus an unrelated refines that must
+		// survive
+		let opf = r###"<?xml version="1.0"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0">
+<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+<dc:title id="t1">Old Title</dc:title>
+<meta refines="#t1" property="title-type">main</meta>
+<dc:identifier id="pub-id">urn:uuid:1234</dc:identifier>
+<meta refines="#pub-id" property="identifier-type">uuid</meta>
+</metadata>
+</package>"###;
+		let writeback = OpfWriteback {
+			title: Some("New Title".to_string()),
+			..Default::default()
+		};
+		let result = rewrite_opf(opf, &writeback).expect("rewrite ok");
+		let out = String::from_utf8(result).expect("utf8");
+
+		// The title and its refines are gone; the new title is present
+		assert!(out.contains("New Title"), "{out}");
+		assert!(
+			!out.contains("refines=\"#t1\""),
+			"dangling refines kept:\n{out}"
+		);
+		assert!(!out.contains("Old Title"), "{out}");
+		// The untouched identifier and ITS refines survive
+		assert!(out.contains("refines=\"#pub-id\""), "{out}");
+		assert!(out.contains("urn:uuid:1234"), "{out}");
 	}
 
 	#[test]

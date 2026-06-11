@@ -23,6 +23,29 @@ use crate::{
 
 use super::ScanOptions;
 
+/// A `<qualified_column> LIKE 'folder<sep>%' ESCAPE '\'` filter matching paths
+/// strictly under `folder`, with the path's LIKE wildcards (`%`, `_`, `\`)
+/// escaped — folder names commonly contain `_`, which would otherwise match any
+/// character and pull in siblings. `qualified_column` must be pre-quoted, e.g.
+/// `"\"media\".\"path\""`.
+fn path_under_prefix(
+	qualified_column: &str,
+	folder: &str,
+) -> sea_orm::sea_query::SimpleExpr {
+	let mut prefix = folder.to_string();
+	if !prefix.ends_with(std::path::MAIN_SEPARATOR) {
+		prefix.push(std::path::MAIN_SEPARATOR);
+	}
+	let escaped = prefix
+		.replace('\\', "\\\\")
+		.replace('%', "\\%")
+		.replace('_', "\\_");
+	Expr::cust_with_values(
+		format!("{qualified_column} LIKE ? ESCAPE '\\'"),
+		[format!("{escaped}%")],
+	)
+}
+
 pub struct WalkerCtx {
 	/// A reference to the database connection
 	pub db: Arc<DatabaseConnection>,
@@ -143,10 +166,6 @@ pub async fn walk_library(
 		// "/books" matching "/books-extra/..."), pulling another root's series in
 		// and marking them missing. Match the root itself or paths under it.
 		let path_str = path.to_string();
-		let mut path_prefix = path_str.clone();
-		if !path_prefix.ends_with(std::path::MAIN_SEPARATOR) {
-			path_prefix.push(std::path::MAIN_SEPARATOR);
-		}
 		let existing_records = series::Entity::find()
 			.columns(vec![
 				series::Column::Id,
@@ -155,8 +174,8 @@ pub async fn walk_library(
 			])
 			.filter(
 				series::Column::Path
-					.eq(path_str)
-					.or(series::Column::Path.starts_with(path_prefix)),
+					.eq(path_str.clone())
+					.or(path_under_prefix("\"series\".\"path\"", &path_str)),
 			)
 			.all(db.as_ref())
 			.await?;
@@ -342,12 +361,9 @@ pub async fn walk_series(
 	// Match existing media by their OWN path rather than via their series'
 	// path: a merged folder feeds a series rooted elsewhere, and the old
 	// series-path join made those books invisible (re-created as duplicates
-	// on every scan). The trailing separator avoids sibling-prefix collisions
-	// (e.g. /books/Foo vs /books/Foobar)
-	let mut media_path_prefix = path.to_string_lossy().to_string();
-	if !media_path_prefix.ends_with(std::path::MAIN_SEPARATOR) {
-		media_path_prefix.push(std::path::MAIN_SEPARATOR);
-	}
+	// on every scan). path_under_prefix scopes to children of this folder while
+	// escaping LIKE wildcards in the path (folder names often contain '_').
+	let series_path = path.to_string_lossy().to_string();
 	let existing_media = media::Entity::find()
 		.columns(vec![
 			media::Column::Id,
@@ -355,7 +371,7 @@ pub async fn walk_series(
 			media::Column::ModifiedAt,
 			media::Column::Status,
 		])
-		.filter(media::Column::Path.starts_with(media_path_prefix))
+		.filter(path_under_prefix("\"media\".\"path\"", &series_path))
 		.all(db.as_ref())
 		.await?;
 	tracing::trace!(
