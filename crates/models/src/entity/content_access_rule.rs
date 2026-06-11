@@ -75,6 +75,17 @@ impl Entity {
 	}
 }
 
+/// A Unicode-case-insensitive `tag.name IN (values)` condition — tag names are
+/// user-typed in rules, so "Хоррор" must match a "хоррор" tag
+fn tag_name_matches(values: &[String]) -> SimpleExpr {
+	let placeholders = values.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
+	let params = values.iter().map(|v| v.to_lowercase());
+	Expr::cust_with_values(
+		format!("ulower(\"tags\".\"name\") IN ({placeholders})"),
+		params,
+	)
+}
+
 /// Tag names → subquery of media ids carrying one of those tags
 fn media_ids_with_tags(values: &[String]) -> sea_orm::sea_query::SelectStatement {
 	Query::select()
@@ -85,7 +96,7 @@ fn media_ids_with_tags(values: &[String]) -> sea_orm::sea_query::SelectStatement
 			Expr::col((tag::Entity, tag::Column::Id))
 				.equals((media_tag::Entity, media_tag::Column::TagId)),
 		)
-		.and_where(tag::Column::Name.is_in(values.to_vec()))
+		.and_where(tag_name_matches(values))
 		.to_owned()
 }
 
@@ -99,7 +110,7 @@ fn series_ids_with_tags(values: &[String]) -> sea_orm::sea_query::SelectStatemen
 			Expr::col((tag::Entity, tag::Column::Id))
 				.equals((series_tag::Entity, series_tag::Column::TagId)),
 		)
-		.and_where(tag::Column::Name.is_in(values.to_vec()))
+		.and_where(tag_name_matches(values))
 		.to_owned()
 }
 
@@ -113,7 +124,7 @@ fn library_ids_with_tags(values: &[String]) -> sea_orm::sea_query::SelectStateme
 			Expr::col((tag::Entity, tag::Column::Id))
 				.equals((library_tag::Entity, library_tag::Column::TagId)),
 		)
-		.and_where(tag::Column::Name.is_in(values.to_vec()))
+		.and_where(tag_name_matches(values))
 		.to_owned()
 }
 
@@ -141,39 +152,39 @@ fn library_ids_with_any_tag() -> sea_orm::sea_query::SelectStatement {
 
 /// A comma-separated-list membership test for one value of a TEXT column like
 /// `media_metadata.genres` ("Fantasy, Horror"). The value is matched literally —
-/// LIKE metacharacters in it are escaped — and case-insensitively for ASCII
-/// (SQLite `lower()`/LIKE only fold ASCII; non-ASCII values must match case).
-/// COALESCE keeps the expression non-NULL so it is safe to negate for Exclude.
+/// LIKE metacharacters in it are escaped — and case-insensitively across the
+/// full Unicode range: both sides go through the custom `ulower()` function
+/// (see [`crate::db`]; SQLite's own `lower()`/LIKE only fold ASCII). COALESCE
+/// keeps the expression non-NULL so it is safe to negate for Exclude.
 fn comma_list_contains(table: &str, column: &str, value: &str) -> SimpleExpr {
-	// Escape so a value like "sci_fi" or "100%" is not treated as a wildcard
+	// Escape so a value like "sci_fi" or "100%" is not treated as a wildcard.
+	// Lowercased in Rust — the column side is lowercased by ulower() in SQL
 	let escaped = value
+		.to_lowercase()
 		.replace('\\', "\\\\")
 		.replace('%', "\\%")
 		.replace('_', "\\_");
 	Expr::cust_with_values(
 		format!(
-			"(',' || lower(REPLACE(COALESCE(\"{table}\".\"{column}\", ''), ', ', ',')) || ',') LIKE ('%,' || lower(?) || ',%') ESCAPE '\\'"
+			"(',' || ulower(REPLACE(COALESCE(\"{table}\".\"{column}\", ''), ', ', ',')) || ',') LIKE ('%,' || ? || ',%') ESCAPE '\\'"
 		),
 		[escaped],
 	)
 }
 
-/// A NULL-safe, ASCII-case-insensitive equality test against a list of values.
-/// Returns a guaranteed boolean (never NULL) so it is safe under Exclude's
-/// negation — a NULL column must read as "does not match", not "unknown"
+/// A NULL-safe, Unicode-case-insensitive equality test against a list of
+/// values. Returns a guaranteed boolean (never NULL) so it is safe under
+/// Exclude's negation — a NULL column must read as "does not match", not
+/// "unknown"
 fn column_in_values(table: &str, column: &str, values: &[String]) -> SimpleExpr {
 	if values.is_empty() {
 		return Expr::cust("0 = 1");
 	}
-	let placeholders = values
-		.iter()
-		.map(|_| "lower(?)")
-		.collect::<Vec<_>>()
-		.join(", ");
-	let params = values.iter().map(|v| v.to_string());
+	let placeholders = values.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
+	let params = values.iter().map(|v| v.to_lowercase());
 	Expr::cust_with_values(
 		format!(
-			"\"{table}\".\"{column}\" IS NOT NULL AND lower(\"{table}\".\"{column}\") IN ({placeholders})"
+			"\"{table}\".\"{column}\" IS NOT NULL AND ulower(\"{table}\".\"{column}\") IN ({placeholders})"
 		),
 		params,
 	)
@@ -239,184 +250,193 @@ fn mode_condition(
 	}
 }
 
-/// Build the media-level filter for a set of rules. Assumes the query joins
-/// `media_metadata` (left), `series` (inner) and `series_metadata` (left), as
-/// `media::Entity::find_for_user` does. Tags are matched with inheritance
-/// (own + series + library); genre/publisher match the book's own metadata or,
-/// when inherited, its series metadata
-pub fn media_filter(rules: &[Model]) -> Option<Condition> {
-	if rules.is_empty() {
+/// One inheritance level's contribution to a dimension match: how rows at
+/// that level match the rule's values, and how they read as "unset"
+struct LevelMatch {
+	match_any: Condition,
+	is_unset: Condition,
+}
+
+/// Where the library id lives in the query being filtered: media/series
+/// queries don't join `libraries` and reach it through `series.library_id`,
+/// while library queries select from the table itself
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum LibraryIdSource {
+	SeriesColumn,
+	LibraryTable,
+}
+
+impl LibraryIdSource {
+	fn expr(self) -> Expr {
+		match self {
+			Self::SeriesColumn => Expr::col((series::Entity, series::Column::LibraryId)),
+			Self::LibraryTable => {
+				Expr::col((super::library::Entity, super::library::Column::Id))
+			},
+		}
+	}
+}
+
+/// At which inheritance level a dimension is being matched. Tags exist on
+/// media, series and libraries; genre/publisher only on media and series
+/// metadata
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum MatchLevel {
+	Media,
+	Series,
+	Library(LibraryIdSource),
+}
+
+/// The building block shared by the media/series/library filters: the match
+/// and unset conditions one level contributes for one rule's dimension.
+/// Returns None when the dimension does not exist at that level
+fn level_match(
+	level: MatchLevel,
+	dimension: ContentRuleDimension,
+	values: &[String],
+) -> Option<LevelMatch> {
+	match (level, dimension) {
+		(MatchLevel::Media, ContentRuleDimension::Tag) => Some(LevelMatch {
+			match_any: Condition::any()
+				.add(media::Column::Id.in_subquery(media_ids_with_tags(values))),
+			is_unset: Condition::all().add(
+				media::Column::Id
+					.in_subquery(media_ids_with_any_tag())
+					.not(),
+			),
+		}),
+		(MatchLevel::Series, ContentRuleDimension::Tag) => Some(LevelMatch {
+			match_any: Condition::any()
+				.add(series::Column::Id.in_subquery(series_ids_with_tags(values))),
+			is_unset: Condition::all().add(
+				series::Column::Id
+					.in_subquery(series_ids_with_any_tag())
+					.not(),
+			),
+		}),
+		(MatchLevel::Library(source), ContentRuleDimension::Tag) => Some(LevelMatch {
+			match_any: Condition::any()
+				.add(source.expr().in_subquery(library_ids_with_tags(values))),
+			is_unset: Condition::all()
+				.add(source.expr().in_subquery(library_ids_with_any_tag()).not()),
+		}),
+		(MatchLevel::Media, ContentRuleDimension::Genre) => Some(LevelMatch {
+			// Self-contained subqueries — no outer media_metadata join needed
+			// (callers like keepReading add their own via find_also_related)
+			match_any: Condition::any()
+				.add(media::Column::Id.in_subquery(media_ids_with_genre(values))),
+			is_unset: Condition::all().add(
+				media::Column::Id
+					.in_subquery(media_ids_with_any("genres"))
+					.not(),
+			),
+		}),
+		(MatchLevel::Series, ContentRuleDimension::Genre) => {
+			// Series metadata is matched via the always-joined series_metadata
+			let mut match_any = Condition::any();
+			for value in values {
+				match_any = match_any.add(comma_list_contains(
+					"series_metadata",
+					"genres",
+					value,
+				));
+			}
+			Some(LevelMatch {
+				match_any,
+				is_unset: Condition::all()
+					.add(column_is_unset("series_metadata", "genres")),
+			})
+		},
+		(MatchLevel::Media, ContentRuleDimension::Publisher) => Some(LevelMatch {
+			match_any: Condition::any()
+				.add(media::Column::Id.in_subquery(media_ids_with_publisher(values))),
+			is_unset: Condition::all().add(
+				media::Column::Id
+					.in_subquery(media_ids_with_any("publisher"))
+					.not(),
+			),
+		}),
+		(MatchLevel::Series, ContentRuleDimension::Publisher) => Some(LevelMatch {
+			match_any: Condition::any().add(column_in_values(
+				"series_metadata",
+				"publisher",
+				values,
+			)),
+			is_unset: Condition::all()
+				.add(column_is_unset("series_metadata", "publisher")),
+		}),
+		(MatchLevel::Library(_), _) => None,
+	}
+}
+
+/// Combine the levels visible to a query into one rule condition: an item
+/// matches when ANY level matches, and counts as unset only when EVERY level
+/// is unset. Returns None when the dimension exists at none of the levels
+fn rule_condition_for_levels(rule: &Model, levels: &[MatchLevel]) -> Option<Condition> {
+	let values = rule.values_vec();
+	if values.is_empty() {
 		return None;
 	}
-
-	let mut all = Condition::all();
-	for rule in rules {
-		let values = rule.values_vec();
-		if values.is_empty() {
-			continue;
+	let mut match_any = Condition::any();
+	let mut is_unset = Condition::all();
+	let mut any_level = false;
+	for level in levels {
+		if let Some(level_match) = level_match(*level, rule.dimension, &values) {
+			match_any = match_any.add(level_match.match_any);
+			is_unset = is_unset.add(level_match.is_unset);
+			any_level = true;
 		}
-		let condition = match rule.dimension {
-			ContentRuleDimension::Tag => {
-				let match_any = Condition::any()
-					.add(media::Column::Id.in_subquery(media_ids_with_tags(&values)))
-					.add(series::Column::Id.in_subquery(series_ids_with_tags(&values)))
-					.add(
-						series::Column::LibraryId
-							.in_subquery(library_ids_with_tags(&values)),
-					);
-				let is_unset = Condition::all()
-					.add(
-						media::Column::Id
-							.in_subquery(media_ids_with_any_tag())
-							.not(),
-					)
-					.add(
-						series::Column::Id
-							.in_subquery(series_ids_with_any_tag())
-							.not(),
-					)
-					.add(
-						series::Column::LibraryId
-							.in_subquery(library_ids_with_any_tag())
-							.not(),
-					);
-				mode_condition(rule.mode, rule.restrict_on_unset, match_any, is_unset)
-			},
-			ContentRuleDimension::Genre => {
-				// Media side via subquery (no media_metadata join needed); series
-				// side via the always-joined series_metadata
-				let mut match_any = Condition::any()
-					.add(media::Column::Id.in_subquery(media_ids_with_genre(&values)));
-				for value in &values {
-					match_any = match_any.add(comma_list_contains(
-						"series_metadata",
-						"genres",
-						value,
-					));
-				}
-				let is_unset = Condition::all()
-					.add(
-						media::Column::Id
-							.in_subquery(media_ids_with_any("genres"))
-							.not(),
-					)
-					.add(column_is_unset("series_metadata", "genres"));
-				mode_condition(rule.mode, rule.restrict_on_unset, match_any, is_unset)
-			},
-			ContentRuleDimension::Publisher => {
-				let match_any = Condition::any()
-					.add(media::Column::Id.in_subquery(media_ids_with_publisher(&values)))
-					.add(column_in_values("series_metadata", "publisher", &values));
-				let is_unset = Condition::all()
-					.add(
-						media::Column::Id
-							.in_subquery(media_ids_with_any("publisher"))
-							.not(),
-					)
-					.add(column_is_unset("series_metadata", "publisher"));
-				mode_condition(rule.mode, rule.restrict_on_unset, match_any, is_unset)
-			},
-		};
-		all = all.add(condition);
 	}
+	any_level
+		.then(|| mode_condition(rule.mode, rule.restrict_on_unset, match_any, is_unset))
+}
 
-	Some(all)
+/// AND together the conditions of every applicable rule. Returns None when no
+/// rule applies at the given levels (no filtering needed)
+fn combined_filter(rules: &[Model], levels: &[MatchLevel]) -> Option<Condition> {
+	let mut all = Condition::all();
+	let mut any_applied = false;
+	for rule in rules {
+		if let Some(condition) = rule_condition_for_levels(rule, levels) {
+			all = all.add(condition);
+			any_applied = true;
+		}
+	}
+	any_applied.then_some(all)
+}
+
+/// Build the media-level filter for a set of rules. Assumes the query joins
+/// `series` (inner) and `series_metadata` (left), as
+/// `media::Entity::find_for_user` does — the media side is matched through
+/// self-contained subqueries. Tags are matched with inheritance (own + series
+/// + library); genre/publisher match the book's own metadata or, when
+/// inherited, its series metadata
+pub fn media_filter(rules: &[Model]) -> Option<Condition> {
+	combined_filter(
+		rules,
+		&[
+			MatchLevel::Media,
+			MatchLevel::Series,
+			MatchLevel::Library(LibraryIdSource::SeriesColumn),
+		],
+	)
 }
 
 /// Build the series-level filter. Assumes `series_metadata` is joined (left),
 /// as `series::Entity::find_for_user` does. Tags match the series' own tags
 /// plus its library's tags
 pub fn series_filter(rules: &[Model]) -> Option<Condition> {
-	if rules.is_empty() {
-		return None;
-	}
-
-	let mut all = Condition::all();
-	for rule in rules {
-		let values = rule.values_vec();
-		if values.is_empty() {
-			continue;
-		}
-		let condition = match rule.dimension {
-			ContentRuleDimension::Tag => {
-				let match_any = Condition::any()
-					.add(series::Column::Id.in_subquery(series_ids_with_tags(&values)))
-					.add(
-						series::Column::LibraryId
-							.in_subquery(library_ids_with_tags(&values)),
-					);
-				let is_unset = Condition::all()
-					.add(
-						series::Column::Id
-							.in_subquery(series_ids_with_any_tag())
-							.not(),
-					)
-					.add(
-						series::Column::LibraryId
-							.in_subquery(library_ids_with_any_tag())
-							.not(),
-					);
-				mode_condition(rule.mode, rule.restrict_on_unset, match_any, is_unset)
-			},
-			ContentRuleDimension::Genre => {
-				let mut match_any = Condition::any();
-				for value in &values {
-					match_any = match_any.add(comma_list_contains(
-						"series_metadata",
-						"genres",
-						value,
-					));
-				}
-				let is_unset =
-					Condition::all().add(column_is_unset("series_metadata", "genres"));
-				mode_condition(rule.mode, rule.restrict_on_unset, match_any, is_unset)
-			},
-			ContentRuleDimension::Publisher => {
-				let match_any = Condition::any().add(column_in_values(
-					"series_metadata",
-					"publisher",
-					&values,
-				));
-				let is_unset =
-					Condition::all().add(column_is_unset("series_metadata", "publisher"));
-				mode_condition(rule.mode, rule.restrict_on_unset, match_any, is_unset)
-			},
-		};
-		all = all.add(condition);
-	}
-
-	Some(all)
+	combined_filter(
+		rules,
+		&[
+			MatchLevel::Series,
+			MatchLevel::Library(LibraryIdSource::SeriesColumn),
+		],
+	)
 }
 
 /// Build the library-level filter. Only tag rules apply to libraries —
 /// genre/publisher are book/series concepts and leave libraries visible
 pub fn library_filter(rules: &[Model]) -> Option<Condition> {
-	if rules.is_empty() {
-		return None;
-	}
-
-	let mut all = Condition::all();
-	let mut any_applied = false;
-	for rule in rules {
-		let values = rule.values_vec();
-		if values.is_empty() || rule.dimension != ContentRuleDimension::Tag {
-			continue;
-		}
-		let match_any = Condition::any()
-			.add(super::library::Column::Id.in_subquery(library_ids_with_tags(&values)));
-		let is_unset = Condition::all().add(
-			super::library::Column::Id
-				.in_subquery(library_ids_with_any_tag())
-				.not(),
-		);
-		all = all.add(mode_condition(
-			rule.mode,
-			rule.restrict_on_unset,
-			match_any,
-			is_unset,
-		));
-		any_applied = true;
-	}
-
-	any_applied.then_some(all)
+	combined_filter(rules, &[MatchLevel::Library(LibraryIdSource::LibraryTable)])
 }

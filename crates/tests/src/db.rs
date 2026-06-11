@@ -3,9 +3,11 @@ use models::entity::{
 	media_metadata, media_tag, reading_session, refresh_token, registered_reading_device,
 	series, series_metadata, server_config, tag, user, user_preferences,
 };
-use sea_orm::{ConnectionTrait, Database, DbBackend, DbConn, DbErr, Schema};
+use sea_orm::{ConnectionTrait, DbBackend, DbConn, DbErr, Schema};
 pub async fn test_database() -> DbConn {
-	let db = Database::connect("sqlite::memory:")
+	// Connect through models::db so custom SQL functions (ulower) exist in
+	// test databases too — content-rule queries reference them
+	let db = models::db::connect_sqlite("sqlite::memory:")
 		.await
 		.expect("failed to connect to test database");
 

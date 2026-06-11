@@ -24,7 +24,9 @@ pub async fn connect(config: &StumpConfig) -> Result<DatabaseConnection, CoreErr
 		format!("sqlite://{}/stump.db?mode=rwc", config_dir.display())
 	};
 
-	let connection = sea_orm::Database::connect(&sqlite_url).await?;
+	// models::db registers Stump's custom SQL functions (ulower) on every
+	// pooled connection — content-rule queries depend on them
+	let connection = models::db::connect_sqlite(&sqlite_url).await?;
 
 	let force_reset = match env::var(FORCE_RESET_KEY) {
 		Ok(value) => value == "true",
@@ -51,7 +53,7 @@ pub async fn connect(config: &StumpConfig) -> Result<DatabaseConnection, CoreErr
 }
 
 pub async fn connect_at(path: &str) -> Result<DatabaseConnection, CoreError> {
-	let connection = sea_orm::Database::connect(path).await?;
+	let connection = models::db::connect_sqlite(path).await?;
 	Migrator::up(&connection, None).await?;
 	Ok(connection)
 }
