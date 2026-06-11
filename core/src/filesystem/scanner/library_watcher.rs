@@ -1,7 +1,7 @@
 use crate::{job::stump_job::StumpJob, CoreError, CoreResult};
 use apalis::prelude::MemoryStorage;
 use async_trait::async_trait;
-use models::entity::{library, library_config};
+use models::entity::{library, library_config, library_path};
 use notify::{Event, RecommendedWatcher, Watcher};
 use sea_orm::prelude::*;
 use std::collections::{HashMap, HashSet};
@@ -105,9 +105,13 @@ impl LibraryWatcherInternal {
 	}
 }
 
+/// A watched library together with every root folder it spans (the primary
+/// path plus any extra roots from library_paths)
+type LibraryWithRoots = (library::LibraryIdentSelect, Vec<String>);
+
 #[async_trait]
 trait LibrariesProvider {
-	async fn get_libraries(&self) -> CoreResult<Vec<library::LibraryIdentSelect>>;
+	async fn get_libraries(&self) -> CoreResult<Vec<LibraryWithRoots>>;
 }
 
 #[derive(Debug, Clone)]
@@ -118,9 +122,9 @@ struct LibraryProvider {
 #[async_trait]
 impl LibrariesProvider for LibraryProvider {
 	#[tracing::instrument(skip(self), err)]
-	async fn get_libraries(&self) -> CoreResult<Vec<library::LibraryIdentSelect>> {
+	async fn get_libraries(&self) -> CoreResult<Vec<LibraryWithRoots>> {
 		// get list of all libraries
-		// for each library, if watching is enabled, watch their directory
+		// for each library, if watching is enabled, watch their directories
 		let conn = self.conn.as_ref();
 
 		let libraries: Vec<library::LibraryIdentSelect> = library::Entity::find()
@@ -131,7 +135,16 @@ impl LibrariesProvider for LibraryProvider {
 			.all(conn)
 			.await?;
 
-		Ok(libraries)
+		let mut with_roots = Vec::with_capacity(libraries.len());
+		for library in libraries {
+			let mut roots = vec![library.path.clone()];
+			roots.extend(
+				library_path::Entity::fetch_for_library(conn, &library.id).await?,
+			);
+			with_roots.push((library, roots));
+		}
+
+		Ok(with_roots)
 	}
 }
 
@@ -225,19 +238,22 @@ impl LibraryWatcher {
 				match command {
 					LibraryWatcherCommand::AddWatcher(path) => {
 						tracing::debug!("Adding watcher for path: {:?}", path);
+						// Note: a failed (un)watch must not kill the listener loop,
+						// otherwise every future watcher command errors with a
+						// closed channel
 						if let Err(e) = lib_watcher
 							.watcher
 							.watch(path.as_path(), notify::RecursiveMode::Recursive)
 						{
 							tracing::error!(error = ?e, "Error adding file watcher");
-							break;
 						}
 					},
 					LibraryWatcherCommand::RemoveWatcher(path) => {
 						tracing::debug!("Removing watcher for path: {:?}", path);
 						if let Err(e) = lib_watcher.watcher.unwatch(path.as_path()) {
-							tracing::error!(error = ?e, "Error removing file watcher");
-							break;
+							// Commonly just "watch not found" — e.g. removing a root
+							// that was never watched. Not fatal
+							tracing::warn!(error = ?e, "Error removing file watcher");
 						}
 					},
 					LibraryWatcherCommand::ChangedFiles(paths) => {
@@ -267,9 +283,11 @@ impl LibraryWatcher {
 		let libraries = library_provider.as_ref().get_libraries().await?;
 
 		let mut libraries_to_scan = HashMap::new();
-		for library in libraries {
+		for (library, roots) in libraries {
 			for path in &paths {
-				if path.starts_with(&library.path) {
+				if roots.iter().any(|root| path.starts_with(root)) {
+					// The scan job resolves every root itself, so submitting the
+					// primary path is enough no matter which root changed
 					libraries_to_scan.insert(library.id.clone(), library.path.clone());
 				}
 			}
@@ -314,10 +332,15 @@ impl LibraryWatcher {
 
 	pub async fn init(&self) -> CoreResult<()> {
 		let libraries = self.library_provider.get_libraries().await?;
-		for library in libraries {
-			self.add_watcher(library.path.into()).await.map_err(|e| {
-				CoreError::InitializationError(format!("Failed to add watcher: {:?}", e))
-			})?;
+		for (_, roots) in libraries {
+			for root in roots {
+				self.add_watcher(root.into()).await.map_err(|e| {
+					CoreError::InitializationError(format!(
+						"Failed to add watcher: {:?}",
+						e
+					))
+				})?;
+			}
 		}
 		Ok(())
 	}
@@ -333,8 +356,16 @@ mod tests {
 
 	#[async_trait]
 	impl LibrariesProvider for MockLibraryProvider {
-		async fn get_libraries(&self) -> CoreResult<Vec<library::LibraryIdentSelect>> {
-			Ok(self.libraries.clone())
+		async fn get_libraries(&self) -> CoreResult<Vec<LibraryWithRoots>> {
+			Ok(self
+				.libraries
+				.clone()
+				.into_iter()
+				.map(|library| {
+					let roots = vec![library.path.clone()];
+					(library, roots)
+				})
+				.collect())
 		}
 	}
 
