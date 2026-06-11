@@ -708,9 +708,7 @@ impl JobLifecycle for LibraryScanJob {
 								"Series not found".to_string(),
 							))?;
 						series::Entity::find()
-							.filter(
-								series::Column::Id.eq(merge_target.target_series_id),
-							)
+							.filter(series::Column::Id.eq(merge_target.target_series_id))
 							.into_model::<series::SeriesIdentSelect>()
 							.one(ctx.conn())
 							.await?

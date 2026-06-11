@@ -16,7 +16,10 @@ use crate::{
 	},
 };
 
-use super::{content_access_rule, library_exclusion, media_metadata, series, series_metadata, user::AuthUser};
+use super::{
+	content_access_rule, library_exclusion, media_metadata, series, series_metadata,
+	user::AuthUser,
+};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, SimpleObject, Ordering)]
 #[graphql(name = "MediaModel")]
@@ -185,6 +188,11 @@ impl Entity {
 	}
 
 	pub fn apply_for_user(user: &AuthUser, select: Select<Entity>) -> Select<Entity> {
+		// NOTE: unlike find_for_user this does NOT join media_metadata — callers
+		// (keepReading) add their own via find_also_related, and double-joining
+		// is ambiguous. The content-rule filter is self-contained (subqueries),
+		// so it needs no media_metadata join; the age-restriction filter does
+		// reference media_metadata directly (pre-existing caller contract).
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
 		let select = apply_content_rules_filter(select, &user.content_rules);

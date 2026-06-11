@@ -432,7 +432,8 @@ async fn get_series(
 	let search_cpy = search.clone();
 	let series = series::Entity::find_for_user(&user)
 		.apply_if(search_cpy, |query, search| {
-			query.left_join(series_metadata::Entity).filter(
+			// find_for_user already joins series_metadata
+			query.filter(
 				series::Column::Name
 					.contains(search.clone())
 					.or(series_metadata::Column::Title.contains(search)),
@@ -446,7 +447,8 @@ async fn get_series(
 	let search_cpy = search.clone();
 	let count = series::Entity::find_for_user(&user)
 		.apply_if(search_cpy, |query, search| {
-			query.left_join(series_metadata::Entity).filter(
+			// find_for_user already joins series_metadata
+			query.filter(
 				series::Column::Name
 					.contains(search.clone())
 					.or(series_metadata::Column::Title.contains(search)),
@@ -616,9 +618,8 @@ async fn search_feed(
 		);
 	}
 
-	// Search series
+	// Search series (find_for_user already joins series_metadata)
 	let series = series::Entity::find_for_user(&user)
-		.left_join(series_metadata::Entity)
 		.filter(
 			series::Column::Name
 				.contains(&search)

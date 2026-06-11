@@ -7,8 +7,8 @@ use models::{
 		last_library_visit,
 		library::{self, LibraryIdentSelect},
 		library_config, library_exclusion, library_path, library_scan_record,
-		library_tag, media,
-		media_metadata, metadata_provider_config, series, series_metadata, tag, user,
+		library_tag, media, media_metadata, metadata_provider_config, series,
+		series_metadata, tag, user,
 	},
 	shared::enums::{FileStatus, MetadataResetImpact, UserPermission},
 };
@@ -853,10 +853,7 @@ impl LibraryMutation {
 				{
 					let path = entry.path();
 					if path.is_file()
-						&& path
-							.to_string_lossy()
-							.to_lowercase()
-							.ends_with(".epub.bak")
+						&& path.to_string_lossy().to_lowercase().ends_with(".epub.bak")
 					{
 						match std::fs::remove_file(path) {
 							Ok(_) => removed += 1,

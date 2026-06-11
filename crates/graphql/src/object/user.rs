@@ -2,12 +2,11 @@ use async_graphql::{ComplexObject, Context, Result, SimpleObject};
 
 use chrono::{DateTime, FixedOffset, Utc};
 use models::{
-	shared::enums::{ContentRuleDimension, ContentRuleMode},
 	entity::{
 		age_restriction, content_access_rule, finished_reading_session, session, user,
-		user_login_activity,
-		user_preferences,
+		user_login_activity, user_preferences,
 	},
+	shared::enums::{ContentRuleDimension, ContentRuleMode},
 	shared::{enums::UserPermission, permission_set::PermissionSet},
 };
 use sea_orm::{prelude::*, ActiveValue, QueryOrder};
@@ -63,6 +62,9 @@ impl User {
 		Ok(rules.into_iter().map(ContentAccessRule::from).collect())
 	}
 
+	#[graphql(
+		guard = "SelfGuard::new(&self.model.id).or(PermissionGuard::one(UserPermission::ManageUsers)).or(ServerOwnerGuard)"
+	)]
 	async fn age_restriction(
 		&self,
 		ctx: &Context<'_>,

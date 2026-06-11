@@ -229,8 +229,7 @@ impl UserMutation {
 		}
 		txn.commit().await?;
 
-		let saved =
-			content_access_rule::Entity::fetch_for_user(conn, &target.id).await?;
+		let saved = content_access_rule::Entity::fetch_for_user(conn, &target.id).await?;
 		Ok(saved.into_iter().map(ContentAccessRule::from).collect())
 	}
 
