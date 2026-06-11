@@ -4,6 +4,7 @@ import { graphql, MetadataResetImpact, UserPermission } from '@stump/graphql'
 import { Construction } from 'lucide-react'
 import { Suspense, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
 
 import { SceneContainer } from '@/components/container'
 import { ResetMetadata } from '@/components/metadata/metadataEditor'
@@ -45,6 +46,12 @@ const resetMetadataMutation = graphql(`
 	}
 `)
 
+const regenerateThumbnailMutation = graphql(`
+	mutation SeriesSettingsSceneRegenerateThumbnail($id: ID!, $forceRegenerate: Boolean!) {
+		generateSeriesThumbnail(id: $id, forceRegenerate: $forceRegenerate)
+	}
+`)
+
 export default function SeriesSettingsScene() {
 	const { sdk } = useSDK()
 	const { series } = useSeriesContext()
@@ -60,11 +67,27 @@ export default function SeriesSettingsScene() {
 
 	const { data, mutate: analyze, isPending } = useGraphQLMutation(analyzeMutation)
 	const { mutate: resetMetadata } = useGraphQLMutation(resetMetadataMutation)
+	const { mutate: regenerateThumbnail, isPending: isRegeneratingThumbnail } = useGraphQLMutation(
+		regenerateThumbnailMutation,
+		{
+			onSuccess: () => {
+				toast.success('Thumbnail regeneration started')
+			},
+			onError: (error) => {
+				console.error('Failed to regenerate series thumbnail', error)
+				toast.error('Failed to regenerate thumbnail')
+			},
+		},
+	)
 
 	const handleAnalyze = useCallback(() => analyze({ id: series.id }), [analyze, series.id])
 	const handleResetMetadata = useCallback(
 		(impact: MetadataResetImpact) => resetMetadata({ id: series.id, impact }),
 		[resetMetadata, series.id],
+	)
+	const handleRegenerateThumbnail = useCallback(
+		() => regenerateThumbnail({ id: series.id, forceRegenerate: true }),
+		[regenerateThumbnail, series.id],
 	)
 
 	useEffect(() => {
@@ -122,7 +145,20 @@ export default function SeriesSettingsScene() {
 						</Text>
 					</div>
 
-					<SeriesThumbnailSelector fragment={seriesById} />
+					<div className="gap-2 flex items-center">
+						<SeriesThumbnailSelector fragment={seriesById} />
+						{checkPermission(UserPermission.EditThumbnails) && (
+							<Button
+								title="Regenerate the thumbnail for this series from its first book"
+								size="md"
+								variant="outline"
+								onClick={handleRegenerateThumbnail}
+								disabled={isRegeneratingThumbnail}
+							>
+								Regenerate from books
+							</Button>
+						)}
+					</div>
 				</div>
 
 				<div className="gap-y-2 flex w-full flex-col">
