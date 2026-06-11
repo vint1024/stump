@@ -41,6 +41,15 @@ export class EpubAPI extends APIBase {
 	}
 
 	/**
+	 * The URL for fetching the whole epub file for READING purposes (e.g. the
+	 * native Readium reader opening a publication). Unlike media.downloadURL,
+	 * this does not require the DownloadFile permission
+	 */
+	fileURL(id: string): string {
+		return this.withServiceURL(epubURL(`/${id}/file`))
+	}
+
+	/**
 	 * Fetch a resource from an epub by its ID and resource ID
 	 */
 	async fetchResource({
@@ -65,6 +74,7 @@ export class EpubAPI extends APIBase {
 		return {
 			epubServiceURL: 'epub.serviceURL',
 			fetchResource: 'epub.fetchResource',
+			fileURL: 'epub.fileURL',
 			manifestURL: 'epub.manifestURL',
 			resourceBaseURL: 'epub.resourceBaseURL',
 		}
