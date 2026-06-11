@@ -1246,22 +1246,53 @@ async fn enforce_valid_library_roots(
 		.map(|path| normalize_path(path).to_string())
 		.collect::<Vec<_>>();
 
-	let unique = candidates.iter().collect::<std::collections::HashSet<_>>();
+	// Case-insensitive comparisons throughout: the deployment filesystem may be
+	// case-insensitive (macOS/Windows), where "/Books" and "/books" are the same
+	// folder. Unicode-aware lowercasing handles non-ASCII paths
+	let ci = |path: &str| path.to_lowercase();
+
+	let unique = candidates
+		.iter()
+		.map(|c| ci(c))
+		.collect::<std::collections::HashSet<_>>();
 	if unique.len() != candidates.len() {
 		return Err("The same folder was provided more than once".into());
 	}
 
+	// Existence is only validated for NEWLY added roots, and even then an
+	// unreachable path is allowed — a root may live on a NAS that is temporarily
+	// offline, and an existing library must stay editable regardless of whether
+	// its folders are reachable right now. We only reject a path we can positively
+	// see is a file rather than a directory.
+	let existing_roots: Vec<String> = if let Some(library_id) = existing_library_id {
+		let mut roots = library::Entity::find()
+			.filter(library::Column::Id.eq(library_id))
+			.into_partial_model::<library::LibraryIdentSelect>()
+			.all(conn)
+			.await?
+			.into_iter()
+			.map(|library| ci(normalize_path(&library.path)))
+			.collect::<Vec<_>>();
+		roots.extend(
+			library_path::Entity::fetch_for_library(conn, library_id)
+				.await?
+				.iter()
+				.map(|path| ci(normalize_path(path))),
+		);
+		roots
+	} else {
+		vec![]
+	};
+
 	// TODO: Move this to the core, Ideally we avoid pulling tokio for this crate
 	for path in &candidates {
-		match fs::metadata(path).await {
-			Ok(metadata) => {
-				if !metadata.is_dir() {
-					return Err(format!("Path is not a directory: {path}").into());
-				}
-			},
-			Err(error) => {
-				return Err(format!("{path}: {error}").into());
-			},
+		if existing_roots.contains(&ci(path)) {
+			continue;
+		}
+		if let Ok(metadata) = fs::metadata(path).await {
+			if !metadata.is_dir() {
+				return Err(format!("Path is not a directory: {path}").into());
+			}
 		}
 	}
 
@@ -1269,7 +1300,9 @@ async fn enforce_valid_library_roots(
 	// and /books/fiction would double-scan everything under fiction
 	for parent in &candidates {
 		for child in &candidates {
-			if parent != child && child.starts_with(&add_trailing_slash(parent)) {
+			if ci(parent) != ci(child)
+				&& ci(child).starts_with(&ci(&add_trailing_slash(parent)))
+			{
 				return Err(format!(
 					"Folder {child} is nested inside {parent} — library folders cannot contain one another"
 				)
@@ -1298,14 +1331,15 @@ async fn enforce_valid_library_roots(
 	}
 
 	for (_, other) in &other_roots {
-		let other = normalize_path(other);
+		let other = ci(normalize_path(other));
 		for candidate in &candidates {
+			let candidate = ci(candidate);
 			let is_same = candidate == other;
 			// example: candidate = "/books", other = "/books/fiction" (parent of another root);
 			// the trailing slash avoids flagging e.g. "/books2"
-			let is_parent = other.starts_with(&add_trailing_slash(candidate));
+			let is_parent = other.starts_with(&add_trailing_slash(&candidate));
 			// example: candidate = "/data/books/fiction", other = "/data/books"
-			let is_child = candidate.starts_with(&add_trailing_slash(other));
+			let is_child = candidate.starts_with(&add_trailing_slash(&other));
 			if is_same || is_parent || is_child {
 				return Err(format!(
 					"Folder {candidate} overlaps with another library's folder on the filesystem"
