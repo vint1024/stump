@@ -6,8 +6,8 @@ use async_graphql::{
 
 use models::{
 	entity::{
-		finished_reading_session, library, media, reading_session, series, series_tag,
-		tag,
+		finished_reading_session, library, media, reading_session, series,
+		series_merge, series_tag, tag,
 	},
 	shared::{
 		alphabet::{AvailableAlphabet, EntityLetter},
@@ -48,8 +48,33 @@ impl From<series::ModelWithMetadata> for Series {
 	}
 }
 
+/// A folder that was merged into a series and can be restored via unmerge
+#[derive(Clone, Debug, SimpleObject)]
+pub struct MergedSeriesSource {
+	/// The name the source series had before the merge
+	pub name: String,
+	/// The folder on disk that was absorbed
+	pub path: String,
+}
+
 #[ComplexObject]
 impl Series {
+	/// Folders that were merged into this series (empty when it is not a merge target)
+	async fn merged_sources(&self, ctx: &Context<'_>) -> Result<Vec<MergedSeriesSource>> {
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+		let rows = series_merge::Entity::find()
+			.filter(series_merge::Column::TargetSeriesId.eq(self.model.id.clone()))
+			.all(conn)
+			.await?;
+		Ok(rows
+			.into_iter()
+			.map(|row| MergedSeriesSource {
+				name: row.source_name,
+				path: row.source_path,
+			})
+			.collect())
+	}
+
 	async fn is_favorite(&self, ctx: &Context<'_>) -> Result<bool> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let loader = ctx.data::<DataLoader<FavoritesLoader>>()?;

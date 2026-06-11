@@ -48,6 +48,7 @@ pub mod review;
 pub mod scheduled_job;
 pub mod series;
 pub mod series_metadata;
+pub mod series_merge;
 pub mod series_tag;
 pub mod server_config;
 pub mod server_invitation;

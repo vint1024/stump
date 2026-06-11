@@ -1760,6 +1760,15 @@ export enum MergeStrategy {
   PreferExternalAndMergeLists = 'PREFER_EXTERNAL_AND_MERGE_LISTS'
 }
 
+/** A folder that was merged into a series and can be restored via unmerge */
+export type MergedSeriesSource = {
+  __typename?: 'MergedSeriesSource';
+  /** The name the source series had before the merge */
+  name: Scalars['String']['output'];
+  /** The folder on disk that was absorbed */
+  path: Scalars['String']['output'];
+};
+
 export type MetadataFetchJobOutput = {
   __typename?: 'MetadataFetchJobOutput';
   /** Number of entities that were auto-applied */
@@ -2088,6 +2097,13 @@ export type Mutation = {
   /** Lock or unlock a discussion (Moderator+) */
   lockDiscussion: Scalars['Boolean']['output'];
   markMediaAsComplete?: Maybe<FinishedReadingSessionModel>;
+  /**
+   * Merge one or more series into a target series: their books move to the
+   * target and the source series are removed. A persistent merge map keeps
+   * the scanner from re-creating the source folders as series, and allows
+   * the merge to be undone later. All series must be in the same library
+   */
+  mergeSeries: Series;
   patchEmailDevice: RegisteredEmailDevice;
   /** Pin or unpin a message (Moderator+) */
   pinMessage: Scalars['Boolean']['output'];
@@ -2158,6 +2174,11 @@ export type Mutation = {
   toggleSeriesCompletion: Series;
   /** Toggle like on a suggestion */
   toggleSuggestionLike: Scalars['Boolean']['output'];
+  /**
+   * Undo every merge into the given series: each absorbed folder becomes its
+   * own series again (with its original name) and its books move back
+   */
+  unmergeSeries: Series;
   /** Update an annotation's note text */
   updateAnnotation: MediaAnnotation;
   updateApiKey: Apikey;
@@ -2636,6 +2657,12 @@ export type MutationMarkMediaAsCompleteArgs = {
 };
 
 
+export type MutationMergeSeriesArgs = {
+  sourceIds: Array<Scalars['ID']['input']>;
+  targetId: Scalars['ID']['input'];
+};
+
+
 export type MutationPatchEmailDeviceArgs = {
   id: Scalars['Int']['input'];
   input: PatchEmailDeviceInput;
@@ -2792,6 +2819,11 @@ export type MutationToggleSeriesCompletionArgs = {
 
 export type MutationToggleSuggestionLikeArgs = {
   suggestionId: Scalars['ID']['input'];
+};
+
+
+export type MutationUnmergeSeriesArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -3921,6 +3953,8 @@ export type Series = {
   media: Array<Media>;
   mediaAlphabet: Scalars['JSONObject']['output'];
   mediaCount: Scalars['Int']['output'];
+  /** Folders that were merged into this series (empty when it is not a merge target) */
+  mergedSources: Array<MergedSeriesSource>;
   metadata?: Maybe<SeriesMetadata>;
   name: Scalars['String']['output'];
   path: Scalars['String']['output'];
@@ -6242,6 +6276,35 @@ export type SeriesBooksSceneQuery = { __typename?: 'Query', media: { __typename?
       { __typename?: 'Media', id: string }
       & { ' $fragmentRefs'?: { 'BookCardFragment': BookCardFragment;'BookMetadataFragment': BookMetadataFragment } }
     )>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', currentPage: number, totalPages: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
+
+export type MergeSeriesSectionQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type MergeSeriesSectionQuery = { __typename?: 'Query', seriesById?: { __typename?: 'Series', id: string, library: { __typename?: 'Library', id: string }, mergedSources: Array<{ __typename?: 'MergedSeriesSource', name: string, path: string }> } | null };
+
+export type MergeSeriesSectionCandidatesQueryVariables = Exact<{
+  libraryId: Scalars['String']['input'];
+}>;
+
+
+export type MergeSeriesSectionCandidatesQuery = { __typename?: 'Query', series: { __typename?: 'PaginatedSeriesResponse', nodes: Array<{ __typename?: 'Series', id: string, path: string, name: string }> } };
+
+export type MergeSeriesSectionMergeMutationVariables = Exact<{
+  targetId: Scalars['ID']['input'];
+  sourceIds: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
+}>;
+
+
+export type MergeSeriesSectionMergeMutation = { __typename?: 'Mutation', mergeSeries: { __typename?: 'Series', id: string } };
+
+export type MergeSeriesSectionUnmergeMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type MergeSeriesSectionUnmergeMutation = { __typename?: 'Mutation', unmergeSeries: { __typename?: 'Series', id: string } };
 
 export type SeriesBookGridQueryVariables = Exact<{
   id: Scalars['String']['input'];
@@ -12193,6 +12256,48 @@ fragment BookMetadata on Media {
     number
   }
 }`) as unknown as TypedDocumentString<SeriesBooksSceneQuery, SeriesBooksSceneQueryVariables>;
+export const MergeSeriesSectionDocument = new TypedDocumentString(`
+    query MergeSeriesSection($id: ID!) {
+  seriesById(id: $id) {
+    id
+    library {
+      id
+    }
+    mergedSources {
+      name
+      path
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<MergeSeriesSectionQuery, MergeSeriesSectionQueryVariables>;
+export const MergeSeriesSectionCandidatesDocument = new TypedDocumentString(`
+    query MergeSeriesSectionCandidates($libraryId: String!) {
+  series(
+    filter: {libraryId: {eq: $libraryId}}
+    pagination: {none: {unpaginated: true}}
+  ) {
+    nodes {
+      id
+      name: resolvedName
+      path
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<MergeSeriesSectionCandidatesQuery, MergeSeriesSectionCandidatesQueryVariables>;
+export const MergeSeriesSectionMergeDocument = new TypedDocumentString(`
+    mutation MergeSeriesSectionMerge($targetId: ID!, $sourceIds: [ID!]!) {
+  mergeSeries(targetId: $targetId, sourceIds: $sourceIds) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<MergeSeriesSectionMergeMutation, MergeSeriesSectionMergeMutationVariables>;
+export const MergeSeriesSectionUnmergeDocument = new TypedDocumentString(`
+    mutation MergeSeriesSectionUnmerge($id: ID!) {
+  unmergeSeries(id: $id) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<MergeSeriesSectionUnmergeMutation, MergeSeriesSectionUnmergeMutationVariables>;
 export const SeriesBookGridDocument = new TypedDocumentString(`
     query SeriesBookGrid($id: String!, $pagination: Pagination) {
   media(filter: {seriesId: {eq: $id}}, pagination: $pagination) {

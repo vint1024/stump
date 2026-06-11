@@ -3,9 +3,9 @@ use chrono::Utc;
 use models::{
 	entity::{
 		favorite_series, finished_reading_session, library, library_config, media,
-		reading_session, series, user::AuthUser,
+		reading_session, series, series_merge, user::AuthUser,
 	},
-	shared::enums::UserPermission,
+	shared::enums::{FileStatus, UserPermission},
 };
 use sea_orm::{
 	prelude::*,
@@ -266,6 +266,177 @@ impl SeriesMutation {
 		.await?;
 
 		Ok(true)
+	}
+
+	/// Merge one or more series into a target series: their books move to the
+	/// target and the source series are removed. A persistent merge map keeps
+	/// the scanner from re-creating the source folders as series, and allows
+	/// the merge to be undone later. All series must be in the same library
+	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageLibrary)")]
+	async fn merge_series(
+		&self,
+		ctx: &Context<'_>,
+		target_id: ID,
+		source_ids: Vec<ID>,
+	) -> Result<Series> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let core = ctx.data::<CoreContext>()?;
+		let conn = core.conn.as_ref();
+
+		if source_ids.is_empty() {
+			return Err("At least one source series is required".into());
+		}
+		let source_ids = source_ids
+			.iter()
+			.map(|id| id.to_string())
+			.collect::<Vec<_>>();
+		if source_ids.contains(&target_id.to_string()) {
+			return Err("A series cannot be merged into itself".into());
+		}
+
+		let target = series::Entity::find_for_user(user)
+			.filter(series::Column::Id.eq(target_id.to_string()))
+			.one(conn)
+			.await?
+			.ok_or("Target series not found")?;
+
+		let sources = series::Entity::find_for_user(user)
+			.filter(series::Column::Id.is_in(source_ids.clone()))
+			.all(conn)
+			.await?;
+		if sources.len() != source_ids.len() {
+			return Err("One or more source series were not found".into());
+		}
+		if sources
+			.iter()
+			.any(|source| source.library_id != target.library_id)
+		{
+			return Err("Series can only be merged within the same library".into());
+		}
+
+		let txn = conn.begin().await?;
+
+		for source in &sources {
+			media::Entity::update_many()
+				.col_expr(
+					media::Column::SeriesId,
+					Expr::value(target.id.clone()),
+				)
+				.filter(media::Column::SeriesId.eq(source.id.clone()))
+				.exec(&txn)
+				.await?;
+
+			// If the source was itself a merge target, re-point its absorbed
+			// folders at the new target so chained merges stay resolvable
+			series_merge::Entity::update_many()
+				.col_expr(
+					series_merge::Column::TargetSeriesId,
+					Expr::value(target.id.clone()),
+				)
+				.filter(series_merge::Column::TargetSeriesId.eq(source.id.clone()))
+				.exec(&txn)
+				.await?;
+
+			series_merge::ActiveModel {
+				target_series_id: Set(target.id.clone()),
+				source_path: Set(source.path.clone()),
+				source_name: Set(source.name.clone()),
+				..Default::default()
+			}
+			.insert(&txn)
+			.await?;
+
+			series::Entity::delete_by_id(source.id.clone())
+				.exec(&txn)
+				.await?;
+		}
+
+		txn.commit().await?;
+
+		tracing::debug!(
+			target_id = %target.id,
+			source_count = sources.len(),
+			"Merged series"
+		);
+
+		Ok(series::ModelWithMetadata {
+			series: target,
+			metadata: None,
+		}
+		.into())
+	}
+
+	/// Undo every merge into the given series: each absorbed folder becomes its
+	/// own series again (with its original name) and its books move back
+	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageLibrary)")]
+	async fn unmerge_series(&self, ctx: &Context<'_>, id: ID) -> Result<Series> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let core = ctx.data::<CoreContext>()?;
+		let conn = core.conn.as_ref();
+
+		let target = series::Entity::find_for_user(user)
+			.filter(series::Column::Id.eq(id.to_string()))
+			.one(conn)
+			.await?
+			.ok_or("Series not found")?;
+
+		let merges = series_merge::Entity::find()
+			.filter(series_merge::Column::TargetSeriesId.eq(target.id.clone()))
+			.all(conn)
+			.await?;
+		if merges.is_empty() {
+			return Err("This series has no merged folders to restore".into());
+		}
+
+		let txn = conn.begin().await?;
+
+		for merge in &merges {
+			let restored = series::ActiveModel {
+				id: Set(Uuid::new_v4().to_string()),
+				name: Set(merge.source_name.clone()),
+				path: Set(merge.source_path.clone()),
+				status: Set(FileStatus::Ready),
+				library_id: Set(target.library_id.clone()),
+				created_at: Set(Utc::now().into()),
+				..Default::default()
+			}
+			.insert(&txn)
+			.await?;
+
+			// Books that live under the restored folder move back to it
+			let mut source_prefix = merge.source_path.clone();
+			if !source_prefix.ends_with('/') && !source_prefix.ends_with('\\') {
+				source_prefix.push(if source_prefix.contains('/') { '/' } else { '\\' });
+			}
+			media::Entity::update_many()
+				.col_expr(
+					media::Column::SeriesId,
+					Expr::value(restored.id.clone()),
+				)
+				.filter(media::Column::SeriesId.eq(target.id.clone()))
+				.filter(media::Column::Path.starts_with(source_prefix))
+				.exec(&txn)
+				.await?;
+		}
+
+		series_merge::Entity::delete_many()
+			.filter(series_merge::Column::TargetSeriesId.eq(target.id.clone()))
+			.exec(&txn)
+			.await?;
+
+		txn.commit().await?;
+
+		tracing::debug!(
+			target_id = %target.id,
+			restored = merges.len(),
+			"Un-merged series"
+		);
+
+		Ok(series::ModelWithMetadata {
+			series: target,
+			metadata: None,
+		}
+		.into())
 	}
 }
 
