@@ -285,6 +285,31 @@ impl UserMutation {
 			tracing::trace!(?created_restriction, "Created age restriction");
 		}
 
+		// Content access rules (same shape as setUserContentAccessRules, applied
+		// atomically here). New users are never the server owner, so no
+		// owner-restriction guard is needed.
+		for rule in &input.content_rules {
+			let values = rule
+				.values
+				.iter()
+				.map(|value| value.trim().to_string())
+				.filter(|value| !value.is_empty())
+				.collect::<Vec<_>>();
+			if values.is_empty() {
+				continue;
+			}
+			content_access_rule::ActiveModel {
+				user_id: Set(user_model.id.clone()),
+				dimension: Set(rule.dimension),
+				mode: Set(rule.mode),
+				values: Set(serde_json::to_value(values)?),
+				restrict_on_unset: Set(rule.restrict_on_unset),
+				..Default::default()
+			}
+			.insert(&txn)
+			.await?;
+		}
+
 		let user_preferences = models::entity::user_preferences::ActiveModel {
 			id: NotSet,
 			user_id: Set(Some(user_model.id.clone())),

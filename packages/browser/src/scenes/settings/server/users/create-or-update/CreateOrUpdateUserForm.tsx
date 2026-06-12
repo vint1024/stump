@@ -4,7 +4,7 @@ import { Alert, AlertDescription, Button, Form, Heading, Text } from '@stump/com
 import { CreateUserInput, extractErrorMessage, graphql, UpdateUserInput } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 
@@ -12,10 +12,13 @@ import { ContentContainer } from '@/components/container'
 import paths from '@/paths'
 
 import AccountDetails from './AccountDetails'
+import ContentAccessRulesEditor, { EditableRule } from './ContentAccessRulesEditor'
 import MaxSessionsAllowed from './MaxSessionsAllowed'
 import { buildSchema, CreateOrUpdateUserSchema, formDefaults } from './schema'
 import UserPermissionsTable from './UserPermissionsTable'
 import UserRestrictionsForm from './UserRestrictionsForm'
+
+const CONTENT_RULES_LOCALE = 'settingsScene.server/users.createOrUpdateForm.contentRules'
 
 const updateMutation = graphql(`
 	mutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {
@@ -69,6 +72,10 @@ export default function CreateOrUpdateUserForm({ user, existingUsernames }: Prop
 		resolver: zodResolver(schema),
 	})
 
+	// Content rules are only collected at creation time here; for existing users
+	// they're managed by the standalone ContentAccessRulesSection (self-saving)
+	const [contentRules, setContentRules] = useState<EditableRule[]>([])
+
 	const client = useQueryClient()
 
 	const { mutate: createUser, error: createError } = useGraphQLMutation(createMutation, {
@@ -117,6 +124,14 @@ export default function CreateOrUpdateUserForm({ user, existingUsernames }: Prop
 				permissions,
 				maxSessionsAllowed,
 				ageRestriction,
+				contentRules: contentRules
+					.map((rule) => ({
+						dimension: rule.dimension,
+						mode: rule.mode,
+						restrictOnUnset: rule.restrictOnUnset,
+						values: rule.values.map((value) => value.trim()).filter(Boolean),
+					}))
+					.filter((rule) => rule.values.length > 0),
 			}
 			createUser({ input })
 		} else if (user) {
@@ -169,6 +184,19 @@ export default function CreateOrUpdateUserForm({ user, existingUsernames }: Prop
 						<UserPermissionsTable />
 						<UserRestrictionsForm />
 						<MaxSessionsAllowed />
+						{isCreating && (
+							<div className="gap-4 flex flex-col">
+								<div>
+									<Heading size="sm">{t(`${CONTENT_RULES_LOCALE}.heading`)}</Heading>
+									<Text size="sm" variant="muted" className="mt-1.5">
+										{t(`${CONTENT_RULES_LOCALE}.description`)}
+									</Text>
+								</div>
+								<Suspense fallback={null}>
+									<ContentAccessRulesEditor rules={contentRules} onChange={setContentRules} />
+								</Suspense>
+							</div>
+						)}
 					</>
 				)}
 

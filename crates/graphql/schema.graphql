@@ -534,6 +534,11 @@ input CreateUserInput {
 	permissions: [UserPermission!]!
 	ageRestriction: AgeRestrictionInput = null
 	maxSessionsAllowed: Int
+	"""
+	Content access rules to apply to the new user. Mirrors what
+	`setUserContentAccessRules` does, but atomically at creation time
+	"""
+	contentRules: [ContentAccessRuleInput!]! = []
 }
 
 type CreatedAPIKey {
@@ -2041,6 +2046,13 @@ type Mutation {
 	This is used to inform the UI of the last library which was visited by the user
 	"""
 	visitLibrary(id: ID!): Library!
+	"""
+	Permanently delete a single series and all of its books from the
+	database. Files on disk are NOT touched. This is the per-series
+	counterpart to "Clean Library" — handy for removing a series whose
+	folder is gone (status "Missing") without wiping the whole library.
+	"""
+	deleteSeries(id: ID!): Boolean!
 	analyzeSeries(id: ID!, forceReanalysis: Boolean! = false): Boolean!
 	favoriteSeries(id: ID!, isFavorite: Boolean!): Series!
 	"""
