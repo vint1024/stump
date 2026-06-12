@@ -2187,7 +2187,7 @@
 						"exclude": "Exclude listed",
 						"only": "Only listed"
 					},
-					"valuesPlaceholder": "Values, comma separated",
+					"valuesPlaceholder": "Search or add a value",
 					"restrictOnUnset": "Hide items without a value",
 					"removeRule": "Remove rule",
 					"addRule": "Add rule",

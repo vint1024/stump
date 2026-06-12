@@ -103,7 +103,15 @@ export default function ContentAccessRulesEditor({ rules, onChange }: Props) {
 						className="w-40"
 						value={rule.mode}
 						options={modeOptions}
-						onChange={(e) => patchRule(index, { mode: e.target.value as ContentRuleMode })}
+						// restrictOnUnset only applies to "Only" mode — clear it when
+						// switching to "Exclude" so a stale true isn't carried along
+						onChange={(e) => {
+							const mode = e.target.value as ContentRuleMode
+							patchRule(
+								index,
+								mode === ContentRuleMode.Exclude ? { mode, restrictOnUnset: false } : { mode },
+							)
+						}}
 					/>
 					<ComboBox
 						isMultiSelect

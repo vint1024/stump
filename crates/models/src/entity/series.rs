@@ -231,9 +231,10 @@ fn apply_content_rules_filter(user: &AuthUser, select: Select<Entity>) -> Select
 /// Hide a series when EVERY book in it is hidden from the user by the content
 /// rules — otherwise a fully-restricted series shows up empty. A series with no
 /// books at all stays visible (emptiness is a separate concern — see the
-/// "delete series" feature). Only kicks in when the user actually has content
-/// rules, so unrestricted users and the owner keep the fast path with no extra
-/// subquery. Used by both `Entity::find_for_user` and
+/// "delete series" feature). Gated on content rules only (matching the
+/// per-series visible-book count) so unrestricted users, the owner, and
+/// age-only-restricted users keep the fast path with no extra subquery and the
+/// pre-existing age behavior. Used by both `Entity::find_for_user` and
 /// `ModelWithMetadata::find_for_user` so GraphQL and OPDS stay consistent.
 fn apply_all_books_hidden_filter(
 	user: &AuthUser,
