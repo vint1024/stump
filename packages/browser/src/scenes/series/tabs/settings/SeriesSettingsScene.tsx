@@ -1,9 +1,17 @@
 import { useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
-import { Alert, AlertDescription, Button, Heading, Text } from '@stump/components'
+import {
+	Alert,
+	AlertDescription,
+	Button,
+	ConfirmationModal,
+	Heading,
+	Text,
+} from '@stump/components'
 import { graphql, MetadataResetImpact, UserPermission } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
+import { useQueryClient } from '@tanstack/react-query'
 import { Construction } from 'lucide-react'
-import { Suspense, useCallback, useEffect } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -23,6 +31,9 @@ const query = graphql(`
 		seriesById(id: $id) {
 			id
 			...SeriesThumbnailSelector
+			library {
+				id
+			}
 			tags {
 				id
 				name
@@ -54,13 +65,21 @@ const regenerateThumbnailMutation = graphql(`
 	}
 `)
 
+const deleteSeriesMutation = graphql(`
+	mutation SeriesSettingsSceneDeleteSeries($id: ID!) {
+		deleteSeries(id: $id)
+	}
+`)
+
 export default function SeriesSettingsScene() {
 	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 	const { series } = useSeriesContext()
 	const { checkPermission } = useAppContext()
+	const client = useQueryClient()
 
 	const navigate = useNavigate()
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
 	const {
 		data: { seriesById },
@@ -92,6 +111,21 @@ export default function SeriesSettingsScene() {
 		() => regenerateThumbnail({ id: series.id, forceRegenerate: true }),
 		[regenerateThumbnail, series.id],
 	)
+
+	const { mutate: deleteSeries, isPending: isDeleting } = useGraphQLMutation(deleteSeriesMutation, {
+		onSuccess: () => {
+			toast.success(t('seriesSettingsScene.delete.toasts.deleted'))
+			setShowDeleteConfirm(false)
+			client.invalidateQueries({ queryKey: [sdk.cacheKeys.series] })
+			client.invalidateQueries({ queryKey: [sdk.cacheKeys.libraries] })
+			const libraryId = seriesById?.library?.id
+			navigate(libraryId ? paths.librarySeries(libraryId) : paths.libraries())
+		},
+		onError: (error) => {
+			console.error('Failed to delete series', error)
+			toast.error(t('seriesSettingsScene.delete.toasts.failed'))
+		},
+	})
 
 	useEffect(() => {
 		if (!seriesById) {
@@ -150,7 +184,7 @@ export default function SeriesSettingsScene() {
 						</Text>
 					</div>
 
-					<div className="gap-2 flex items-center">
+					<div className="gap-3 flex flex-col items-start">
 						<SeriesThumbnailSelector fragment={seriesById} />
 						{checkPermission(UserPermission.EditThumbnails) && (
 							<Button
@@ -184,6 +218,37 @@ export default function SeriesSettingsScene() {
 					</div>
 					<SeriesMetadataEditor seriesId={seriesById.id} data={seriesById.metadata} />
 				</div>
+
+				{checkPermission(UserPermission.ManageLibrary) && (
+					<div className="gap-y-2 flex w-full flex-col">
+						<div>
+							<Heading size="sm">{t('seriesSettingsScene.delete.heading')}</Heading>
+							<Text size="sm" variant="muted">
+								{t('seriesSettingsScene.delete.description')}
+							</Text>
+						</div>
+						<div className="flex">
+							<Button
+								type="button"
+								variant="danger"
+								disabled={isDeleting}
+								onClick={() => setShowDeleteConfirm(true)}
+							>
+								{t('seriesSettingsScene.delete.button')}
+							</Button>
+						</div>
+						<ConfirmationModal
+							title={t('seriesSettingsScene.delete.confirm.title')}
+							description={t('seriesSettingsScene.delete.confirm.description')}
+							confirmText={t('seriesSettingsScene.delete.confirm.confirm')}
+							confirmVariant="danger"
+							isOpen={showDeleteConfirm}
+							onClose={() => setShowDeleteConfirm(false)}
+							onConfirm={() => deleteSeries({ id: series.id })}
+							trigger={null}
+						/>
+					</div>
+				)}
 			</div>
 		</SceneContainer>
 	)

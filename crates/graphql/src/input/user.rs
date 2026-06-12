@@ -28,6 +28,10 @@ pub struct CreateUserInput {
 	#[graphql(default)]
 	pub age_restriction: Option<AgeRestrictionInput>,
 	pub max_sessions_allowed: Option<i32>,
+	/// Content access rules to apply to the new user. Mirrors what
+	/// `setUserContentAccessRules` does, but atomically at creation time
+	#[graphql(default)]
+	pub content_rules: Vec<ContentAccessRuleInput>,
 }
 
 #[derive(InputObject)]

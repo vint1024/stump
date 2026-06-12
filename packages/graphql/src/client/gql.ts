@@ -234,10 +234,11 @@ type Documents = {
     "\n\tmutation MergeSeriesSectionMerge($targetId: ID!, $sourceIds: [ID!]!) {\n\t\tmergeSeries(targetId: $targetId, sourceIds: $sourceIds) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.MergeSeriesSectionMergeDocument,
     "\n\tmutation MergeSeriesSectionUnmerge($id: ID!) {\n\t\tunmergeSeries(id: $id) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.MergeSeriesSectionUnmergeDocument,
     "\n\tquery SeriesBookGrid($id: String!, $pagination: Pagination) {\n\t\tmedia(filter: { seriesId: { eq: $id } }, pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tthumbnail {\n\t\t\t\t\turl\n\t\t\t\t}\n\t\t\t\tpages\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\tcurrentCursor\n\t\t\t\t\tnextCursor\n\t\t\t\t\tlimit\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.SeriesBookGridDocument,
-    "\n\tquery SeriesSettingsScene($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tid\n\t\t\t...SeriesThumbnailSelector\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\tmetadata {\n\t\t\t\t...SeriesMetadataEditor\n\t\t\t}\n\t\t}\n\t}\n": typeof types.SeriesSettingsSceneDocument,
+    "\n\tquery SeriesSettingsScene($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tid\n\t\t\t...SeriesThumbnailSelector\n\t\t\tlibrary {\n\t\t\t\tid\n\t\t\t}\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\tmetadata {\n\t\t\t\t...SeriesMetadataEditor\n\t\t\t}\n\t\t}\n\t}\n": typeof types.SeriesSettingsSceneDocument,
     "\n\tmutation SeriesSettingsSceneAnalyze($id: ID!) {\n\t\tanalyzeSeries(id: $id)\n\t}\n": typeof types.SeriesSettingsSceneAnalyzeDocument,
     "\n\tmutation SeriesSettingsSceneResetMetadata($id: ID!, $impact: MetadataResetImpact!) {\n\t\tresetSeriesMetadata(id: $id, impact: $impact) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.SeriesSettingsSceneResetMetadataDocument,
     "\n\tmutation SeriesSettingsSceneRegenerateThumbnail($id: ID!, $forceRegenerate: Boolean!) {\n\t\tgenerateSeriesThumbnail(id: $id, forceRegenerate: $forceRegenerate)\n\t}\n": typeof types.SeriesSettingsSceneRegenerateThumbnailDocument,
+    "\n\tmutation SeriesSettingsSceneDeleteSeries($id: ID!) {\n\t\tdeleteSeries(id: $id)\n\t}\n": typeof types.SeriesSettingsSceneDeleteSeriesDocument,
     "\n\tmutation SeriesTagEditorSetTags($id: ID!, $tags: [String!]!) {\n\t\tsetSeriesTags(id: $id, tags: $tags) {\n\t\t\tid\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t}\n\t}\n": typeof types.SeriesTagEditorSetTagsDocument,
     "\n\tfragment SeriesThumbnailSelector on Series {\n\t\tid\n\t\tthumbnail {\n\t\t\turl\n\t\t}\n\t}\n": typeof types.SeriesThumbnailSelectorFragmentDoc,
     "\n\tmutation SeriesThumbnailSelectorUpdate($id: ID!, $input: UpdateThumbnailInput!) {\n\t\tupdateSeriesThumbnail(id: $id, input: $input) {\n\t\t\tid\n\t\t\tthumbnail {\n\t\t\t\turl\n\t\t\t}\n\t\t}\n\t}\n": typeof types.SeriesThumbnailSelectorUpdateDocument,
@@ -295,6 +296,7 @@ type Documents = {
     "\n\tmutation RenameTagModal($id: Int!, $name: String!) {\n\t\trenameTag(id: $id, name: $name) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.RenameTagModalDocument,
     "\n\tquery TagTable {\n\t\ttags {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": typeof types.TagTableDocument,
     "\n\tquery UserStats {\n\t\tuserCount\n\t\ttopReaders(take: 1) {\n\t\t\tid\n\t\t\tusername\n\t\t\tfinishedReadingSessionsCount\n\t\t}\n\t\tactiveReadingSessionCount\n\t\tfinishedReadingSessionCount\n\t}\n": typeof types.UserStatsDocument,
+    "\n\tquery ContentAccessRulesEditorOptions {\n\t\ttags {\n\t\t\tname\n\t\t}\n\t\tmediaMetadataOverview {\n\t\t\tgenres\n\t\t\tpublishers\n\t\t}\n\t}\n": typeof types.ContentAccessRulesEditorOptionsDocument,
     "\n\tquery ContentAccessRulesSection($id: ID!) {\n\t\tuserById(id: $id) {\n\t\t\tid\n\t\t\tcontentAccessRules {\n\t\t\t\tid\n\t\t\t\tdimension\n\t\t\t\tmode\n\t\t\t\tvalues\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t}\n\t}\n": typeof types.ContentAccessRulesSectionDocument,
     "\n\tmutation ContentAccessRulesSectionSave($userId: ID!, $rules: [ContentAccessRuleInput!]!) {\n\t\tsetUserContentAccessRules(userId: $userId, rules: $rules) {\n\t\t\tid\n\t\t}\n\t}\n": typeof types.ContentAccessRulesSectionSaveDocument,
     "\n\tmutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {\n\t\tupdateUser(id: $id, input: $input) {\n\t\t\tid\n\t\t\tusername\n\t\t\tageRestriction {\n\t\t\t\tage\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t\tpermissions\n\t\t\tmaxSessionsAllowed\n\t\t}\n\t}\n": typeof types.CreateOrUpdateUserFormUpdateUserDocument,
@@ -542,10 +544,11 @@ const documents: Documents = {
     "\n\tmutation MergeSeriesSectionMerge($targetId: ID!, $sourceIds: [ID!]!) {\n\t\tmergeSeries(targetId: $targetId, sourceIds: $sourceIds) {\n\t\t\tid\n\t\t}\n\t}\n": types.MergeSeriesSectionMergeDocument,
     "\n\tmutation MergeSeriesSectionUnmerge($id: ID!) {\n\t\tunmergeSeries(id: $id) {\n\t\t\tid\n\t\t}\n\t}\n": types.MergeSeriesSectionUnmergeDocument,
     "\n\tquery SeriesBookGrid($id: String!, $pagination: Pagination) {\n\t\tmedia(filter: { seriesId: { eq: $id } }, pagination: $pagination) {\n\t\t\tnodes {\n\t\t\t\tid\n\t\t\t\tthumbnail {\n\t\t\t\t\turl\n\t\t\t\t}\n\t\t\t\tpages\n\t\t\t}\n\t\t\tpageInfo {\n\t\t\t\t__typename\n\t\t\t\t... on CursorPaginationInfo {\n\t\t\t\t\tcurrentCursor\n\t\t\t\t\tnextCursor\n\t\t\t\t\tlimit\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": types.SeriesBookGridDocument,
-    "\n\tquery SeriesSettingsScene($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tid\n\t\t\t...SeriesThumbnailSelector\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\tmetadata {\n\t\t\t\t...SeriesMetadataEditor\n\t\t\t}\n\t\t}\n\t}\n": types.SeriesSettingsSceneDocument,
+    "\n\tquery SeriesSettingsScene($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tid\n\t\t\t...SeriesThumbnailSelector\n\t\t\tlibrary {\n\t\t\t\tid\n\t\t\t}\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\tmetadata {\n\t\t\t\t...SeriesMetadataEditor\n\t\t\t}\n\t\t}\n\t}\n": types.SeriesSettingsSceneDocument,
     "\n\tmutation SeriesSettingsSceneAnalyze($id: ID!) {\n\t\tanalyzeSeries(id: $id)\n\t}\n": types.SeriesSettingsSceneAnalyzeDocument,
     "\n\tmutation SeriesSettingsSceneResetMetadata($id: ID!, $impact: MetadataResetImpact!) {\n\t\tresetSeriesMetadata(id: $id, impact: $impact) {\n\t\t\tid\n\t\t}\n\t}\n": types.SeriesSettingsSceneResetMetadataDocument,
     "\n\tmutation SeriesSettingsSceneRegenerateThumbnail($id: ID!, $forceRegenerate: Boolean!) {\n\t\tgenerateSeriesThumbnail(id: $id, forceRegenerate: $forceRegenerate)\n\t}\n": types.SeriesSettingsSceneRegenerateThumbnailDocument,
+    "\n\tmutation SeriesSettingsSceneDeleteSeries($id: ID!) {\n\t\tdeleteSeries(id: $id)\n\t}\n": types.SeriesSettingsSceneDeleteSeriesDocument,
     "\n\tmutation SeriesTagEditorSetTags($id: ID!, $tags: [String!]!) {\n\t\tsetSeriesTags(id: $id, tags: $tags) {\n\t\t\tid\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t}\n\t}\n": types.SeriesTagEditorSetTagsDocument,
     "\n\tfragment SeriesThumbnailSelector on Series {\n\t\tid\n\t\tthumbnail {\n\t\t\turl\n\t\t}\n\t}\n": types.SeriesThumbnailSelectorFragmentDoc,
     "\n\tmutation SeriesThumbnailSelectorUpdate($id: ID!, $input: UpdateThumbnailInput!) {\n\t\tupdateSeriesThumbnail(id: $id, input: $input) {\n\t\t\tid\n\t\t\tthumbnail {\n\t\t\t\turl\n\t\t\t}\n\t\t}\n\t}\n": types.SeriesThumbnailSelectorUpdateDocument,
@@ -603,6 +606,7 @@ const documents: Documents = {
     "\n\tmutation RenameTagModal($id: Int!, $name: String!) {\n\t\trenameTag(id: $id, name: $name) {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.RenameTagModalDocument,
     "\n\tquery TagTable {\n\t\ttags {\n\t\t\tid\n\t\t\tname\n\t\t}\n\t}\n": types.TagTableDocument,
     "\n\tquery UserStats {\n\t\tuserCount\n\t\ttopReaders(take: 1) {\n\t\t\tid\n\t\t\tusername\n\t\t\tfinishedReadingSessionsCount\n\t\t}\n\t\tactiveReadingSessionCount\n\t\tfinishedReadingSessionCount\n\t}\n": types.UserStatsDocument,
+    "\n\tquery ContentAccessRulesEditorOptions {\n\t\ttags {\n\t\t\tname\n\t\t}\n\t\tmediaMetadataOverview {\n\t\t\tgenres\n\t\t\tpublishers\n\t\t}\n\t}\n": types.ContentAccessRulesEditorOptionsDocument,
     "\n\tquery ContentAccessRulesSection($id: ID!) {\n\t\tuserById(id: $id) {\n\t\t\tid\n\t\t\tcontentAccessRules {\n\t\t\t\tid\n\t\t\t\tdimension\n\t\t\t\tmode\n\t\t\t\tvalues\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t}\n\t}\n": types.ContentAccessRulesSectionDocument,
     "\n\tmutation ContentAccessRulesSectionSave($userId: ID!, $rules: [ContentAccessRuleInput!]!) {\n\t\tsetUserContentAccessRules(userId: $userId, rules: $rules) {\n\t\t\tid\n\t\t}\n\t}\n": types.ContentAccessRulesSectionSaveDocument,
     "\n\tmutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {\n\t\tupdateUser(id: $id, input: $input) {\n\t\t\tid\n\t\t\tusername\n\t\t\tageRestriction {\n\t\t\t\tage\n\t\t\t\trestrictOnUnset\n\t\t\t}\n\t\t\tpermissions\n\t\t\tmaxSessionsAllowed\n\t\t}\n\t}\n": types.CreateOrUpdateUserFormUpdateUserDocument,
@@ -1510,7 +1514,7 @@ export function graphql(source: "\n\tquery SeriesBookGrid($id: String!, $paginat
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n\tquery SeriesSettingsScene($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tid\n\t\t\t...SeriesThumbnailSelector\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\tmetadata {\n\t\t\t\t...SeriesMetadataEditor\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').SeriesSettingsSceneDocument;
+export function graphql(source: "\n\tquery SeriesSettingsScene($id: ID!) {\n\t\tseriesById(id: $id) {\n\t\t\tid\n\t\t\t...SeriesThumbnailSelector\n\t\t\tlibrary {\n\t\t\t\tid\n\t\t\t}\n\t\t\ttags {\n\t\t\t\tid\n\t\t\t\tname\n\t\t\t}\n\t\t\tmetadata {\n\t\t\t\t...SeriesMetadataEditor\n\t\t\t}\n\t\t}\n\t}\n"): typeof import('./graphql').SeriesSettingsSceneDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -1523,6 +1527,10 @@ export function graphql(source: "\n\tmutation SeriesSettingsSceneResetMetadata($
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n\tmutation SeriesSettingsSceneRegenerateThumbnail($id: ID!, $forceRegenerate: Boolean!) {\n\t\tgenerateSeriesThumbnail(id: $id, forceRegenerate: $forceRegenerate)\n\t}\n"): typeof import('./graphql').SeriesSettingsSceneRegenerateThumbnailDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tmutation SeriesSettingsSceneDeleteSeries($id: ID!) {\n\t\tdeleteSeries(id: $id)\n\t}\n"): typeof import('./graphql').SeriesSettingsSceneDeleteSeriesDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -1751,6 +1759,10 @@ export function graphql(source: "\n\tquery TagTable {\n\t\ttags {\n\t\t\tid\n\t\
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n\tquery UserStats {\n\t\tuserCount\n\t\ttopReaders(take: 1) {\n\t\t\tid\n\t\t\tusername\n\t\t\tfinishedReadingSessionsCount\n\t\t}\n\t\tactiveReadingSessionCount\n\t\tfinishedReadingSessionCount\n\t}\n"): typeof import('./graphql').UserStatsDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tquery ContentAccessRulesEditorOptions {\n\t\ttags {\n\t\t\tname\n\t\t}\n\t\tmediaMetadataOverview {\n\t\t\tgenres\n\t\t\tpublishers\n\t\t}\n\t}\n"): typeof import('./graphql').ContentAccessRulesEditorOptionsDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

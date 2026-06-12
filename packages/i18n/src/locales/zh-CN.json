@@ -3308,6 +3308,20 @@
 				"restored": "Series restored",
 				"restoreFailed": "Failed to unmerge series"
 			}
+		},
+		"delete": {
+			"heading": "Delete series",
+			"description": "Permanently remove this series and its books from Stump. The files on disk are left untouched.",
+			"button": "Delete series",
+			"confirm": {
+				"title": "Delete this series?",
+				"description": "Its books will be removed from the database. The files on disk are left untouched, and a future scan may re-import the series if its folder still exists. This cannot be undone.",
+				"confirm": "Delete"
+			},
+			"toasts": {
+				"deleted": "Series deleted",
+				"failed": "Failed to delete series"
+			}
 		}
 	},
 	"bookManagementScene": {
