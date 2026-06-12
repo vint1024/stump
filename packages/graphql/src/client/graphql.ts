@@ -578,6 +578,11 @@ export type CreateScheduledJobInput = {
 
 export type CreateUserInput = {
   ageRestriction?: InputMaybe<AgeRestrictionInput>;
+  /**
+   * Content access rules to apply to the new user. Mirrors what
+   * `setUserContentAccessRules` does, but atomically at creation time
+   */
+  contentRules?: Array<ContentAccessRuleInput>;
   maxSessionsAllowed?: InputMaybe<Scalars['Int']['input']>;
   password: Scalars['String']['input'];
   permissions: Array<UserPermission>;
@@ -2107,6 +2112,13 @@ export type Mutation = {
    */
   deleteReadingList: ReadingList;
   deleteScheduledJob: Scalars['Boolean']['output'];
+  /**
+   * Permanently delete a single series and all of its books from the
+   * database. Files on disk are NOT touched. This is the per-series
+   * counterpart to "Clean Library" — handy for removing a series whose
+   * folder is gone (status "Missing") without wiping the whole library.
+   */
+  deleteSeries: Scalars['Boolean']['output'];
   deleteSmartList: SmartList;
   deleteSmartListView: SmartListView;
   /**
@@ -2628,6 +2640,11 @@ export type MutationDeleteReadingListArgs = {
 
 export type MutationDeleteScheduledJobArgs = {
   id: Scalars['Int']['input'];
+};
+
+
+export type MutationDeleteSeriesArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -6435,7 +6452,7 @@ export type SeriesSettingsSceneQueryVariables = Exact<{
 
 
 export type SeriesSettingsSceneQuery = { __typename?: 'Query', seriesById?: (
-    { __typename?: 'Series', id: string, tags: Array<{ __typename?: 'Tag', id: number, name: string }>, metadata?: (
+    { __typename?: 'Series', id: string, library: { __typename?: 'Library', id: string }, tags: Array<{ __typename?: 'Tag', id: number, name: string }>, metadata?: (
       { __typename?: 'SeriesMetadata' }
       & { ' $fragmentRefs'?: { 'SeriesMetadataEditorFragment': SeriesMetadataEditorFragment } }
     ) | null }
@@ -6464,6 +6481,13 @@ export type SeriesSettingsSceneRegenerateThumbnailMutationVariables = Exact<{
 
 
 export type SeriesSettingsSceneRegenerateThumbnailMutation = { __typename?: 'Mutation', generateSeriesThumbnail: boolean };
+
+export type SeriesSettingsSceneDeleteSeriesMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type SeriesSettingsSceneDeleteSeriesMutation = { __typename?: 'Mutation', deleteSeries: boolean };
 
 export type SeriesTagEditorSetTagsMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -6873,6 +6897,11 @@ export type UserStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type UserStatsQuery = { __typename?: 'Query', userCount: number, activeReadingSessionCount: number, finishedReadingSessionCount: number, topReaders: Array<{ __typename?: 'User', id: string, username: string, finishedReadingSessionsCount: number }> };
+
+export type ContentAccessRulesEditorOptionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ContentAccessRulesEditorOptionsQuery = { __typename?: 'Query', tags: Array<{ __typename?: 'Tag', name: string }>, mediaMetadataOverview: { __typename?: 'MediaMetadataOverview', genres: Array<string>, publishers: Array<string> } };
 
 export type ContentAccessRulesSectionQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -12474,6 +12503,9 @@ export const SeriesSettingsSceneDocument = new TypedDocumentString(`
   seriesById(id: $id) {
     id
     ...SeriesThumbnailSelector
+    library {
+      id
+    }
     tags {
       id
       name
@@ -12534,6 +12566,11 @@ export const SeriesSettingsSceneRegenerateThumbnailDocument = new TypedDocumentS
   generateSeriesThumbnail(id: $id, forceRegenerate: $forceRegenerate)
 }
     `) as unknown as TypedDocumentString<SeriesSettingsSceneRegenerateThumbnailMutation, SeriesSettingsSceneRegenerateThumbnailMutationVariables>;
+export const SeriesSettingsSceneDeleteSeriesDocument = new TypedDocumentString(`
+    mutation SeriesSettingsSceneDeleteSeries($id: ID!) {
+  deleteSeries(id: $id)
+}
+    `) as unknown as TypedDocumentString<SeriesSettingsSceneDeleteSeriesMutation, SeriesSettingsSceneDeleteSeriesMutationVariables>;
 export const SeriesTagEditorSetTagsDocument = new TypedDocumentString(`
     mutation SeriesTagEditorSetTags($id: ID!, $tags: [String!]!) {
   setSeriesTags(id: $id, tags: $tags) {
@@ -13116,6 +13153,17 @@ export const UserStatsDocument = new TypedDocumentString(`
   finishedReadingSessionCount
 }
     `) as unknown as TypedDocumentString<UserStatsQuery, UserStatsQueryVariables>;
+export const ContentAccessRulesEditorOptionsDocument = new TypedDocumentString(`
+    query ContentAccessRulesEditorOptions {
+  tags {
+    name
+  }
+  mediaMetadataOverview {
+    genres
+    publishers
+  }
+}
+    `) as unknown as TypedDocumentString<ContentAccessRulesEditorOptionsQuery, ContentAccessRulesEditorOptionsQueryVariables>;
 export const ContentAccessRulesSectionDocument = new TypedDocumentString(`
     query ContentAccessRulesSection($id: ID!) {
   userById(id: $id) {

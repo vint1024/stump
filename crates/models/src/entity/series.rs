@@ -15,7 +15,9 @@ use crate::{
 	},
 };
 
-use super::{content_access_rule, library_exclusion, series_metadata, user::AuthUser};
+use super::{
+	content_access_rule, library_exclusion, media, series_metadata, user::AuthUser,
+};
 
 // TODO: Properly support soft deletion
 
@@ -90,6 +92,8 @@ impl Entity {
 		if let Some(filter) = content_rules_filter {
 			query = query.filter(filter);
 		}
+		query = apply_all_books_hidden_filter(user, query);
+
 		query
 	}
 
@@ -215,11 +219,46 @@ fn apply_hidden_library_filter(
 
 fn apply_content_rules_filter(user: &AuthUser, select: Select<Entity>) -> Select<Entity> {
 	// Note: the callers join series_metadata, which the filter may reference
-	if let Some(filter) = content_access_rule::series_filter(&user.content_rules) {
-		select.filter(filter)
-	} else {
-		select
+	let select =
+		if let Some(filter) = content_access_rule::series_filter(&user.content_rules) {
+			select.filter(filter)
+		} else {
+			select
+		};
+	apply_all_books_hidden_filter(user, select)
+}
+
+/// Hide a series when EVERY book in it is hidden from the user by the content
+/// rules — otherwise a fully-restricted series shows up empty. A series with no
+/// books at all stays visible (emptiness is a separate concern — see the
+/// "delete series" feature). Only kicks in when the user actually has content
+/// rules, so unrestricted users and the owner keep the fast path with no extra
+/// subquery. Used by both `Entity::find_for_user` and
+/// `ModelWithMetadata::find_for_user` so GraphQL and OPDS stay consistent.
+fn apply_all_books_hidden_filter(
+	user: &AuthUser,
+	select: Select<Entity>,
+) -> Select<Entity> {
+	if user.content_rules.is_empty() {
+		return select;
 	}
+	let series_with_visible_book = media::Entity::find_for_user(user)
+		.select_only()
+		.column(media::Column::SeriesId)
+		.filter(media::Column::SeriesId.is_not_null())
+		.into_query();
+	// Non-null guard keeps the NOT IN set free of NULLs (NOT IN with a NULL in
+	// the set would otherwise hide every book-less series)
+	let series_with_any_book = media::Entity::find()
+		.select_only()
+		.column(media::Column::SeriesId)
+		.filter(media::Column::SeriesId.is_not_null())
+		.into_query();
+	select.filter(
+		Condition::any()
+			.add(Column::Id.in_subquery(series_with_visible_book))
+			.add(Column::Id.not_in_subquery(series_with_any_book)),
+	)
 }
 
 fn apply_age_restriction_filter(
