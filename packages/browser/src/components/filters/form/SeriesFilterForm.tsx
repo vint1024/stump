@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form } from '@stump/components'
 import { SeriesFilterInput } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import z from 'zod'
@@ -8,17 +9,6 @@ import z from 'zod'
 import { useSeriesFilterContext } from '../context'
 import AgeRatingFilter from './AgeRatingFilter'
 import GenericFilterMultiselect from './GenericFilterMultiselect'
-
-const DEFAULT_STATUS_OPTIONS = [
-	{
-		label: 'Continuing',
-		value: 'continuing',
-	},
-	{
-		label: 'Ended',
-		value: 'ended',
-	},
-]
 
 const schema = z.object({
 	metadata: z
@@ -37,6 +27,21 @@ export type SeriesFilterFormSchema = z.infer<typeof schema>
 
 export default function SeriesFilterForm() {
 	const { filters, setFilters } = useSeriesFilterContext()
+	const { t } = useLocaleContext()
+
+	const statusOptions = useMemo(
+		() => [
+			{
+				label: t(getKey('status.options.continuing')),
+				value: 'continuing',
+			},
+			{
+				label: t(getKey('status.options.ended')),
+				value: 'ended',
+			},
+		],
+		[t],
+	)
 
 	const defaultValues = useMemo(
 		() =>
@@ -78,15 +83,18 @@ export default function SeriesFilterForm() {
 			onSubmit={handleSubmit}
 		>
 			<GenericFilterMultiselect
-				label="Status"
+				label={t(getKey('status.label'))}
 				name="metadata.status"
-				options={DEFAULT_STATUS_OPTIONS}
+				options={statusOptions}
 			/>
 
 			<AgeRatingFilter variant="series" />
 		</Form>
 	)
 }
+
+const LOCALE_KEY = 'components.filters.form.SeriesFilterForm'
+const getKey = (key: string) => `${LOCALE_KEY}.${key}`
 
 const intoGraphql = (values: SeriesFilterFormSchema) =>
 	({

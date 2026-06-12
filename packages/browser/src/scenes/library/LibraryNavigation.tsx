@@ -1,6 +1,7 @@
 import { usePrefetchFiles } from '@stump/client'
 import { cn, Link, useSticky } from '@stump/components'
 import { UserPermission } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router'
 import { useMediaMatch } from 'rooks'
@@ -13,6 +14,7 @@ import { usePrefetchLibraryBooks } from './tabs/books/LibraryBooksScene'
 import { usePrefetchLibrarySeries } from './tabs/series/LibrarySeriesScene'
 
 export default function LibraryNavigation() {
+	const { t } = useLocaleContext()
 	const location = useLocation()
 	const isMobile = useMediaMatch('(max-width: 768px)')
 	const {
@@ -60,7 +62,7 @@ export default function LibraryNavigation() {
 				? [
 						{
 							isActive: location.pathname.match(/\/libraries\/[^/]+\/files(\/.*)?$/),
-							label: 'Files',
+							label: t('scenes.library.LibraryNavigation.files'),
 							onHover: () => handlePrefetchFiles(),
 							to: 'files',
 						},
@@ -80,6 +82,7 @@ export default function LibraryNavigation() {
 			prefetchBooks,
 			handlePrefetchFiles,
 			id,
+			t,
 		],
 	)
 

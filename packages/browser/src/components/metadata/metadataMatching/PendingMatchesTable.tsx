@@ -150,6 +150,7 @@ type PendingMatchRow = {
 const columnHelper = createColumnHelper<PendingMatchRow>()
 
 function ReviewButton({ records, startIndex }: { records: MatchRecord[]; startIndex: number }) {
+	const { t } = useLocaleContext()
 	const open = useMatchReviewStore((s) => s.open)
 	return (
 		<div className="md:w-2 inline-flex items-end">
@@ -157,7 +158,7 @@ function ReviewButton({ records, startIndex }: { records: MatchRecord[]; startIn
 				size="icon"
 				variant="ghost"
 				className="h-7 w-7 shrink-0"
-				title="Review match"
+				title={t('components.metadata.metadataMatching.PendingMatchesTable.reviewMatch')}
 				onClick={() => open(records, startIndex)}
 			>
 				<Eye className="h-4 w-4" />
@@ -188,7 +189,10 @@ export function PendingMatchesTable() {
 				const topCandidate = candidates[0]
 				return {
 					id: record.id,
-					entityName: record.media?.resolvedName ?? record.series?.resolvedName ?? 'Unknown',
+					entityName:
+						record.media?.resolvedName ??
+						record.series?.resolvedName ??
+						t('components.metadata.metadataMatching.PendingMatchesTable.unknownEntity'),
 					entityType: record.mediaId ? 'Media' : 'Series',
 					entityId: record.mediaId ?? record.seriesId ?? '',
 					candidateCount: candidates.length,
@@ -197,7 +201,7 @@ export function PendingMatchesTable() {
 					record,
 				}
 			}),
-		[records],
+		[records, t],
 	)
 
 	const columns = useMemo(
@@ -216,7 +220,9 @@ export function PendingMatchesTable() {
 		acceptAllPendingMatchesMutation,
 		{
 			onSuccess: () => {
-				toast.success('All pending matches accepted')
+				toast.success(
+					t('components.metadata.metadataMatching.PendingMatchesTable.acceptAllSuccess'),
+				)
 				client.invalidateQueries({
 					predicate: ({ queryKey }) =>
 						queryKey.some((key) => typeof key === 'string' && key === 'pendingMetadataMatches'),

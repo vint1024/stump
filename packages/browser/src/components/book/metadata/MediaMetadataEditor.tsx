@@ -133,7 +133,9 @@ export default function MediaMetadataEditor({ mediaId, data }: Props) {
 								onClick={() => setShowMissing((prev) => !prev)}
 							/>
 
-							<span className="ml-2">Missing</span>
+							<span className="ml-2">
+								{t('components.book.metadata.MediaMetadataEditor.missing')}
+							</span>
 						</Label>
 					</div>
 				),
@@ -269,7 +271,7 @@ export default function MediaMetadataEditor({ mediaId, data }: Props) {
 				size: 0,
 			}),
 		],
-		[metadata, paths, checkPermission],
+		[metadata, paths, checkPermission, t],
 	) as ColumnDef<MediaMetadataEditorRow>[]
 
 	const items = useMemo(
@@ -305,14 +307,14 @@ export default function MediaMetadataEditor({ mediaId, data }: Props) {
 		},
 		onError: (error) => {
 			console.error('Failed to update metadata', error)
-			toast.error('Failed to update metadata')
+			toast.error(t('components.book.metadata.MediaMetadataEditor.updateError'))
 		},
 	})
 
 	const { mutate: setLocked } = useGraphQLMutation(setLockedFieldsMutation, {
 		onError: () => {
 			setLockedFields(new Set(metadata?.lockedFields ?? []))
-			toast.error('Failed to update locked fields')
+			toast.error(t('components.book.metadata.MediaMetadataEditor.lockedFieldsError'))
 		},
 	})
 
@@ -358,9 +360,7 @@ export default function MediaMetadataEditor({ mediaId, data }: Props) {
 						form.handleSubmit(onSaveMetadata)
 					},
 					lockedFields,
-					onToggleLock: checkPermission(UserPermission.EditMetadata)
-						? onToggleLock
-						: undefined,
+					onToggleLock: checkPermission(UserPermission.EditMetadata) ? onToggleLock : undefined,
 				}}
 			>
 				<form onSubmit={form.handleSubmit(onSaveMetadata)}>

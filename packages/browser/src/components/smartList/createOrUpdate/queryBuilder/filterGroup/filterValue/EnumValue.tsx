@@ -19,20 +19,39 @@ type EnumOption = {
 	devOnly?: boolean
 }
 
-const CONCEPTUAL_FIELD_OPTIONS: Record<string, EnumOption[]> = {
-	readingStatus: [
-		{ value: ReadingStatus.Reading, label: 'Reading' },
-		{ value: ReadingStatus.Finished, label: 'Finished' },
-		{ value: ReadingStatus.NotStarted, label: 'Not Started' },
-		{ value: ReadingStatus.Abandoned, label: 'Abandoned', devOnly: true },
-	],
-}
-
 const isDev = import.meta.env.DEV
 
 export default function EnumValue({ idx }: Props) {
 	const { t } = useLocaleContext()
 	const { groupIdx } = useFilterGroupContext()
+
+	const conceptualFieldOptions = useMemo<Record<string, EnumOption[]>>(
+		() => ({
+			readingStatus: [
+				{ value: ReadingStatus.Reading, label: 'Reading' },
+				{
+					value: ReadingStatus.Finished,
+					label: t(
+						'components.smartList.createOrUpdate.queryBuilder.filterGroup.filterValue.EnumValue.finished',
+					),
+				},
+				{
+					value: ReadingStatus.NotStarted,
+					label: t(
+						'components.smartList.createOrUpdate.queryBuilder.filterGroup.filterValue.EnumValue.notStarted',
+					),
+				},
+				{
+					value: ReadingStatus.Abandoned,
+					label: t(
+						'components.smartList.createOrUpdate.queryBuilder.filterGroup.filterValue.EnumValue.abandoned',
+					),
+					devOnly: true,
+				},
+			],
+		}),
+		[t],
+	)
 
 	const form = useFormContext<SmartListFormSchema>()
 	const fieldDef = useWatch({
@@ -48,9 +67,9 @@ export default function EnumValue({ idx }: Props) {
 	})
 
 	const options = useMemo(() => {
-		const fieldOptions = CONCEPTUAL_FIELD_OPTIONS[fieldDef.field] || []
+		const fieldOptions = conceptualFieldOptions[fieldDef.field] || []
 		return fieldOptions.filter((opt) => !opt.devOnly || isDev)
-	}, [fieldDef.field])
+	}, [fieldDef.field, conceptualFieldOptions])
 
 	const isMultiSelect = useMemo(() => {
 		const op = fieldDef.operation

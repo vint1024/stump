@@ -76,7 +76,7 @@ export default function LibraryReview() {
 					<div>
 						<Label>{t(getLabelKey('quality'))}</Label>
 						<Text variant="muted" size="sm">
-							{state.thumbnailConfig.quality || 'Default'}
+							{state.thumbnailConfig.quality || t(getKey('default'))}
 						</Text>
 					</div>
 
@@ -114,7 +114,7 @@ export default function LibraryReview() {
 				<div>
 					<Label>{t(getLabelKey('description'))}</Label>
 					<Text variant="muted" size="sm">
-						{state.description || 'None'}
+						{state.description || t(getKey('none'))}
 					</Text>
 				</div>
 
@@ -166,42 +166,42 @@ export default function LibraryReview() {
 					<div>
 						<Label>{t(getLabelKey('processMetadata'))}</Label>
 						<Text variant="muted" size="sm">
-							{state.processMetadata ? 'Yes' : 'No'}
+							{state.processMetadata ? t(getKey('yes')) : t(getKey('no'))}
 						</Text>
 					</div>
 
 					<div>
 						<Label>{t(getLabelKey('watch'))}</Label>
 						<Text variant="muted" size="sm">
-							{state.watch ? 'Yes' : 'No'}
+							{state.watch ? t(getKey('yes')) : t(getKey('no'))}
 						</Text>
 					</div>
 
 					<div>
 						<Label>{t(getLabelKey('generateFileHashes'))}</Label>
 						<Text variant="muted" size="sm">
-							{state.generateFileHashes ? 'Yes' : 'No'}
+							{state.generateFileHashes ? t(getKey('yes')) : t(getKey('no'))}
 						</Text>
 					</div>
 
 					<div>
 						<Label>{t(getLabelKey('generateKoreaderHashes'))}</Label>
 						<Text variant="muted" size="sm">
-							{state.generateKoreaderHashes ? 'Yes' : 'No'}
+							{state.generateKoreaderHashes ? t(getKey('yes')) : t(getKey('no'))}
 						</Text>
 					</div>
 
 					<div>
 						<Label>{t(getLabelKey('convertRar'))}</Label>
 						<Text variant="muted" size="sm">
-							{state.convertRarToZip ? 'Yes' : 'No'}
+							{state.convertRarToZip ? t(getKey('yes')) : t(getKey('no'))}
 						</Text>
 					</div>
 
 					<div>
 						<Label>{t(getLabelKey('deleteConversions'))}</Label>
 						<Text variant="muted" size="sm">
-							{state.hardDeleteConversions ? 'Yes' : 'No'}
+							{state.hardDeleteConversions ? t(getKey('yes')) : t(getKey('no'))}
 						</Text>
 					</div>
 				</div>

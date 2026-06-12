@@ -1,4 +1,5 @@
 import { Badge, Card, Text } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { useMemo } from 'react'
 
 import { useFilterContext } from './context'
@@ -31,6 +32,7 @@ const flattenObject = (obj: object, prefix = ''): Record<string, unknown[]> => {
  * A component that displays the current filters in a human-readable format.
  */
 export default function FilterDisplay() {
+	const { t } = useLocaleContext()
 	const { filters } = useFilterContext()
 
 	const filterMapping = useMemo(() => flattenObject(filters || {}), [filters])
@@ -38,13 +40,13 @@ export default function FilterDisplay() {
 	const renderPredicate = (key: string, values: unknown[]) => {
 		const isMatchKey = MATCH_KEYS.includes(key)
 		if (values.length > 1 && !isMatchKey) {
-			return 'is any of'
+			return t('components.filters.FilterDisplay.isAnyOf')
 		} else if (values.length === 1 && !isMatchKey) {
-			return 'is'
+			return t('components.filters.FilterDisplay.is')
 		} else if (values.length === 1 && isMatchKey) {
-			return 'matches'
+			return t('components.filters.FilterDisplay.matches')
 		} else {
-			return 'matches any of'
+			return t('components.filters.FilterDisplay.matchesAnyOf')
 		}
 	}
 

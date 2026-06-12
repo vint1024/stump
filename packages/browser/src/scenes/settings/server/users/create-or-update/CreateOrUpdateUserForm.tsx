@@ -19,6 +19,7 @@ import UserPermissionsTable from './UserPermissionsTable'
 import UserRestrictionsForm from './UserRestrictionsForm'
 
 const CONTENT_RULES_LOCALE = 'settingsScene.server/users.createOrUpdateForm.contentRules'
+const LOCALE_NS = 'scenes.settings.server.users.create-or-update.CreateOrUpdateUserForm'
 
 const updateMutation = graphql(`
 	mutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {
@@ -170,9 +171,9 @@ export default function CreateOrUpdateUserForm({ user, existingUsernames }: Prop
 
 				<div className="gap-6 flex flex-col">
 					<div>
-						<Heading size="sm">Account details</Heading>
+						<Heading size="sm">{t(`${LOCALE_NS}.accountDetailsHeading`)}</Heading>
 						<Text size="sm" variant="muted" className="mt-1.5">
-							They can change these values at any time
+							{t(`${LOCALE_NS}.accountDetailsDescription`)}
 						</Text>
 					</div>
 

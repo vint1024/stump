@@ -91,17 +91,20 @@ export default function UploadModal() {
 
 	const isUploading = isUploadingBooks || isUploadingSeries
 
-	const handleDrop = useCallback((acceptedFiles: File[], rejections: FileRejection[]) => {
-		if (rejections.length) {
-			console.warn('Some files were rejected:', rejections)
-			toast.error('Some files were rejected. Please check the file type and size')
-		}
+	const handleDrop = useCallback(
+		(acceptedFiles: File[], rejections: FileRejection[]) => {
+			if (rejections.length) {
+				console.warn('Some files were rejected:', rejections)
+				toast.error(t('common.fileUpload.someRejected'))
+			}
 
-		setFiles((prev) => [
-			...prev,
-			...acceptedFiles.filter((file) => !prev.some((f) => f.name === file.name)),
-		])
-	}, [])
+			setFiles((prev) => [
+				...prev,
+				...acceptedFiles.filter((file) => !prev.some((f) => f.name === file.name)),
+			])
+		},
+		[t],
+	)
 
 	const { getRootProps, getInputProps, isFileDialogActive, isDragActive } = useDropzone({
 		accept: {
@@ -131,13 +134,13 @@ export default function UploadModal() {
 		async (params: UploadBooksInput) => {
 			try {
 				await uploadBooks({ input: params })
-				toast.success('Successfully uploaded file(s)')
+				toast.success(t(getKey('toast.booksSuccess')))
 			} catch (error) {
 				console.error(error)
-				toast.error('Failed to upload book(s)')
+				toast.error(t(getKey('toast.booksError')))
 			}
 		},
-		[uploadBooks],
+		[uploadBooks, t],
 	)
 
 	const enableSeries = useSeriesContextSafe() == null
@@ -157,12 +160,12 @@ export default function UploadModal() {
 					seriesDirName,
 				},
 			})
-			toast.success('Successfully uploaded series')
+			toast.success(t(getKey('toast.seriesSuccess')))
 		} catch (error) {
 			console.error(error)
-			toast.error('Failed to upload series')
+			toast.error(t(getKey('toast.seriesError')))
 		}
-	}, [uploadSeries, files, seriesDirName, currentPath, libraryID, enableSeries])
+	}, [uploadSeries, files, seriesDirName, currentPath, libraryID, enableSeries, t])
 
 	const onUploadClicked = useCallback(async () => {
 		// Return if files is empty
@@ -297,13 +300,10 @@ export default function UploadModal() {
 						{/* Conditionally render the series name input */}
 						{uploadType === 'series' && (
 							<div className="mt-2">
-								<Heading size="xs">Series name</Heading>
-								<Dialog.Description>
-									This will be used as the name of the series directory. Your zip archive will be
-									unpacked here.
-								</Dialog.Description>
+								<Heading size="xs">{t(getKey('seriesName.label'))}</Heading>
+								<Dialog.Description>{t(getKey('seriesName.description'))}</Dialog.Description>
 								<Input
-									placeholder="Enter series name"
+									placeholder={t(getKey('seriesName.placeholder'))}
 									value={seriesDirName}
 									onChange={(e) => setSeriesDirName(e.target.value)}
 									className="mt-2"
@@ -357,7 +357,7 @@ export default function UploadModal() {
 										))}
 										{files.length > visibleCount && (
 											<div className="p-2 text-xs text-center text-foreground-muted italic">
-												...and {files.length - visibleCount} more files (scroll to load more)
+												{t(getKey('moreFiles'), { count: files.length - visibleCount })}
 											</div>
 										)}
 									</div>

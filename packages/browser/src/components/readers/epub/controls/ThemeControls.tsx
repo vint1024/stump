@@ -1,4 +1,5 @@
 import { Dialog, Heading, Popover } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { Paintbrush } from 'lucide-react'
 
 import ControlButton from './ControlButton'
@@ -9,16 +10,20 @@ import ReadingDirection from './ReadingDirection'
 import ReadingMode from './ReadingMode'
 
 export default function ThemeControls() {
+	const { t } = useLocaleContext()
+
 	return (
 		<Dialog>
 			<Dialog.Trigger asChild>
-				<ControlButton title="Theme and options">
+				<ControlButton title={t('components.readers.epub.controls.ThemeControls.title')}>
 					<Paintbrush className="h-4 w-4" />
 				</ControlButton>
 			</Dialog.Trigger>
 
 			<Dialog.Content size="md" className="gap-4 z-101 flex flex-col bg-background-surface">
-				<Heading size="md">Appearance</Heading>
+				<Heading size="md">
+					{t('components.readers.epub.controls.ThemeControls.appearance')}
+				</Heading>
 
 				<FontFamily />
 				<FontSizeControl />
@@ -32,7 +37,7 @@ export default function ThemeControls() {
 	return (
 		<Popover>
 			<Popover.Trigger asChild>
-				<ControlButton title="Theme and options">
+				<ControlButton title={t('components.readers.epub.controls.ThemeControls.title')}>
 					<Paintbrush className="h-4 w-4" />
 				</ControlButton>
 			</Popover.Trigger>

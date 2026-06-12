@@ -1,5 +1,5 @@
 import { Badge, cn, Heading, Link, Statistic, Text } from '@stump/components'
-import { formatHumanDuration } from '@stump/i18n'
+import { formatHumanDuration, useLocaleContext } from '@stump/i18n'
 import { ExternalLink } from 'lucide-react'
 
 import BadgeList from '@/components/BadgeList'
@@ -14,6 +14,7 @@ import { useSeriesContext } from './context'
 
 // TODO(localization): Use localized strings for labels etc
 export default function SeriesHeader() {
+	const { t } = useLocaleContext()
 	const {
 		preferences: { primaryNavigationMode, layoutMaxWidthPx, showThumbnailsInHeaders },
 	} = usePreferences()
@@ -51,15 +52,28 @@ export default function SeriesHeader() {
 					<Heading size="lg">{resolvedName}</Heading>
 
 					<div className="gap-3 sm:grid-cols-3 md:flex md:flex-wrap md:gap-6 grid grid-cols-2">
-						<Statistic.Item label="Books" value={stats.bookCount} />
+						<Statistic.Item label={t('scenes.series.SeriesHeader.books')} value={stats.bookCount} />
 						<Statistic.Item
-							label="Completed"
+							label={t('scenes.series.SeriesHeader.completed')}
 							value={stats.completedBooks}
 							suffix={` / ${stats.bookCount}`}
 						/>
-						<Statistic.Item label="In progress" value={stats.inProgressBooks} />
-						{formattedTime && <Statistic.Item label="Reading time" value={formattedTime} />}
-						{formattedSize && <Statistic.Item label="Total size" value={formattedSize} />}
+						<Statistic.Item
+							label={t('scenes.series.SeriesHeader.inProgress')}
+							value={stats.inProgressBooks}
+						/>
+						{formattedTime && (
+							<Statistic.Item
+								label={t('scenes.series.SeriesHeader.readingTime')}
+								value={formattedTime}
+							/>
+						)}
+						{formattedSize && (
+							<Statistic.Item
+								label={t('scenes.series.SeriesHeader.totalSize')}
+								value={formattedSize}
+							/>
+						)}
 					</div>
 
 					{hasMetadataBadges && (
@@ -91,7 +105,7 @@ export default function SeriesHeader() {
 					{hasGenres && (
 						<div className="gap-1 flex flex-col">
 							<Text size="xs" variant="muted">
-								Genres
+								{t('scenes.series.SeriesHeader.genres')}
 							</Text>
 							<BadgeList>
 								{metadata.genres.map((genre) => (
@@ -114,7 +128,7 @@ export default function SeriesHeader() {
 					{hasTags && (
 						<div className="gap-1 flex flex-col">
 							<Text size="xs" variant="muted">
-								Tags
+								{t('scenes.series.SeriesHeader.tags')}
 							</Text>
 							<TagList
 								tags={tags}
@@ -126,7 +140,7 @@ export default function SeriesHeader() {
 					{hasLinks && (
 						<div className="gap-1 flex flex-col">
 							<Text size="xs" variant="muted">
-								Links
+								{t('scenes.series.SeriesHeader.links')}
 							</Text>
 							<BadgeList>
 								{metadata.links.map((link) => {

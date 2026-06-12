@@ -98,6 +98,78 @@ export default function PersistedLogsTable() {
 		throw new Error('Invalid pagination type, expected OffsetPaginationInfo')
 	}
 
+	const baseColumns = useMemo(
+		() => [
+			columnHelper.accessor('timestamp', {
+				id: LogModelOrdering.Timestamp,
+				cell: ({
+					row: {
+						original: { timestamp },
+					},
+				}) => (
+					<Text size="sm" variant="muted">
+						{intlFormat(new Date(timestamp), {
+							year: 'numeric',
+							month: '2-digit',
+							day: '2-digit',
+							hour: '2-digit',
+							minute: '2-digit',
+							second: '2-digit',
+						})}
+					</Text>
+				),
+				enableSorting: true,
+				header: t('scenes.settings.server.logs.persistedLogs.PersistedLogsTable.time'),
+				sortingFn: ({ original: a }, { original: b }) => {
+					return isBefore(new Date(a.timestamp), new Date(b.timestamp)) ? -1 : 1
+				},
+			}),
+			columnHelper.accessor('level', {
+				id: LogModelOrdering.Level,
+				cell: ({
+					row: {
+						original: { level },
+					},
+				}) => <LogLevelBadge level={level} />,
+				enableSorting: true,
+				header: t('scenes.settings.server.logs.persistedLogs.PersistedLogsTable.level'),
+				size: 75,
+				sortingFn: ({ original: a }, { original: b }) => {
+					const levels = ['error', 'warn', 'info', 'debug']
+					return levels.indexOf(a.level) < levels.indexOf(b.level) ? -1 : 1
+				},
+			}),
+			columnHelper.accessor('message', {
+				id: LogModelOrdering.Message,
+				cell: ({
+					row: {
+						original: { message },
+					},
+				}) => <Text size="xs">{message}</Text>,
+				header: t('scenes.settings.server.logs.persistedLogs.PersistedLogsTable.message'),
+				size: 300,
+			}),
+			columnHelper.accessor('jobId', {
+				id: LogModelOrdering.JobId,
+				cell: ({
+					row: {
+						original: { jobId },
+					},
+				}) =>
+					jobId ? (
+						<ToolTip content={<span className="font-mono">{jobId}</span>}>
+							<Text size="xs" variant="muted" className="font-mono">
+								{jobId.slice(0, 5)}..{jobId.slice(-5)}
+							</Text>
+						</ToolTip>
+					) : null,
+				header: t('scenes.settings.server.logs.persistedLogs.PersistedLogsTable.jobId'),
+				size: 150,
+			}),
+		],
+		[t],
+	)
+
 	return (
 		<Card>
 			<Table
@@ -136,71 +208,3 @@ export default function PersistedLogsTable() {
 const LOCALE_BASE = 'settingsScene.server/logs.sections.persistedLogs.table'
 
 const columnHelper = createColumnHelper<PersistedLog>()
-const baseColumns = [
-	columnHelper.accessor('timestamp', {
-		id: LogModelOrdering.Timestamp,
-		cell: ({
-			row: {
-				original: { timestamp },
-			},
-		}) => (
-			<Text size="sm" variant="muted">
-				{intlFormat(new Date(timestamp), {
-					year: 'numeric',
-					month: '2-digit',
-					day: '2-digit',
-					hour: '2-digit',
-					minute: '2-digit',
-					second: '2-digit',
-				})}
-			</Text>
-		),
-		enableSorting: true,
-		header: 'Time',
-		sortingFn: ({ original: a }, { original: b }) => {
-			return isBefore(new Date(a.timestamp), new Date(b.timestamp)) ? -1 : 1
-		},
-	}),
-	columnHelper.accessor('level', {
-		id: LogModelOrdering.Level,
-		cell: ({
-			row: {
-				original: { level },
-			},
-		}) => <LogLevelBadge level={level} />,
-		enableSorting: true,
-		header: 'Level',
-		size: 75,
-		sortingFn: ({ original: a }, { original: b }) => {
-			const levels = ['error', 'warn', 'info', 'debug']
-			return levels.indexOf(a.level) < levels.indexOf(b.level) ? -1 : 1
-		},
-	}),
-	columnHelper.accessor('message', {
-		id: LogModelOrdering.Message,
-		cell: ({
-			row: {
-				original: { message },
-			},
-		}) => <Text size="xs">{message}</Text>,
-		header: 'Message',
-		size: 300,
-	}),
-	columnHelper.accessor('jobId', {
-		id: LogModelOrdering.JobId,
-		cell: ({
-			row: {
-				original: { jobId },
-			},
-		}) =>
-			jobId ? (
-				<ToolTip content={<span className="font-mono">{jobId}</span>}>
-					<Text size="xs" variant="muted" className="font-mono">
-						{jobId.slice(0, 5)}..{jobId.slice(-5)}
-					</Text>
-				</ToolTip>
-			) : null,
-		header: 'Job ID',
-		size: 150,
-	}),
-]

@@ -1,4 +1,5 @@
 import { Button, IconButton, Input } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { Eye, EyeOff, Shield } from 'lucide-react'
 import { useState } from 'react'
 import { useFormContext, useFormState } from 'react-hook-form'
@@ -6,6 +7,7 @@ import { useFormContext, useFormState } from 'react-hook-form'
 import { CreateOrUpdateUserSchema } from './schema'
 
 export default function AccountDetails() {
+	const { t } = useLocaleContext()
 	const form = useFormContext<CreateOrUpdateUserSchema>()
 	const { errors } = useFormState({ control: form.control })
 
@@ -17,8 +19,10 @@ export default function AccountDetails() {
 				id="username"
 				variant="primary"
 				fullWidth
-				label="Username"
-				placeholder="Username"
+				label={t('scenes.settings.server.users.create-or-update.AccountDetails.usernameLabel')}
+				placeholder={t(
+					'scenes.settings.server.users.create-or-update.AccountDetails.usernamePlaceholder',
+				)}
 				autoComplete="off"
 				errorMessage={errors.username?.message}
 				{...form.register('username')}
@@ -27,8 +31,10 @@ export default function AccountDetails() {
 				id="password"
 				variant="primary"
 				fullWidth
-				label="Password"
-				placeholder="Password"
+				label={t('scenes.settings.server.users.create-or-update.AccountDetails.passwordLabel')}
+				placeholder={t(
+					'scenes.settings.server.users.create-or-update.AccountDetails.passwordPlaceholder',
+				)}
 				errorMessage={errors.password?.message}
 				type={passwordVisible ? 'text' : 'password'}
 				autoComplete="off"
@@ -53,7 +59,8 @@ export default function AccountDetails() {
 					onClick={() => form.setValue('password', generateRandomPassword())}
 					data-testid="generatePassword"
 				>
-					<Shield className="mr-1.5 h-4 w-4" /> Generate Random Password
+					<Shield className="mr-1.5 h-4 w-4" />{' '}
+					{t('scenes.settings.server.users.create-or-update.AccountDetails.generateRandomPassword')}
 				</Button>
 			</div>
 		</div>

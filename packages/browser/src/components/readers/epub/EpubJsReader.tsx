@@ -682,10 +682,10 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 				await rendition.prev()
 			} catch (err) {
 				console.error(err)
-				toast.error('Something went wrong!')
+				toast.error(t('common.somethingWentWrong'))
 			}
 		}
-	}, [rendition])
+	}, [rendition, t])
 
 	/**
 	 * A callback for when the user wants to navigate to a specific cfi. This will only run
@@ -703,10 +703,10 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 				await rendition.display(cfi)
 			} catch (err) {
 				console.error(err)
-				toast.error('Failed to navigate, please check the integrity of the epub file')
+				toast.error(t('components.readers.epub.EpubJsReader.failedToNavigate'))
 			}
 		},
-		[rendition],
+		[rendition, t],
 	)
 
 	// jump to a specific section
@@ -727,7 +727,7 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 				return
 			}
 
-			const failureMessage = 'Failed to navigate, please check the integrity of the epub file'
+			const failureMessage = t('components.readers.epub.EpubJsReader.failedToNavigate')
 			const adjusted = href.split('#')[0]
 
 			let spineItem = book.spine.get(adjusted)
@@ -767,7 +767,7 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 				toast.error(failureMessage)
 			}
 		},
-		[book, rendition],
+		[book, rendition, t],
 	)
 
 	/**
@@ -918,7 +918,7 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 					<div className="gap-1.5 p-4 flex h-full flex-1 flex-col items-center justify-center text-center">
 						<span className="text-base font-medium text-foreground">{bookError}</span>
 						<span className="text-sm text-foreground-muted">
-							You may not have permission to read this book, or the file may be missing or corrupt
+							{t('components.readers.epub.EpubJsReader.loadErrorDescription')}
 						</span>
 					</div>
 				)}

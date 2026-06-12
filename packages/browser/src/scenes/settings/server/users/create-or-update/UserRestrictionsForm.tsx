@@ -63,7 +63,9 @@ export default function UserRestrictionsForm() {
 	return (
 		<div className="gap-y-4 flex flex-col">
 			<div>
-				<Heading size="sm">Access control</Heading>
+				<Heading size="sm">
+					{t('scenes.settings.server.users.create-or-update.UserRestrictionsForm.heading')}
+				</Heading>
 				<Text size="sm" variant="muted" className="mt-1.5">
 					{renderDescription()}
 				</Text>

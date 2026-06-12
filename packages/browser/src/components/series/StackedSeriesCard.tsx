@@ -1,5 +1,6 @@
 import { cn, Text } from '@stump/components'
 import { LibrarySeriesQuery } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 import { Link } from '@/context'
@@ -18,6 +19,7 @@ type Props = {
 }
 
 const StackedSeriesCard = memo(function StackedSeriesCard({ data }: Props) {
+	const { t } = useLocaleContext()
 	const paths = usePaths()
 	const containerRef = useRef<HTMLAnchorElement>(null)
 	const [width, setWidth] = useState<number | null>(null)
@@ -81,7 +83,9 @@ const StackedSeriesCard = memo(function StackedSeriesCard({ data }: Props) {
 					}}
 				>
 					{isMissing ? (
-						<span className="text-amber-500">Series Missing</span>
+						<span className="text-amber-500">
+							{t('components.series.StackedSeriesCard.seriesMissing')}
+						</span>
 					) : (
 						pluralizeStat('book', data.mediaCount)
 					)}

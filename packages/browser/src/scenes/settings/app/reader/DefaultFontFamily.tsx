@@ -35,9 +35,13 @@ export default function DefaultFontFamily() {
 			<Label htmlFor="font-family">{t(getKey('fontFamily.label'))}</Label>
 			<ComboBox
 				size="full"
-				options={[{ value: '', label: 'Default', fontClassName: '' }].concat(
-					SUPPORTED_FONT_OPTIONS,
-				)}
+				options={[
+					{
+						value: '',
+						label: t('scenes.settings.app.reader.DefaultFontFamily.default'),
+						fontClassName: '',
+					},
+				].concat(SUPPORTED_FONT_OPTIONS)}
 				value={fontFamily ?? ''}
 				onChange={changeFont}
 			/>

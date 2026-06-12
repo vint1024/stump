@@ -72,11 +72,11 @@ export default function DeleteLibraryConfirmation({
 
 		console.error(error)
 		if (isAxiosError(error)) {
-			toast.error(error.message || 'An error occurred while deleting the library')
+			toast.error(error.message || t('components.library.DeleteLibraryConfirmation.deleteError'))
 		} else {
-			toast.error('An error occurred while deleting the library')
+			toast.error(t('components.library.DeleteLibraryConfirmation.deleteError'))
 		}
-	}, [error])
+	}, [error, t])
 
 	const entityI18nValues = { name: libraryName, type: 'library' }
 

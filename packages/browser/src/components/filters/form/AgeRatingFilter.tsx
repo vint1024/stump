@@ -1,4 +1,5 @@
 import { Input, Label, RadioGroup } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { useState } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form'
 
@@ -12,6 +13,7 @@ type Props = {
  * 2. X and up (where X is a number from 0 to 18)
  */
 export default function AgeRatingFilter({ variant = 'media' }: Props) {
+	const { t } = useLocaleContext()
 	const form = useFormContext<{
 		metadata: {
 			ageRating: number | null
@@ -40,7 +42,7 @@ export default function AgeRatingFilter({ variant = 'media' }: Props) {
 
 	return (
 		<div>
-			<Label>Age Rating</Label>
+			<Label>{t('components.filters.form.AgeRatingFilter.label')}</Label>
 			<RadioGroup
 				value={selection !== null ? 'custom' : 'any-age'}
 				onValueChange={handleSelection}
@@ -48,16 +50,16 @@ export default function AgeRatingFilter({ variant = 'media' }: Props) {
 			>
 				<RadioGroup.CardItem
 					isActive={selection === null}
-					label="Any age"
-					description="No age rating filter will be applied"
+					label={t('components.filters.form.AgeRatingFilter.anyAgeLabel')}
+					description={t('components.filters.form.AgeRatingFilter.anyAgeDescription')}
 					value="any-age"
 					innerContainerClassName="flex-col sm:items-start sm:justify-start gap-1.5"
 				/>
 
 				<RadioGroup.CardItem
 					isActive={selection !== null}
-					label="Aged N and up"
-					description={`Only ${variant} with an age rating of N or lower will be shown, where N is the number you enter below`}
+					label={t('components.filters.form.AgeRatingFilter.customLabel')}
+					description={t('components.filters.form.AgeRatingFilter.customDescription', { variant })}
 					value="custom"
 					innerContainerClassName="flex-col sm:items-start sm:justify-start gap-1.5"
 				>

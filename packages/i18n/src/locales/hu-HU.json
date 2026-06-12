@@ -351,6 +351,10 @@
 				"quality": {
 					"label": "Minőség",
 					"description": "A generált bélyegképek minősége, 0 és 1,0 között"
+				},
+				"enabledSwitch": {
+					"label": "Enabled",
+					"description": "Generate thumbnail images for this library"
 				}
 			},
 			"ignoreRules": {
@@ -514,7 +518,8 @@
 					"scaleEvenlyByFactor": "Evenly Scale",
 					"exact": "Exact Size",
 					"scaleDimension": "Explicitly Sized"
-				}
+				},
+				"default": "Default"
 			},
 			"buttons": {
 				"confirm": "Könyvtár létrehozása"
@@ -541,7 +546,19 @@
 				"series": "Húzd ide egy zip fájlt",
 				"alt": "Vagy kattints a számítógépen a feltölthető könyvek kereséséhez"
 			},
-			"addedFiles": "Hozzáadott fájlok"
+			"addedFiles": "Hozzáadott fájlok",
+			"toast": {
+				"booksSuccess": "Successfully uploaded file(s)",
+				"booksError": "Failed to upload book(s)",
+				"seriesSuccess": "Successfully uploaded series",
+				"seriesError": "Failed to upload series"
+			},
+			"seriesName": {
+				"label": "Series name",
+				"description": "This will be used as the name of the series directory. Your zip archive will be unpacked here.",
+				"placeholder": "Enter series name"
+			},
+			"moreFiles": "...and {{count}} more files (scroll to load more)"
 		}
 	},
 	"librarySettingsScene": {
@@ -1184,7 +1201,8 @@
 				}
 			}
 		},
-		"inheritDisclaimer": "This API key will inherit your full permissions, which means it can do anything you can do. Be careful with this setting"
+		"inheritDisclaimer": "This API key will inherit your full permissions, which means it can do anything you can do. Be careful with this setting",
+		"permissionsSelected": "{{count}} permissions"
 	},
 	"userSmartListsScene": {
 		"heading": "Okoslisták",
@@ -1405,7 +1423,13 @@
 						"removeImage": "Remove Image",
 						"removeSelection": "Remove uploaded image",
 						"uploadFailed": "Failed to upload avatar",
-						"removeFailed": "Failed to remove avatar"
+						"removeFailed": "Failed to remove avatar",
+						"errors": {
+							"fileTooLarge": "File too large (20MB max)",
+							"unknown": "Unknown error",
+							"onlyOneFile": "Only 1 file allowed",
+							"noFiles": "No files provided"
+						}
 					},
 					"buttons": {
 						"confirm": "Save Changes"
@@ -1608,7 +1632,8 @@
 					"unrestrictedKey": {
 						"heading": "Unrestricted key",
 						"description": "Since you are the server owner, this key has unrestricted access when configured to inherit permissions. Please be careful."
-					}
+					},
+					"title": "API key"
 				},
 				"createKey": {
 					"modal": {
@@ -1802,7 +1827,8 @@
 					"discordPresence": {
 						"label": "Discord Presence",
 						"description": "Display your Stump activity in Discord using Discord Rich Presence",
-						"reconnect": "Reconnect to Discord"
+						"reconnect": "Reconnect to Discord",
+						"updateError": "Failed to update!"
 					}
 				}
 			}
@@ -1833,7 +1859,11 @@
 							"It looks like you are running the",
 							"build channel"
 						]
-					}
+					},
+					"semanticVersion": "Semantic version",
+					"buildChannel": "Build channel",
+					"exactCommit": "Exact commit",
+					"buildDate": "Build date"
 				},
 				"helpfulLinks": {
 					"title": "Helpful links",
@@ -1845,7 +1875,10 @@
 				},
 				"serverPublicUrl": {
 					"label": "Public URL",
-					"description": "The URL that your server is accessible from outside your network, if applicable. This will enable invite links and other features"
+					"description": "The URL that your server is accessible from outside your network, if applicable. This will enable invite links and other features",
+					"updateSuccess": "Public URL updated successfully",
+					"updateError": "Failed to update public URL",
+					"unknownError": "An unknown error occurred"
 				},
 				"customEmojis": {
 					"title": "Custom emojis",
@@ -1866,7 +1899,10 @@
 					"renameSuccess": "Emoji renamed",
 					"renameError": "Failed to rename emoji",
 					"deleteSuccess": "Emoji deleted",
-					"deleteError": "Failed to delete emoji"
+					"deleteError": "Failed to delete emoji",
+					"provideName": "Please provide an emoji name",
+					"renamePlaceholder": "emoji_name",
+					"previewAlt": "emoji preview"
 				}
 			}
 		},
@@ -2262,7 +2298,16 @@
 					},
 					"table": {
 						"emptyHeading": "No devices registered",
-						"emptySubtitle": "Create a new device alias for future use"
+						"emptySubtitle": "Create a new device alias for future use",
+						"columns": {
+							"name": "Name",
+							"email": "Email",
+							"status": "Status"
+						},
+						"status": {
+							"forbidden": "Forbidden",
+							"allowed": "Allowed"
+						}
 					}
 				}
 			},
@@ -2571,7 +2616,15 @@
 		"uploadImage": {
 			"emptyState": "A preview of your image will appear here",
 			"prompt": "Drop image here or click to select",
-			"remove": "Remove image"
+			"remove": "Remove image",
+			"confirmSelection": "Confirm selection",
+			"errors": {
+				"fileTooLarge": "File too large (20MB max)",
+				"unknown": "Unknown error",
+				"onlyOneFile": "Only 1 file allowed",
+				"noFiles": "No files provided",
+				"uploadFailed": "Failed to upload image"
+			}
 		}
 	},
 	"common": {
@@ -3352,5 +3405,1073 @@
 	},
 	"epubReader": {
 		"failedToLoad": "Failed to load the book"
+	},
+	"AppLayout": {
+		"logoutSuccess": "You have been logged out",
+		"logoutError": "There was an error logging you out. Please try again."
+	},
+	"components": {
+		"DirectoryPickerModal": {
+			"title": "Select a Directory",
+			"description": "Specify the directory where your library is located.",
+			"showHidden": "Show Hidden Directories",
+			"cancel": "Cancel",
+			"confirm": "Confirm"
+		},
+		"ErrorFallback": {
+			"copiedToClipboard": "Copied error details to your clipboard",
+			"imageAlt": "Construction illustration",
+			"criticalError": "A critical error occurred",
+			"emptyMessage": "The error message was empty.",
+			"goHomeTitle": "Go back to the homepage",
+			"goHome": "Go Home",
+			"reportBugTitle": "Report this error as a potential bug on GitHub",
+			"reportBug": "Report Bug",
+			"copyDetailsTitle": "Copy the error details to your clipboard",
+			"copyDetails": "Copy Error Details"
+		},
+		"HorizontalCardList": {
+			"nothingToShow": "Nothing to show",
+			"noResults": "No results present to display",
+			"seekBackwards": "Seek backwards",
+			"seekAhead": "Seek Ahead"
+		},
+		"MultiRowHorizontalCardList": {
+			"nothingToShow": "Nothing to show",
+			"noResults": "No results were returned",
+			"seekBackwards": "Seek backwards",
+			"seekAhead": "Seek Ahead"
+		},
+		"ServerStatusOverlay": {
+			"notConnected": "Server is not connected",
+			"checkConnection": "Please check your internet connection.",
+			"clickHere": "Click here",
+			"changeServerUrl": "to change your server URL."
+		},
+		"UserMenu": {
+			"notifications": "Notifications",
+			"settings": "Settings",
+			"switchServer": "Switch server"
+		},
+		"book": {
+			"BookCard": {
+				"fileMissing": "File Missing",
+				"pagesLeft": "{{count}} pages left",
+				"completed": "Completed"
+			},
+			"BookSearch": {
+				"searchPlaceholder": "Search for a book..."
+			},
+			"BookSearchOverlay": {
+				"searchForBook": "Search for a book",
+				"description": "You can use the search bar below to find a book"
+			},
+			"metadata": {
+				"MediaMetadataEditor": {
+					"missing": "Missing",
+					"updateError": "Failed to update metadata",
+					"lockedFieldsError": "Failed to update locked fields"
+				}
+			}
+		},
+		"bookClub": {
+			"DeleteBookClubConfirmation": {
+				"deleteError": "Failed to delete book club",
+				"title": "Delete book club",
+				"description": "Are you sure you want to delete this club? This action cannot be undone.",
+				"confirmText": "Delete club"
+			},
+			"books": {
+				"BookClubBookItem": {
+					"started": "Started {{when}}",
+					"completed": "Completed {{count}} {{days}} ago",
+					"added": "Added {{when}}",
+					"currentlyReading": "Currently reading",
+					"pastBook": "Past book",
+					"untitled": "Untitled",
+					"externalLink": "External link",
+					"accessBook": "Access book",
+					"readFor": "Read for {{count}} {{days}}",
+					"notCompletedYet": "Not completed yet"
+				},
+				"BookClubBooks": {
+					"hidePastBooks": "Hide past books",
+					"showPastBooks": "Show past books",
+					"emptyTitle": "No books to display",
+					"emptySubtitle": "The club has no books scheduled",
+					"createSchedule": "Create a schedule",
+					"books": "Books"
+				}
+			}
+		},
+		"explorer": {
+			"FileExplorer": {
+				"emptyTitle": "No files",
+				"emptySubtitle": "This folder is empty"
+			},
+			"FileExplorerProvider": {
+				"noDbEntry": "No associated DB entry found for this file",
+				"unknownError": "An unknown error occurred"
+			},
+			"table": {
+				"FileTable": {
+					"cover": "Cover",
+					"name": "Name"
+				}
+			},
+			"upload": {
+				"UploadMenu": {
+					"tooltip": "Upload",
+					"addBooks": "Add books",
+					"addSeries": "Add series"
+				}
+			}
+		},
+		"filters": {
+			"FilterDisplay": {
+				"isAnyOf": "is any of",
+				"is": "is",
+				"matches": "matches",
+				"matchesAnyOf": "matches any of"
+			},
+			"FilterSlideOver": {
+				"notImplemented": "Not implemented yet",
+				"title": "Filter options",
+				"description": "Use the options below to narrow your search",
+				"filter": "Filter",
+				"clearFilters": "Clear filters",
+				"applyFilters": "Apply filters"
+			},
+			"URLFilterDrawer": {
+				"title": "Configure URL filters",
+				"description": "Adjust the filters applied to the current view",
+				"tooltip": "Configure filters",
+				"clearFilters": "Clear filters",
+				"applyFilters": "Apply filters"
+			},
+			"URLPageSize": {
+				"perPage": "per page"
+			},
+			"URLPagination": {
+				"ofPages": "of {{pages}}",
+				"previousPage": "Previous page",
+				"nextPage": "Next page"
+			},
+			"form": {
+				"AgeRatingFilter": {
+					"label": "Age Rating",
+					"anyAgeLabel": "Any age",
+					"anyAgeDescription": "No age rating filter will be applied",
+					"customLabel": "Aged N and up",
+					"customDescription": "Only {{variant}} with an age rating of N or lower will be shown, where N is the number you enter below"
+				},
+				"ExtensionSelect": {
+					"label": "Extension",
+					"any": "Any"
+				},
+				"OrderBySelect": {
+					"label": "Order by",
+					"selectOption": "Select an option"
+				},
+				"MediaFilterForm": {
+					"onlyFromSeries": "Only show options available from series",
+					"genre": "Genre",
+					"writer": "Writer",
+					"penciller": "Penciller",
+					"colorist": "Colorist",
+					"letterer": "Letterer",
+					"inker": "Inker",
+					"publisher": "Publisher",
+					"editor": "Editor",
+					"character": "Character"
+				},
+				"ReadStatusSelect": {
+					"label": "Read Status",
+					"completed": "Completed",
+					"reading": "Reading",
+					"unread": "Unread"
+				},
+				"SeriesFilterForm": {
+					"status": {
+						"label": "Status",
+						"options": {
+							"continuing": "Continuing",
+							"ended": "Ended"
+						}
+					}
+				},
+				"OrderByDirection": {
+					"descending": "Descending",
+					"ascending": "Ascending"
+				}
+			},
+			"Search": {
+				"search": "Search",
+				"unavailable": "This functionality isn't available right now"
+			}
+		},
+		"jobs": {
+			"JobOverlay": {
+				"jobInProgress": "Job in Progress",
+				"tasks": "Tasks ({{completed}}/{{total}})"
+			}
+		},
+		"library": {
+			"LastVisitedLibrary": {
+				"lastVisited": "Last visited"
+			},
+			"createOrUpdate": {
+				"sections": {
+					"GenerateThumbnailColorsSwitch": {
+						"label": "Thumbnail colors",
+						"description": "Extract dominant colors for thumbnails. This is used for thumbnail placeholders and accent colors"
+					}
+				}
+			},
+			"DeleteLibraryConfirmation": {
+				"deleteError": "An error occurred while deleting the library"
+			}
+		},
+		"markdown": {
+			"MarkdownEditor": {
+				"write": "Write",
+				"preview": "Preview",
+				"addSpoiler": "Add spoiler",
+				"tagUser": "Tag a user"
+			},
+			"MarkdownPreview": {
+				"clickToReveal": "Click to reveal",
+				"clickToHide": "Click to hide"
+			}
+		},
+		"metadata": {
+			"metadataEditor": {
+				"ResetMetadata": {
+					"deleteMetadata": "Delete metadata",
+					"selectImpact": "Select the impact for the deletion",
+					"confirmDelete": "Delete",
+					"seriesLabel": "Series",
+					"seriesDescription": "Remove only this series' metadata",
+					"booksLabel": "Books",
+					"booksDescription": "Remove all the metadata for books in this series",
+					"everythingLabel": "Everything",
+					"everythingDescription": "Remove all the metadata for everything related to this series",
+					"cannotBeUndone": "This action cannot be undone",
+					"permanentWarning": "This will permanently delete all metadata for the selected items. You will need to trigger a custom scan to regenerate the metadata"
+				},
+				"cells": {
+					"NumberCell": {
+						"resetField": "Reset field"
+					},
+					"TextCell": {
+						"resetField": "Reset field"
+					},
+					"BadgeListCell": {
+						"removeItem": "Remove item"
+					},
+					"InlineBadgeListInput": {
+						"removeItem": "Remove item"
+					},
+					"LockFieldButton": {
+						"unlockField": "Unlock field",
+						"lockField": "Lock field"
+					}
+				},
+				"MetadataEditorTable": {
+					"noMetadata": "No Metadata"
+				}
+			},
+			"metadataMatching": {
+				"PendingMatchesTable": {
+					"reviewMatch": "Review match",
+					"unknownEntity": "Unknown",
+					"acceptAllSuccess": "All pending matches accepted"
+				}
+			}
+		},
+		"navigation": {
+			"sidebar": {
+				"Logout": {
+					"title": "Sign out",
+					"description": "Are you sure you want sign out?",
+					"confirmText": "Sign out",
+					"tooltip": "Sign Out"
+				},
+				"SignOut": {
+					"title": "Sign out",
+					"description": "Are you sure you want sign out?",
+					"confirmText": "Sign out",
+					"label": "Sign out"
+				}
+			},
+			"topbar": {
+				"sections": {
+					"UserMenu": {
+						"logoutError": "There was an error logging you out. Please try again.",
+						"notifications": "Notifications",
+						"logout": "Logout"
+					},
+					"library": {
+						"LibraryNavigationItem": {
+							"noLibraries": "No libraries",
+							"noLibrariesDescription": "You don't have any libraries yet",
+							"libraries": "Libraries",
+							"createLibrary": "Create library",
+							"seeAll": "See all"
+						}
+					}
+				}
+			}
+		},
+		"readers": {
+			"epub": {
+				"EpubReaderHeader": {
+					"bookOverview": "Book Overview"
+				},
+				"controls": {
+					"FontSizeControl": {
+						"fontSize": "Font size",
+						"previewCap": "Live font preview is capped at 50px"
+					},
+					"LineHeightControl": {
+						"lineHeight": "Line height"
+					},
+					"ReadingDirection": {
+						"label": "Reading direction",
+						"leftToRight": "Left to right",
+						"rightToLeft": "Right to left"
+					},
+					"ReadingMode": {
+						"label": "Reading mode",
+						"paged": "Paged",
+						"continuous": "Continuous"
+					},
+					"SearchCommand": {
+						"spineItem": "Spine item {{index}}",
+						"noResults": "No results found.",
+						"placeholder": "Enter a basic query to search for"
+					},
+					"ThemeControls": {
+						"title": "Theme and options",
+						"appearance": "Appearance"
+					},
+					"FontFamily": {
+						"default": "Default"
+					},
+					"FullScreenToggle": {
+						"exitFullscreen": "Exit Fullscreen",
+						"enterFullscreen": "Enter Fullscreen"
+					}
+				},
+				"locations": {
+					"Bookmarks": {
+						"empty": "No bookmarks"
+					},
+					"LocationManager": {
+						"title": "Location manager",
+						"contents": "Contents",
+						"bookmarks": "Bookmarks",
+						"annotations": "Annotations"
+					},
+					"TableOfContents": {
+						"ariaLabel": "Table of Contents"
+					}
+				},
+				"EpubJsReader": {
+					"failedToNavigate": "Failed to navigate, please check the integrity of the epub file",
+					"loadErrorDescription": "You may not have permission to read this book, or the file may be missing or corrupt"
+				}
+			},
+			"imageBased": {
+				"container": {
+					"BrightnessControl": {
+						"label": "Brightness"
+					},
+					"DoubleSpreadBehavior": {
+						"label": "Double Paged",
+						"auto": "Auto",
+						"always": "Always",
+						"off": "Off"
+					},
+					"ImageScalingSelect": {
+						"label": "Image scaling",
+						"auto": "Auto",
+						"height": "Height",
+						"width": "Width",
+						"original": "Original"
+					},
+					"NextInSeries": {
+						"nextUp": "Next Up:",
+						"read": "Read"
+					},
+					"ReaderFooter": {
+						"readingTime": "Reading time: {{time}}",
+						"pageOf": "{{current}} of {{total}}"
+					},
+					"ReaderHeader": {
+						"goToBookOverview": "Go to media overview"
+					},
+					"ReaderSettings": {
+						"mode": "Mode",
+						"imageOptions": "Image Options",
+						"preferences": "Preferences",
+						"separateSecondPage": "Separate second page",
+						"panZoomWithoutCtrl": "Pan and zoom without Ctrl / Cmd",
+						"tapSidesToNavigate": "Tap sides to navigate",
+						"readingTimer": "Reading timer",
+						"experimentalAnimatedReader": "Experimental animated reader"
+					},
+					"ReadingDirectionSelect": {
+						"label": "Reading direction",
+						"leftToRight": "Left to right",
+						"rightToLeft": "Right to left"
+					},
+					"ReadingModeSelect": {
+						"label": "Flow",
+						"verticalScroll": "Vertical scroll",
+						"horizontalScroll": "Horizontal scroll",
+						"paged": "Paged"
+					},
+					"TimerMenu": {
+						"startTimer": "Start Timer",
+						"stopTimer": "Stop Timer",
+						"resetTimer": "Reset Timer"
+					},
+					"SettingsDialog": {
+						"book": "Book",
+						"global": "Global"
+					}
+				}
+			},
+			"pdf": {
+				"NativePDFViewer": {
+					"failedToLoadPrefix": "PDF failed to load.",
+					"clickHere": "Click here",
+					"failedToLoadSuffix": "attempt downloading it directly."
+				}
+			}
+		},
+		"series": {
+			"SeriesCard": {
+				"seriesMissing": "Series Missing"
+			},
+			"StackedSeriesCard": {
+				"seriesMissing": "Series Missing"
+			},
+			"metadata": {
+				"SeriesMetadataEditor": {
+					"missing": "Missing",
+					"updateMetadataError": "Failed to update metadata",
+					"updateLockedFieldsError": "Failed to update locked fields"
+				}
+			}
+		},
+		"smartList": {
+			"createOrUpdate": {
+				"sections": {
+					"FilterConfigJSON": {
+						"showJSON": "Show JSON",
+						"description": "View the raw JSON representation of the filters"
+					}
+				},
+				"queryBuilder": {
+					"filterGroup": {
+						"OperatorSelect": {
+							"list": "List",
+							"match": "Match",
+							"equality": "Equality",
+							"placeholder": "Operator",
+							"operators": {
+								"anyOf": "any in list",
+								"contains": "contains string",
+								"eq": "equal to",
+								"excludes": "excludes string",
+								"is": "is",
+								"isNot": "is not",
+								"isAnyOf": "is any of",
+								"isNoneOf": "is none of",
+								"gt": "greater than",
+								"gte": "greater than or equal to",
+								"lt": "less than",
+								"lte": "less than or equal to",
+								"noneOf": "none in list",
+								"neq": "not equal to",
+								"range": "in range"
+							}
+						},
+						"filterValue": {
+							"EnumValue": {
+								"finished": "Finished",
+								"notStarted": "Not Started",
+								"abandoned": "Abandoned"
+							}
+						}
+					}
+				}
+			}
+		},
+		"table": {
+			"Table": {
+				"to": "to",
+				"of": "of",
+				"nothingToShow": "Nothing to show",
+				"showRows": "Show {{count}} rows"
+			},
+			"TableFilterInput": {
+				"placeholder": "Filter data"
+			},
+			"TableFooter": {
+				"to": "to",
+				"of": "of"
+			},
+			"EntityTableColumnConfiguration": {
+				"title": "Configure columns",
+				"description": "Adjust which columns are displayed in book-exploration tables",
+				"visible": "Visible",
+				"hidden": "Hidden",
+				"moveToHidden": "Move to hidden",
+				"moveToVisible": "Move to visible",
+				"dropColumnsHere": "Drop columns here"
+			}
+		},
+		"PagePopoverForm": {
+			"validation": "Please enter a number from 1 to {{max}}.",
+			"label": "Jump to another page",
+			"description": "Enter a number from 1 to {{max}}."
+		},
+		"ReadMore": {
+			"readLess": "Read less",
+			"readMore": "Read more"
+		}
+	},
+	"scenes": {
+		"book": {
+			"BookActionMenu": {
+				"toast": {
+					"completionError": "Failed to update book completion status",
+					"deleteSessionError": "Failed to delete current session",
+					"deleteHistoryError": "Failed to delete read history"
+				},
+				"menu": {
+					"continueReading": "Continue reading",
+					"readFromBeginning": "Read from beginning",
+					"incognitoMode": "Incognito mode",
+					"nativePdfViewer": "Native PDF viewer",
+					"markAsRead": "Mark as read",
+					"clearProgress": "Clear progress",
+					"deleteHistory": "Delete history",
+					"manage": "Manage",
+					"email": "Email"
+				},
+				"download": "Download"
+			},
+			"BookFileInformation": {
+				"title": "File Information",
+				"size": "Size: {{value}}",
+				"format": "Format: {{value}}",
+				"hash": "Hash: {{value}}",
+				"relativePath": "Relative path: {{value}}"
+			},
+			"BookOverviewScene": {
+				"bookNotFound": "Book not found",
+				"metadata": "Metadata"
+			},
+			"BookOverviewSceneHeader": {
+				"pages": "Pages",
+				"size": "Size",
+				"format": "Format",
+				"year": "Year",
+				"progress": "Progress",
+				"ageRating": "Age {{value}}+",
+				"lastCompletedOn": "Last completed on {{date}}",
+				"completedOn": "Completed on {{date}}",
+				"genres": "Genres",
+				"writers": "Writers",
+				"tags": "Tags",
+				"links": "Links"
+			},
+			"BooksAfterCursor": {
+				"nextInSeries": "Next in series",
+				"emptyTitle": "Nothing to show",
+				"emptyDescription": "No books remain after this one"
+			},
+			"DeleteHistoryConfirmation": {
+				"title": "Delete reading history",
+				"description": "Are you sure you want to delete your reading history?",
+				"alertTitle": "This cannot be undone",
+				"alertDescription": "Your completion history cannot be recovered once deleted"
+			},
+			"settings": {
+				"BookTagEditor": {
+					"heading": "Tags",
+					"description": "Assign tags to this book"
+				},
+				"BookThumbnailSelector": {
+					"uploadError": "Failed to upload image",
+					"updateError": "Failed to update thumbnail",
+					"dialogTitle": "Select a thumbnail",
+					"dialogDescription": "Choose a page from this book to use as the new thumbnail",
+					"cancel": "Cancel",
+					"confirm": "Confirm selection"
+				}
+			},
+			"EmailBookDialog": {
+				"sendErrors": "Some errors occurred while sending email(s). Check the logs for more detail",
+				"sendFailed": "Failed to send email"
+			}
+		},
+		"bookClub": {
+			"BookClubHeader": {
+				"createdBy": "Created by",
+				"created": "Created"
+			},
+			"UserBookClubsScene": {
+				"active": "Active",
+				"inactive": "Inactive",
+				"memberCount": "{{count}} members",
+				"goToClub": "Go to club",
+				"noClubs": "You are not a member of any book clubs",
+				"explorePublic": "Explore public book clubs",
+				"yourClubs": "Your clubs",
+				"helmet": "Book Clubs"
+			},
+			"tabs": {
+				"settings": {
+					"members": {
+						"RemoveMemberConfirmation": {
+							"title": "Remove member",
+							"description": "Are you sure you want to remove this member?",
+							"confirm": "Confirm"
+						},
+						"MembersTable": {
+							"removeError": "Failed to remove member",
+							"member": "Member"
+						},
+						"MemberActionMenu": {
+							"remove": "Remove"
+						}
+					},
+					"roles": {
+						"MemberSpecDisplay": {
+							"heading": "Custom names",
+							"description": "You can override the default name for any role. This is purely cosmetic and will not affect permissions",
+							"roleColumn": "Role",
+							"showAsColumn": "Show as"
+						}
+					},
+					"scheduler": {
+						"AddBookCard": {
+							"removeSelection": "Remove selection",
+							"pickBookHeading": "Pick a book",
+							"pickBookDescription": "You can add a book from your library",
+							"externalBookHeading": "Add an external book",
+							"externalBookDescription": "If you want to add a book that isn't in your library, you can add information about it here",
+							"titleLabel": "Title",
+							"authorLabel": "Author",
+							"bookUrlLabel": "Book URL",
+							"dividerOr": "OR",
+							"dividerAndThen": "AND THEN",
+							"configureDatesHeading": "Configure the dates",
+							"configureDatesDescription": "If not provided, the start and end dates will be set to a reasonable default based on the last book's end date",
+							"startDateLabel": "Start date",
+							"endDateLabel": "End date"
+						},
+						"CreateOrAddToScheduleForm": {
+							"booksToAdd": "Books to add"
+						}
+					},
+					"basics": {
+						"BasicSettingsScene": {
+							"updateClub": "Update club"
+						}
+					}
+				}
+			},
+			"BookClubNavigation": {
+				"home": "Home",
+				"discussion": "Discussion",
+				"members": "Members"
+			}
+		},
+		"createLibrary": {
+			"CreateLibraryScene": {
+				"errorTitle": "Failed to create library"
+			}
+		},
+		"error": {
+			"FourOhFour": {
+				"message": "The page you are looking for does not seem to exist!",
+				"goHome": "Go home",
+				"reportIssue": "Report an issue"
+			}
+		},
+		"library": {
+			"LibraryHeader": {
+				"series": "Series",
+				"books": "Books",
+				"completed": "Completed",
+				"inProgress": "In progress",
+				"readingTime": "Reading time",
+				"totalSize": "Total size",
+				"genres": "Genres",
+				"tags": "Tags"
+			},
+			"tabs": {
+				"settings": {
+					"LibrarySettingsRouter": {
+						"scanFailed": "Failed to scan library",
+						"scanFailedDescription": "Please check the logs for more details"
+					},
+					"integrations": {
+						"analysis": {
+							"LibraryAnalysisScene": {
+								"workInProgress": "Work in progress",
+								"workInProgressDescription": "This page has limited functionality and is a work in progress"
+							}
+						}
+					},
+					"options": {
+						"thumbnails": {
+							"DeleteLibraryThumbnails": {
+								"deleteSuccess": "Library thumbnails deleted",
+								"deleteError": "An error occurred while deleting the library thumbnails",
+								"heading": "Delete thumbnails",
+								"description": "Remove all generated thumbnails for this library",
+								"button": "Delete thumbnails",
+								"modalTitle": "Delete library thumbnails",
+								"modalDescription": "Are you sure you want to delete all thumbnails for this library?",
+								"alertTitle": "This cannot be undone",
+								"alertDescription": "Deleting the library thumbnails will remove all generated images and you will have to manually regenerate them"
+							},
+							"LibraryThumbnailSelector": {
+								"uploadFailed": "Failed to upload image",
+								"updateFailed": "Failed to update thumbnail",
+								"choosePage": "Choose a page from this book to use as the new thumbnail",
+								"selectBook": "Select a book from the series",
+								"selectSeries": "Select a series from the library",
+								"goBack": "Go back",
+								"label": "Select thumbnail",
+								"labelDescription": "Choose a different thumbnail for this library, either from a book or upload a custom one",
+								"dialogTitle": "Select a thumbnail",
+								"cancel": "Cancel",
+								"confirm": "Confirm selection"
+							},
+							"ProcessLibraryThumbnails": {
+								"label": "Process thumbnail colors",
+								"description": "Extract missing thumbnail color metadata or force the regeneration of it for all thumbnails",
+								"button": "Extract colors",
+								"missingOnly": "Missing only",
+								"reprocessAll": "Reprocess all"
+							},
+							"RegenerateThumbnails": {
+								"label": "Regenerate thumbnails",
+								"description": "Either generate missing thumbnails or force the recreation of all thumbnails",
+								"button": "Generate thumbnails",
+								"createMissingOnly": "Create missing only",
+								"forceRecreateAll": "Force recreate all"
+							}
+						},
+						"scanner": {
+							"customScan": {
+								"ScanConfigForm": {
+									"rebuildMetadata": {
+										"label": "Rebuild metadata",
+										"description": "Rebuild metadata for all books in the library"
+									},
+									"rebuildHashes": {
+										"label": "Rebuild hashes",
+										"description": "Rebuild hashes for all books in the library"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"LibraryNavigation": {
+				"files": "Files"
+			}
+		},
+		"series": {
+			"SeriesHeader": {
+				"books": "Books",
+				"completed": "Completed",
+				"inProgress": "In progress",
+				"readingTime": "Reading time",
+				"totalSize": "Total size",
+				"genres": "Genres",
+				"tags": "Tags",
+				"links": "Links"
+			},
+			"tabs": {
+				"settings": {
+					"SeriesTagEditor": {
+						"heading": "Tags",
+						"description": "Assign tags to this series"
+					},
+					"SeriesThumbnailSelector": {
+						"uploadError": "Failed to upload image",
+						"updateError": "Failed to update thumbnail",
+						"dialogTitle": "Select a thumbnail",
+						"choosePage": "Choose a page from this book to use as the new thumbnail",
+						"selectBook": "Select a book from the series",
+						"goBack": "Go back",
+						"cancel": "Cancel",
+						"confirm": "Confirm selection"
+					}
+				}
+			},
+			"SeriesNavigation": {
+				"files": "Files"
+			}
+		},
+		"settings": {
+			"app": {
+				"apiKeys": {
+					"DeleteAPIKeyConfirmModal": {
+						"title": "Delete API key",
+						"description": "Anything using this key will immediately lose authentication",
+						"confirmText": "Delete key"
+					}
+				},
+				"preferences": {
+					"DebugSettings": {
+						"heading": "Debug settings",
+						"description": "These won't exist in production, but are useful for debugging",
+						"queryToolsLabel": "Query Tools",
+						"queryToolsDescription": "Enable debugging tools for queries"
+					},
+					"PreferColorToggle": {
+						"label": "Prefer colors",
+						"description": "Display more of the main accent color instead of monochrome colors",
+						"title": "This setting is not currently supported"
+					}
+				},
+				"reader": {
+					"DefaultFontFamily": {
+						"default": "Default"
+					}
+				}
+			},
+			"server": {
+				"email": {
+					"devices": {
+						"DeleteDeviceConfirmation": {
+							"deleteError": "Failed to delete device",
+							"title": "Delete device",
+							"description": "Are you sure you want to delete this device?",
+							"confirmText": "Delete device"
+						}
+					},
+					"emailers": {
+						"EmailerListItem": {
+							"notUsedYet": "Not used yet",
+							"primaryEmailer": "Primary emailer"
+						},
+						"EmailerSendRecordAttachmentTable": {
+							"notFound": "Not Found",
+							"media": "Media",
+							"filename": "Filename",
+							"size": "Size"
+						},
+						"CreateOrUpdateEmailerForm": {
+							"custom": "Custom"
+						},
+						"EmailerSendHistoryTable": {
+							"sentAt": "Sent at",
+							"recipient": "Recipient",
+							"sender": "Sender",
+							"unknown": "Unknown",
+							"attachments": "Attachments",
+							"none": "None",
+							"hide": "Hide",
+							"show": "Show"
+						}
+					}
+				},
+				"jobs": {
+					"JobActionMenu": {
+						"invalidStateTitle": "This job was found in an invalid state",
+						"invalidStateDescription": "Please check server logs and report this issue",
+						"unknownError": "An unknown error occurred",
+						"cancel": "Cancel",
+						"viewData": "View data",
+						"viewLogs": "View logs",
+						"clearLogs": "Clear logs",
+						"delete": "Delete"
+					},
+					"JobDataInspector": {
+						"title": "Job data",
+						"description": "The final output of the job after it had completed",
+						"rawJson": "Raw JSON"
+					}
+				},
+				"users": {
+					"create-or-update": {
+						"AccountDetails": {
+							"usernameLabel": "Username",
+							"usernamePlaceholder": "Username",
+							"passwordLabel": "Password",
+							"passwordPlaceholder": "Password",
+							"generateRandomPassword": "Generate Random Password"
+						},
+						"MaxSessionsAllowed": {
+							"label": "Max sessions allowed",
+							"description": "The maximum number of valid sessions allowed at a time. If a user tries to log in once this limit is reached, the oldest session will be invalidated."
+						},
+						"CreateOrUpdateUserForm": {
+							"accountDetailsHeading": "Account details",
+							"accountDetailsDescription": "They can change these values at any time"
+						},
+						"UserRestrictionsForm": {
+							"heading": "Access control"
+						}
+					},
+					"login-activity": {
+						"LoginActivitySection": {
+							"heading": "Authentication history",
+							"description": "All login attempts are logged and stored for security purposes"
+						},
+						"LoginActivityTable": {
+							"emptyHeading": "No login activity",
+							"emptySubtitle": "You cleared this, didn't you?"
+						}
+					},
+					"user-table": {
+						"InspectUserSlideOver": {
+							"title": "Inspect user",
+							"description": "Inspect a user's information and configuration",
+							"rawJson": "Raw JSON"
+						},
+						"UserActionMenu": {
+							"lockError": "An error occurred while locking the user",
+							"deleteSessionsError": "An error occurred while deleting user sessions",
+							"inspect": "Inspect",
+							"clearSessions": "Clear sessions",
+							"edit": "Edit",
+							"delete": "Delete",
+							"lockAccount": "Lock account",
+							"unlockAccount": "Unlock account"
+						},
+						"UserTableSection": {
+							"heading": "Existing accounts",
+							"description": "A list of all existing accounts on the server",
+							"createUser": "Create user"
+						},
+						"DeleteUserModal": {
+							"title": "Delete User Account",
+							"description": "Are you sure you want to delete this user? If you select the hard delete option, this user and all of their data will be permanently deleted.",
+							"hardDeleteLabel": "Hard Delete User",
+							"cancel": "Cancel",
+							"deleteUser": "Delete User"
+						}
+					},
+					"UsersStats": {
+						"users": "Users",
+						"booksCompleted": "Books completed",
+						"booksInProgress": "Books in progress",
+						"powerReader": "Power Reader",
+						"booksCount": "{{count}} books"
+					},
+					"UserPermissionsTable": {
+						"permission": "Permission"
+					},
+					"loginActivity": {
+						"LoginActivityTable": {
+							"user": "User",
+							"timestamp": "Timestamp",
+							"ipAddress": "IP address",
+							"userAgent": "User-agent",
+							"authResult": "Auth result",
+							"authSuccess": "Success",
+							"authFailure": "Failure"
+						}
+					},
+					"UserTable": {
+						"user": "User",
+						"createdAt": "Created at",
+						"lastLogin": "Last login",
+						"role": "Role",
+						"serverOwner": "Server Owner",
+						"member": "Member",
+						"never": "Never",
+						"sessions": "Sessions",
+						"sessionsTooltip": "The number of non-expired login sessions for this user",
+						"status": "Status",
+						"locked": "Locked",
+						"active": "Active"
+					}
+				},
+				"general": {
+					"ServerStats": {
+						"libraries": "Libraries",
+						"series": "Series",
+						"books": "Books",
+						"diskUsage": "Disk Usage"
+					}
+				},
+				"logs": {
+					"persistedLogs": {
+						"PersistedLogsTable": {
+							"time": "Time",
+							"level": "Level",
+							"message": "Message",
+							"jobId": "Job ID"
+						}
+					}
+				}
+			},
+			"SettingsNavigation": {
+				"section": "Section"
+			}
+		},
+		"smartList": {
+			"items": {
+				"table": {
+					"TableColumnsBottomDrawer": {
+						"selectAtLeastOne": "You must select at least one column",
+						"adjustColumns": "Adjust columns",
+						"title": "Table configuration",
+						"subtitle": "Choose which columns to display or hide",
+						"groupColumns": "Group columns",
+						"groupColumnsDescription": "This only affects the parent table by which books are grouped",
+						"bookColumns": "Book columns",
+						"bookColumnsDescription": "This only affects the nested book table(s)",
+						"enableMultiSort": "Enable multi-sort",
+						"enableMultiSortDescription": "Sorting by a column removes the previous sort. This setting allows combining them, instead",
+						"save": "Save",
+						"cancel": "Cancel"
+					},
+					"FilterBottomDrawer": {
+						"adjustFilter": "Adjust filter",
+						"notImplemented": "This functionality is not yet implemented"
+					},
+					"groupColumns": {
+						"collapse": "Collapse",
+						"expand": "Expand",
+						"collapseAll": "Collapse all",
+						"expandAll": "Expand all",
+						"series": "Series",
+						"library": "Library",
+						"books": "Books",
+						"nameOption": "Name ({{scope}})",
+						"seriesScope": "series",
+						"libraryScope": "library"
+					}
+				}
+			},
+			"UserSmartListsScene": {
+				"heading": "Smart lists",
+				"subtitle": "Your favorite searches and filters saved for easy access",
+				"accessCount": "You have access to {{count}} smart {{lists}}"
+			},
+			"settings": {
+				"access": {
+					"ChangeVisibilityConfirmation": {
+						"title": "Change visibility"
+					}
+				}
+			}
+		}
 	}
 }

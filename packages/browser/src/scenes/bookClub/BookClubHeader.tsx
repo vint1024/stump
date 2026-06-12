@@ -1,4 +1,5 @@
 import { Avatar, Card, cn, Heading, Text } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { intlFormat } from 'date-fns'
 import pluralize from 'pluralize'
 
@@ -6,6 +7,7 @@ import { useBookClubContext } from '@/components/bookClub'
 import { usePreferences } from '@/hooks'
 
 export default function BookClubHeader() {
+	const { t } = useLocaleContext()
 	const {
 		preferences: { primaryNavigationMode, layoutMaxWidthPx },
 	} = usePreferences()
@@ -24,7 +26,7 @@ export default function BookClubHeader() {
 		return (
 			<Card className="gap-4 p-2.5 flex items-center justify-between">
 				<Text size="sm" variant="muted">
-					Created by
+					{t('scenes.bookClub.BookClubHeader.createdBy')}
 				</Text>
 
 				<div className="gap-2 flex items-center">
@@ -58,7 +60,8 @@ export default function BookClubHeader() {
 
 				<div className="mt-2">
 					<Text size="sm">
-						<b>{membersCount}</b> {pluralize(roleSpec['MEMBER'], membersCount)} • Created{' '}
+						<b>{membersCount}</b> {pluralize(roleSpec['MEMBER'], membersCount)} •{' '}
+						{t('scenes.bookClub.BookClubHeader.created')}{' '}
 						<b>{intlFormat(new Date(createdAt), { month: 'long', year: 'numeric' })}</b>
 					</Text>
 				</div>

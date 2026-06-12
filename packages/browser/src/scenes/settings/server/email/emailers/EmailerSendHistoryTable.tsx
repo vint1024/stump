@@ -1,5 +1,6 @@
 import { cn, IconButton, Text, ToolTip } from '@stump/components'
 import { EmailerSendHistoryQuery } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import {
 	createColumnHelper,
 	ExpandedState,
@@ -9,7 +10,7 @@ import {
 } from '@tanstack/react-table'
 import { intlFormat } from 'date-fns'
 import { ChevronDown, Copy } from 'lucide-react'
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 
 import { getTableModels, SortIcon } from '@/components/table'
 
@@ -24,7 +25,123 @@ type Props = {
 }
 
 export default function EmailerSendHistoryTable({ records }: Props) {
+	const { t } = useLocaleContext()
 	const [expanded, setExpanded] = useState<ExpandedState>({})
+
+	const columns = useMemo(
+		() => [
+			columnHelper.accessor('sentAt', {
+				cell: ({ getValue }) => (
+					<Text size="sm">
+						{intlFormat(new Date(getValue()), {
+							month: 'long',
+							day: 'numeric',
+							year: 'numeric',
+							hour: 'numeric',
+							minute: '2-digit',
+						})}
+					</Text>
+				),
+				header: () => (
+					<Text size="sm" className="text-left" variant="muted">
+						{t('scenes.settings.server.email.emailers.EmailerSendHistoryTable.sentAt')}
+					</Text>
+				),
+				id: 'sentAt',
+			}),
+			columnHelper.accessor('recipientEmail', {
+				cell: ({ getValue }) => <Text size="sm">{getValue()}</Text>,
+				header: () => (
+					<Text size="sm" className="text-left" variant="muted">
+						{t('scenes.settings.server.email.emailers.EmailerSendHistoryTable.recipient')}
+					</Text>
+				),
+				id: 'recipientEmail',
+			}),
+			columnHelper.display({
+				cell: ({
+					row: {
+						original: { sentBy, sentByUserId },
+					},
+				}) => {
+					if (sentBy) {
+						return <Text size="sm">{sentBy.username}</Text>
+					} else if (sentByUserId) {
+						return (
+							<div className="space-x-2 flex items-center">
+								<ToolTip content={sentByUserId} align="start" size="sm">
+									<Text size="sm">
+										{sentByUserId.slice(0, 5)}..{sentByUserId.slice(-5)}
+									</Text>
+								</ToolTip>
+
+								{/* TODO: implement copy to clipboard */}
+								<IconButton size="xxs" disabled>
+									<Copy className="h-3 w-3" />
+								</IconButton>
+							</div>
+						)
+					} else {
+						return (
+							<Text size="sm">
+								{t('scenes.settings.server.email.emailers.EmailerSendHistoryTable.unknown')}
+							</Text>
+						)
+					}
+				},
+				header: () => (
+					<Text size="sm" className="text-left" variant="muted">
+						{t('scenes.settings.server.email.emailers.EmailerSendHistoryTable.sender')}
+					</Text>
+				),
+				id: 'sender',
+			}),
+			// FIXME: multiple attachments in a single email
+			columnHelper.display({
+				cell: ({ row }) => {
+					const {
+						original: { attachmentMeta },
+					} = row
+
+					if (!attachmentMeta) {
+						return (
+							<Text size="sm">
+								{t('scenes.settings.server.email.emailers.EmailerSendHistoryTable.none')}
+							</Text>
+						)
+					}
+
+					const isAlreadyExpanded = row.getIsExpanded()
+					return (
+						<div
+							className="space-x-2 flex cursor-pointer items-center"
+							onClick={row.getToggleExpandedHandler()}
+						>
+							<Text size="sm">
+								{isAlreadyExpanded
+									? t('scenes.settings.server.email.emailers.EmailerSendHistoryTable.hide')
+									: t('scenes.settings.server.email.emailers.EmailerSendHistoryTable.show')}
+							</Text>
+							<span className="text-foreground-muted">
+								<ChevronDown
+									className={cn('h-4 w-4', {
+										'rotate-180': isAlreadyExpanded,
+									})}
+								/>
+							</span>
+						</div>
+					)
+				},
+				header: () => (
+					<Text size="sm" className="text-left" variant="muted">
+						{t('scenes.settings.server.email.emailers.EmailerSendHistoryTable.attachments')}
+					</Text>
+				),
+				id: 'attachments-sub-table',
+			}),
+		],
+		[t],
+	)
 
 	const table = useReactTable({
 		columns,
@@ -87,102 +204,3 @@ export default function EmailerSendHistoryTable({ records }: Props) {
 }
 
 const columnHelper = createColumnHelper<EmailerSendRecord>()
-const columns = [
-	columnHelper.accessor('sentAt', {
-		cell: ({ getValue }) => (
-			<Text size="sm">
-				{intlFormat(new Date(getValue()), {
-					month: 'long',
-					day: 'numeric',
-					year: 'numeric',
-					hour: 'numeric',
-					minute: '2-digit',
-				})}
-			</Text>
-		),
-		header: () => (
-			<Text size="sm" className="text-left" variant="muted">
-				Sent at
-			</Text>
-		),
-		id: 'sentAt',
-	}),
-	columnHelper.accessor('recipientEmail', {
-		cell: ({ getValue }) => <Text size="sm">{getValue()}</Text>,
-		header: () => (
-			<Text size="sm" className="text-left" variant="muted">
-				Recipient
-			</Text>
-		),
-		id: 'recipientEmail',
-	}),
-	columnHelper.display({
-		cell: ({
-			row: {
-				original: { sentBy, sentByUserId },
-			},
-		}) => {
-			if (sentBy) {
-				return <Text size="sm">{sentBy.username}</Text>
-			} else if (sentByUserId) {
-				return (
-					<div className="space-x-2 flex items-center">
-						<ToolTip content={sentByUserId} align="start" size="sm">
-							<Text size="sm">
-								{sentByUserId.slice(0, 5)}..{sentByUserId.slice(-5)}
-							</Text>
-						</ToolTip>
-
-						{/* TODO: implement copy to clipboard */}
-						<IconButton size="xxs" disabled>
-							<Copy className="h-3 w-3" />
-						</IconButton>
-					</div>
-				)
-			} else {
-				return <Text size="sm">Unknown</Text>
-			}
-		},
-		header: () => (
-			<Text size="sm" className="text-left" variant="muted">
-				Sender
-			</Text>
-		),
-		id: 'sender',
-	}),
-	// FIXME: multiple attachments in a single email
-	columnHelper.display({
-		cell: ({ row }) => {
-			const {
-				original: { attachmentMeta },
-			} = row
-
-			if (!attachmentMeta) {
-				return <Text size="sm">None</Text>
-			}
-
-			const isAlreadyExpanded = row.getIsExpanded()
-			return (
-				<div
-					className="space-x-2 flex cursor-pointer items-center"
-					onClick={row.getToggleExpandedHandler()}
-				>
-					<Text size="sm">{isAlreadyExpanded ? 'Hide' : 'Show'}</Text>
-					<span className="text-foreground-muted">
-						<ChevronDown
-							className={cn('h-4 w-4', {
-								'rotate-180': isAlreadyExpanded,
-							})}
-						/>
-					</span>
-				</div>
-			)
-		},
-		header: () => (
-			<Text size="sm" className="text-left" variant="muted">
-				Attachments
-			</Text>
-		),
-		id: 'attachments-sub-table',
-	}),
-]

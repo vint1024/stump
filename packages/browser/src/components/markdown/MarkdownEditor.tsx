@@ -1,4 +1,5 @@
 import { Card, cx, Divider, IconButton, Tabs, Text, ToolTip } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { Asterisk, AtSign } from 'lucide-react'
 import { useRef, useState } from 'react'
 
@@ -9,6 +10,7 @@ type Props = {
 	initialContent?: string
 }
 export default function MarkdownEditor({ initialState = 'writing', initialContent }: Props) {
+	const { t } = useLocaleContext()
 	const [writingState, setWritingState] = useState(initialState)
 	const [content, setContent] = useState(initialContent || '')
 
@@ -53,7 +55,9 @@ export default function MarkdownEditor({ initialState = 'writing', initialConten
 				<Tabs value={writingState} variant="primary" activeOnHover>
 					<Tabs.List className="border-none">
 						<Tabs.Trigger value="writing" asChild onClick={changeHandler('writing')}>
-							<Text className="cursor-pointer truncate">Write</Text>
+							<Text className="cursor-pointer truncate">
+								{t('components.markdown.MarkdownEditor.write')}
+							</Text>
 						</Tabs.Trigger>
 
 						<Tabs.Trigger
@@ -62,13 +66,18 @@ export default function MarkdownEditor({ initialState = 'writing', initialConten
 							onClick={changeHandler('preview')}
 							disabled={!content.length}
 						>
-							<Text className={cx('truncate', { 'cursor-pointer': content.length })}>Preview</Text>
+							<Text className={cx('truncate', { 'cursor-pointer': content.length })}>
+								{t('components.markdown.MarkdownEditor.preview')}
+							</Text>
 						</Tabs.Trigger>
 					</Tabs.List>
 				</Tabs>
 
 				<div className="gap-x-1.5 pr-1 flex items-center">
-					<ToolTip content="Add spoiler" isDisabled={writingState === 'preview'}>
+					<ToolTip
+						content={t('components.markdown.MarkdownEditor.addSpoiler')}
+						isDisabled={writingState === 'preview'}
+					>
 						<IconButton
 							size="xs"
 							variant="ghost"
@@ -80,7 +89,7 @@ export default function MarkdownEditor({ initialState = 'writing', initialConten
 						</IconButton>
 					</ToolTip>
 
-					<ToolTip content="Tag a user" isDisabled>
+					<ToolTip content={t('components.markdown.MarkdownEditor.tagUser')} isDisabled>
 						<IconButton size="xs" variant="ghost" type="button" disabled>
 							<AtSign className="h-5 w-5" />
 						</IconButton>

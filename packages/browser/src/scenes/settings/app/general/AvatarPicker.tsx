@@ -64,19 +64,28 @@ export default function AvatarPicker() {
 		},
 	})
 
-	const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
-		if (fileRejections.length > 0) {
-			const firstError = fileRejections[0]?.errors[0]
-			const isTooLarge = firstError?.code === 'file-too-large'
-			toast.error(isTooLarge ? 'File too large (20MB max)' : firstError?.message || 'Unknown error')
-		} else if (acceptedFiles.length !== 1 || !acceptedFiles[0]) {
-			toast.error(acceptedFiles.length ? 'Only 1 file allowed' : 'No files provided')
-		} else {
-			const file = acceptedFiles[0]
-			setSelectedFile(file)
-			setFilePreview(URL.createObjectURL(file))
-		}
-	}, [])
+	const onDrop = useCallback(
+		(acceptedFiles: File[], fileRejections: FileRejection[]) => {
+			if (fileRejections.length > 0) {
+				const firstError = fileRejections[0]?.errors[0]
+				const isTooLarge = firstError?.code === 'file-too-large'
+				toast.error(
+					isTooLarge
+						? t(getKey('errors.fileTooLarge'))
+						: firstError?.message || t(getKey('errors.unknown')),
+				)
+			} else if (acceptedFiles.length !== 1 || !acceptedFiles[0]) {
+				toast.error(
+					acceptedFiles.length ? t(getKey('errors.onlyOneFile')) : t(getKey('errors.noFiles')),
+				)
+			} else {
+				const file = acceptedFiles[0]
+				setSelectedFile(file)
+				setFilePreview(URL.createObjectURL(file))
+			}
+		},
+		[t],
+	)
 
 	const { getRootProps, getInputProps, isDragActive, isFileDialogActive } = useDropzone({
 		accept: { 'image/*': [] },

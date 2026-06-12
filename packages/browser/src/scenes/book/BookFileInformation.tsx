@@ -1,5 +1,6 @@
 import { Heading, Text } from '@stump/components'
 import { FragmentType, graphql, useFragment } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 
 import { formatBytes } from '../../utils/format'
 
@@ -19,6 +20,7 @@ type Props = {
 
 // TODO: redesign!!
 export default function BookFileInformation({ fragment }: Props) {
+	const { t } = useLocaleContext()
 	const data = useFragment(BookFileInformationFragment, fragment)
 
 	/**
@@ -34,22 +36,22 @@ export default function BookFileInformation({ fragment }: Props) {
 
 	return (
 		<div className="space-y-1 pb-3 pt-2 text-sm flex flex-col">
-			<Heading size="xs">File Information</Heading>
+			<Heading size="xs">{t('scenes.book.BookFileInformation.title')}</Heading>
 			<div className="space-x-4 flex">
 				<Text size="sm" variant="muted">
-					Size: {formatBytes(data.size)}
+					{t('scenes.book.BookFileInformation.size', { value: formatBytes(data.size) })}
 				</Text>
 				<Text size="sm" variant="muted">
-					Format: {data.extension?.toUpperCase()}
+					{t('scenes.book.BookFileInformation.format', { value: data.extension?.toUpperCase() })}
 				</Text>
 			</div>
 			{data.hash && (
 				<Text size="sm" variant="muted" title={data.hash || ''}>
-					Hash: {formatHash(data.hash || '')}
+					{t('scenes.book.BookFileInformation.hash', { value: formatHash(data.hash || '') })}
 				</Text>
 			)}
 			<Text size="sm" variant="muted" title={data.relativeLibraryPath}>
-				Relative path: {data.relativeLibraryPath}
+				{t('scenes.book.BookFileInformation.relativePath', { value: data.relativeLibraryPath })}
 			</Text>
 		</div>
 	)

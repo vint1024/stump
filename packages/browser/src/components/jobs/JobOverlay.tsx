@@ -1,10 +1,12 @@
 import { useFooterOffsetStore, useJobStore } from '@stump/client'
 import { ProgressBar, Text } from '@stump/components'
 import { JobUpdate } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo } from 'react'
 
 export default function JobOverlay() {
+	const { t } = useLocaleContext()
 	const storeJobs = useJobStore((state) => state.jobs)
 
 	/**
@@ -49,8 +51,14 @@ export default function JobOverlay() {
 	 * tasks that are being done in the job.
 	 */
 	const taskCountString = useMemo(
-		() => (taskCounts?.total ? `Tasks (${taskCounts?.completed ?? 0}/${taskCounts.total})` : null),
-		[taskCounts],
+		() =>
+			taskCounts?.total
+				? t('components.jobs.JobOverlay.tasks', {
+						completed: taskCounts?.completed ?? 0,
+						total: taskCounts.total,
+					})
+				: null,
+		[taskCounts, t],
 	)
 	/**
 	 * The string representation of the subtask counts, which is used to display the total, smaller
@@ -77,7 +85,7 @@ export default function JobOverlay() {
 					}}
 				>
 					<Text size="sm" className="line-clamp-2">
-						{firstRunningJob.message ?? 'Job in Progress'}
+						{firstRunningJob.message ?? t('components.jobs.JobOverlay.jobInProgress')}
 					</Text>
 
 					<div className="gap-y-2 flex w-full flex-col">

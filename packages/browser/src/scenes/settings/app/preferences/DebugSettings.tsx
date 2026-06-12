@@ -1,4 +1,5 @@
 import { Label, RawSwitch } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 
 import { useDebugStore } from '@/stores'
 
@@ -11,22 +12,27 @@ export default function Container() {
 }
 
 function DebugSettings() {
+	const { t } = useLocaleContext()
 	const store = useDebugStore()
 
 	return (
 		<div className="gap-4 flex flex-col">
 			<div>
-				<h3 className="text-base font-medium text-foreground">Debug settings</h3>
+				<h3 className="text-base font-medium text-foreground">
+					{t('scenes.settings.app.preferences.DebugSettings.heading')}
+				</h3>
 				<p className="text-sm text-foreground-muted">
-					These won&apos;t exist in production, but are useful for debugging
+					{t('scenes.settings.app.preferences.DebugSettings.description')}
 				</p>
 			</div>
 
 			<div className="gap-2 flex flex-col">
 				<Label className="rounded-lg p-3 flex items-center justify-between border border-dashed border-fill-brand/40 bg-fill-brand-secondary">
 					<div className="gap-1 flex flex-col">
-						<span>Query Tools</span>
-						<p className="text-sm text-foreground-muted">Enable debugging tools for queries</p>
+						<span>{t('scenes.settings.app.preferences.DebugSettings.queryToolsLabel')}</span>
+						<p className="text-sm text-foreground-muted">
+							{t('scenes.settings.app.preferences.DebugSettings.queryToolsDescription')}
+						</p>
 					</div>
 					<RawSwitch
 						id="showQueryTools"

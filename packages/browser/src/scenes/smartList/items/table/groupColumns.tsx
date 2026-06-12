@@ -6,7 +6,15 @@ import { ChevronDown } from 'lucide-react'
 type EntityGroup = SmartListGroupedItem
 const columnHelper = createColumnHelper<EntityGroup>()
 
-const buildNameColumn = (isGroupedBySeries: boolean) =>
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string
+const NS = 'scenes.smartList.items.table.groupColumns'
+/**
+ * A fallback translate function for non-rendering callers (e.g. the store, which only
+ * reads column ids and never renders header/cell text). It returns the key as-is.
+ */
+const identityT: TranslateFn = (key) => key
+
+const buildNameColumn = (isGroupedBySeries: boolean, t: TranslateFn) =>
 	columnHelper.accessor('entity.name', {
 		cell: ({
 			row: {
@@ -22,7 +30,7 @@ const buildNameColumn = (isGroupedBySeries: boolean) =>
 
 			return (
 				<button
-					title={isExpanded ? 'Collapse' : 'Expand'}
+					title={isExpanded ? t(`${NS}.collapse`) : t(`${NS}.expand`)}
 					className="gap-x-1 flex items-center"
 					onClick={getToggleExpandedHandler()}
 					disabled={!getCanExpand()}
@@ -53,7 +61,7 @@ const buildNameColumn = (isGroupedBySeries: boolean) =>
 							const handler = getToggleAllRowsExpandedHandler()
 							handler(e)
 						}}
-						title={isAllRowsExpanded ? 'Collapse all' : 'Expand all'}
+						title={isAllRowsExpanded ? t(`${NS}.collapseAll`) : t(`${NS}.expandAll`)}
 					>
 						<ChevronDown
 							className={cn('h-4 w-4 text-foreground-muted transition-transform duration-200', {
@@ -62,7 +70,7 @@ const buildNameColumn = (isGroupedBySeries: boolean) =>
 						/>
 					</button>
 					<Text className="text-sm" variant="muted">
-						{isGroupedBySeries ? 'Series' : 'Library'}
+						{isGroupedBySeries ? t(`${NS}.series`) : t(`${NS}.library`)}
 					</Text>
 				</div>
 			)
@@ -70,67 +78,57 @@ const buildNameColumn = (isGroupedBySeries: boolean) =>
 		id: 'name',
 	})
 
-const booksCountColumn = columnHelper.accessor(({ books }) => books.length, {
-	cell: ({
-		row: {
-			original: { books },
-		},
-	}) => (
-		<Text size="sm" variant="muted">
-			{books.length}
-		</Text>
-	),
-	enableGlobalFilter: true,
-	enableSorting: true,
-	header: () => (
-		<Text size="sm" className="text-left" variant="muted">
-			Books
-		</Text>
-	),
-	id: 'books',
-})
+const buildBooksCountColumn = (t: TranslateFn) =>
+	columnHelper.accessor(({ books }) => books.length, {
+		cell: ({
+			row: {
+				original: { books },
+			},
+		}) => (
+			<Text size="sm" variant="muted">
+				{books.length}
+			</Text>
+		),
+		enableGlobalFilter: true,
+		enableSorting: true,
+		header: () => (
+			<Text size="sm" className="text-left" variant="muted">
+				{t(`${NS}.books`)}
+			</Text>
+		),
+		id: 'books',
+	})
 
-const staticColumnMap = {
-	books: booksCountColumn,
-} as Record<string, ColumnDef<EntityGroup>>
-
-export const getColumnMap = (isGroupedBySeries: boolean) =>
+export const getColumnMap = (isGroupedBySeries: boolean, t: TranslateFn = identityT) =>
 	({
-		...staticColumnMap,
-		name: buildNameColumn(isGroupedBySeries),
+		books: buildBooksCountColumn(t),
+		name: buildNameColumn(isGroupedBySeries, t),
 	}) as Record<string, ColumnDef<EntityGroup>>
 
-const staticColumnOptionMap: Record<keyof typeof staticColumnMap, string> = {
-	books: 'Books',
-}
-
-export const getColumnOptionMap = (isGroupedBySeries: boolean) =>
+export const getColumnOptionMap = (isGroupedBySeries: boolean, t: TranslateFn = identityT) =>
 	({
-		name: `Name (${isGroupedBySeries ? 'series' : 'library'})`,
-		...staticColumnOptionMap,
+		name: t(`${NS}.nameOption`, {
+			scope: isGroupedBySeries ? t(`${NS}.seriesScope`) : t(`${NS}.libraryScope`),
+		}),
+		books: t(`${NS}.books`),
 	}) as Record<string, string>
 
-export const defaultSeriesColumns = [
-	buildNameColumn(true),
-	booksCountColumn,
-] as ColumnDef<EntityGroup>[]
-export const defaultLibraryColumns = [
-	buildNameColumn(false),
-	booksCountColumn,
-] as ColumnDef<EntityGroup>[]
+export const buildDefaultColumns = (isGroupedBySeries: boolean, t: TranslateFn = identityT) =>
+	[buildNameColumn(isGroupedBySeries, t), buildBooksCountColumn(t)] as ColumnDef<EntityGroup>[]
 
-export const buildDefaultColumns = (isGroupedBySeries: boolean) =>
-	isGroupedBySeries ? defaultSeriesColumns : defaultLibraryColumns
-
-export const buildColumns = (isGroupedBySeries: boolean, columns?: SmartListViewColumn[]) => {
+export const buildColumns = (
+	isGroupedBySeries: boolean,
+	columns?: SmartListViewColumn[],
+	t: TranslateFn = identityT,
+) => {
 	if (!columns?.length) {
-		return buildDefaultColumns(isGroupedBySeries)
+		return buildDefaultColumns(isGroupedBySeries, t)
 	}
 
 	const sortedColumns = columns.sort((a, b) => a.position - b.position)
 	const selectedColumnIds = sortedColumns.map(({ id }) => id)
 
-	const columnMap = getColumnMap(isGroupedBySeries)
+	const columnMap = getColumnMap(isGroupedBySeries, t)
 
 	return selectedColumnIds.map((id) => columnMap[id]).filter(Boolean) as ColumnDef<EntityGroup>[]
 }

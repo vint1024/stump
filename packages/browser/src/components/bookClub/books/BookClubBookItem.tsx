@@ -1,5 +1,6 @@
 import { AspectRatio, Badge, Card, cx, Heading, Link, Text } from '@stump/components'
 import { FragmentType, graphql, useFragment } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { differenceInDays, formatDistanceToNow } from 'date-fns'
 import { Book } from 'lucide-react'
 import pluralize from 'pluralize'
@@ -38,6 +39,7 @@ type Props = {
 	data: FragmentType<typeof fragment>
 }
 export default function BookClubBookItem({ data }: Props) {
+	const { t } = useLocaleContext()
 	const book = useFragment(fragment, data)
 
 	const { bookClub } = useBookClubContext()
@@ -50,12 +52,19 @@ export default function BookClubBookItem({ data }: Props) {
 
 		let message
 		if (isCurrent) {
-			message = `Started ${formatDistanceToNow(startedAt, { addSuffix: true })}`
+			message = t('components.bookClub.books.BookClubBookItem.started', {
+				when: formatDistanceToNow(startedAt, { addSuffix: true }),
+			})
 		} else if (completedAt) {
 			const daysAgo = differenceInDays(new Date(), completedAt)
-			message = `Completed ${daysAgo} ${pluralize('day', daysAgo)} ago`
+			message = t('components.bookClub.books.BookClubBookItem.completed', {
+				count: daysAgo,
+				days: pluralize('day', daysAgo),
+			})
 		} else {
-			message = `Added ${formatDistanceToNow(startedAt, { addSuffix: true })}`
+			message = t('components.bookClub.books.BookClubBookItem.added', {
+				when: formatDistanceToNow(startedAt, { addSuffix: true }),
+			})
 		}
 
 		return {
@@ -63,7 +72,7 @@ export default function BookClubBookItem({ data }: Props) {
 			start: startedAt,
 			end: completedAt,
 		}
-	}, [book, isCurrent])
+	}, [book, isCurrent, t])
 
 	// const discussionInfo = useMemo(() => {
 	// 	const archived = !isCurrent && !isDiscussing
@@ -81,13 +90,13 @@ export default function BookClubBookItem({ data }: Props) {
 		if (isCurrent) {
 			return (
 				<Badge size="xs" variant="primary" className="shrink-0">
-					Currently reading
+					{t('components.bookClub.books.BookClubBookItem.currentlyReading')}
 				</Badge>
 			)
 		} else {
 			return (
 				<Badge size="xs" className="shrink-0">
-					Past book
+					{t('components.bookClub.books.BookClubBookItem.pastBook')}
 				</Badge>
 			)
 		}
@@ -119,7 +128,7 @@ export default function BookClubBookItem({ data }: Props) {
 		)
 		const link = details?.url
 		const isExternal = !book.entity
-		const heading = details?.title ?? 'Untitled'
+		const heading = details?.title ?? t('components.bookClub.books.BookClubBookItem.untitled')
 		const author = details?.author
 
 		return (
@@ -133,7 +142,9 @@ export default function BookClubBookItem({ data }: Props) {
 					{author && <Text size="xs">{author}</Text>}
 					{link && (
 						<Link {...(isExternal ? { href: link } : { to: link })} className="text-xs">
-							{isExternal ? 'External link' : 'Access book'}
+							{isExternal
+								? t('components.bookClub.books.BookClubBookItem.externalLink')
+								: t('components.bookClub.books.BookClubBookItem.accessBook')}
 						</Link>
 					)}
 				</div>
@@ -169,11 +180,11 @@ export default function BookClubBookItem({ data }: Props) {
 							)}
 						>
 							{daysInfo.end
-								? `Read for ${differenceInDays(daysInfo.end, daysInfo.start)} ${pluralize(
-										'day',
-										differenceInDays(daysInfo.end, daysInfo.start),
-									)}`
-								: 'Not completed yet'}
+								? t('components.bookClub.books.BookClubBookItem.readFor', {
+										count: differenceInDays(daysInfo.end, daysInfo.start),
+										days: pluralize('day', differenceInDays(daysInfo.end, daysInfo.start)),
+									})
+								: t('components.bookClub.books.BookClubBookItem.notCompletedYet')}
 						</span>
 					</div>
 				)}

@@ -1,6 +1,7 @@
 import { useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Badge, Card, Text } from '@stump/components'
 import { graphql, LoginActivityTableQuery } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { Api } from '@stump/sdk'
 import { QueryClient } from '@tanstack/react-query'
 import {
@@ -11,7 +12,7 @@ import {
 } from '@tanstack/react-table'
 import { intlFormat } from 'date-fns'
 import { Fingerprint, Slash } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Table } from '@/components/table'
 
@@ -46,6 +47,7 @@ export const prefetchLoginActivity = async (sdk: Api, client: QueryClient) =>
 	})
 
 export default function LoginActivityTable() {
+	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 	const {
 		data: { loginActivity },
@@ -55,6 +57,79 @@ export default function LoginActivityTable() {
 		pageIndex: 0,
 		pageSize: 10,
 	})
+
+	const baseColumns = useMemo(
+		() =>
+			[
+				columnHelper.display({
+					cell: ({
+						row: {
+							original: { user },
+						},
+					}) => {
+						if (!user) {
+							return null
+						}
+						return <UsernameRow {...user} />
+					},
+					header: t('scenes.settings.server.users.loginActivity.LoginActivityTable.user'),
+					id: 'user',
+					size: 100,
+				}),
+				columnHelper.accessor('timestamp', {
+					cell: ({ row: { original: activity } }) => {
+						const formatted = intlFormat(new Date(activity.timestamp), {
+							month: 'long',
+							day: 'numeric',
+							year: 'numeric',
+							hour: 'numeric',
+							minute: '2-digit',
+						})
+						return (
+							<Text title={formatted} className="line-clamp-1" size="sm">
+								{formatted}
+							</Text>
+						)
+					},
+					header: t('scenes.settings.server.users.loginActivity.LoginActivityTable.timestamp'),
+					size: 100,
+				}),
+				columnHelper.accessor('ipAddress', {
+					cell: ({ row: { original: activity } }) => (
+						<Text className="line-clamp-1" size="sm">
+							{activity.ipAddress}
+						</Text>
+					),
+					header: t('scenes.settings.server.users.loginActivity.LoginActivityTable.ipAddress'),
+					size: 100,
+				}),
+				columnHelper.accessor('userAgent', {
+					cell: ({ row: { original: activity } }) => (
+						<Text
+							size="sm"
+							variant="muted"
+							className="max-w-sm md:max-w-xl line-clamp-1"
+							title={activity.userAgent}
+						>
+							{activity.userAgent}
+						</Text>
+					),
+					header: t('scenes.settings.server.users.loginActivity.LoginActivityTable.userAgent'),
+				}),
+				columnHelper.display({
+					cell: ({ row: { original: activity } }) => (
+						<Badge variant={activity.authenticationSuccessful ? 'success' : 'error'} size="xs">
+							{activity.authenticationSuccessful
+								? t('scenes.settings.server.users.loginActivity.LoginActivityTable.authSuccess')
+								: t('scenes.settings.server.users.loginActivity.LoginActivityTable.authFailure')}
+						</Badge>
+					),
+					header: t('scenes.settings.server.users.loginActivity.LoginActivityTable.authResult'),
+					id: 'authenticationSuccessful',
+				}),
+			] as ColumnDef<LoginActivity>[],
+		[t],
+	)
 
 	if (!loginActivity?.length && !pagination.pageIndex) {
 		return (
@@ -68,9 +143,11 @@ export default function LoginActivityTable() {
 					</div>
 
 					<div className="text-center">
-						<Text>No login activity</Text>
+						<Text>
+							{t('scenes.settings.server.users.login-activity.LoginActivityTable.emptyHeading')}
+						</Text>
 						<Text size="sm" variant="muted">
-							You cleared this, didn&#39;t you?
+							{t('scenes.settings.server.users.login-activity.LoginActivityTable.emptySubtitle')}
 						</Text>
 					</div>
 				</div>
@@ -103,70 +180,3 @@ export default function LoginActivityTable() {
 }
 
 const columnHelper = createColumnHelper<LoginActivity>()
-
-const baseColumns = [
-	columnHelper.display({
-		cell: ({
-			row: {
-				original: { user },
-			},
-		}) => {
-			if (!user) {
-				return null
-			}
-			return <UsernameRow {...user} />
-		},
-		header: 'User',
-		id: 'user',
-		size: 100,
-	}),
-	columnHelper.accessor('timestamp', {
-		cell: ({ row: { original: activity } }) => {
-			const formatted = intlFormat(new Date(activity.timestamp), {
-				month: 'long',
-				day: 'numeric',
-				year: 'numeric',
-				hour: 'numeric',
-				minute: '2-digit',
-			})
-			return (
-				<Text title={formatted} className="line-clamp-1" size="sm">
-					{formatted}
-				</Text>
-			)
-		},
-		header: 'Timestamp',
-		size: 100,
-	}),
-	columnHelper.accessor('ipAddress', {
-		cell: ({ row: { original: activity } }) => (
-			<Text className="line-clamp-1" size="sm">
-				{activity.ipAddress}
-			</Text>
-		),
-		header: 'IP address',
-		size: 100,
-	}),
-	columnHelper.accessor('userAgent', {
-		cell: ({ row: { original: activity } }) => (
-			<Text
-				size="sm"
-				variant="muted"
-				className="max-w-sm md:max-w-xl line-clamp-1"
-				title={activity.userAgent}
-			>
-				{activity.userAgent}
-			</Text>
-		),
-		header: 'User-agent',
-	}),
-	columnHelper.display({
-		cell: ({ row: { original: activity } }) => (
-			<Badge variant={activity.authenticationSuccessful ? 'success' : 'error'} size="xs">
-				{activity.authenticationSuccessful ? 'Success' : 'Failure'}
-			</Badge>
-		),
-		header: 'Auth result',
-		id: 'authenticationSuccessful',
-	}),
-] as ColumnDef<LoginActivity>[]

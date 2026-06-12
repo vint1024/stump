@@ -1,4 +1,5 @@
 import { Dropdown, IconButton, ToolTip } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { BookPlus, FolderPlus, Upload } from 'lucide-react'
 
 import { useSeriesContextSafe } from '@/scenes/series'
@@ -10,9 +11,11 @@ type Props = {
 export default function UploadMenu({ onSelect }: Props) {
 	const enableSeries = useSeriesContextSafe() == null
 
+	const { t } = useLocaleContext()
+
 	return (
 		<Dropdown modal={false}>
-			<ToolTip content="Upload" side="left" size="sm">
+			<ToolTip content={t('components.explorer.upload.UploadMenu.tooltip')} side="left" size="sm">
 				<Dropdown.Trigger asChild>
 					<IconButton
 						variant="ghost"
@@ -30,13 +33,13 @@ export default function UploadMenu({ onSelect }: Props) {
 				<Dropdown.Group>
 					<Dropdown.Item onClick={() => onSelect('books')}>
 						<BookPlus className="mr-2 h-4 w-4" />
-						<span>Add books</span>
+						<span>{t('components.explorer.upload.UploadMenu.addBooks')}</span>
 					</Dropdown.Item>
 
 					{enableSeries && (
 						<Dropdown.Item onClick={() => onSelect('series')}>
 							<FolderPlus className="mr-2 h-4 w-4" />
-							<span>Add series</span>
+							<span>{t('components.explorer.upload.UploadMenu.addSeries')}</span>
 						</Dropdown.Item>
 					)}
 				</Dropdown.Group>
