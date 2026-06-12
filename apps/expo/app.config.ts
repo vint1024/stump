@@ -5,18 +5,17 @@ import type { ConfigContext, ExpoConfig } from 'expo/config'
 export default ({ config }: ConfigContext): ExpoConfig => {
 	const initialConfig: ExpoConfig = {
 		...config,
-		name: 'Stump',
-		slug: 'stump',
-		version: '0.0.0',
+		name: 'Vint Books',
+		slug: 'vint-books',
+		version: '0.1.0',
 		orientation: 'default',
 		icon: './assets/images/icon.png',
-		scheme: 'stump',
+		scheme: 'vintbooks',
 		userInterfaceStyle: 'automatic',
 		assetBundlePatterns: ['**/*'],
 		ios: {
 			supportsTablet: true,
-			bundleIdentifier: 'com.stumpapp.stump',
-			associatedDomains: ['webcredentials:www.stumpapp.dev'],
+			bundleIdentifier: 'in.kuvshinov.books',
 			icon: {
 				light: './assets/images/ios-light.png',
 				dark: './assets/images/ios-dark.png',
@@ -55,7 +54,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 				monochromeImage: './assets/images/android-monochrome.png',
 				backgroundColor: '#ffffff',
 			},
-			package: 'com.stumpapp.stump',
+			package: 'in.kuvshinov.books',
 			permissions: ['WRITE_SETTINGS'],
 			intentFilters: [
 				{
@@ -182,6 +181,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 						hermesFlags: ['-fuseIntlPlurals', '-fuseIntlDateTimeFormat'],
 					},
 					ios: {
+						// DGSwiftUtilities (via react-native-ios-utilities 5.x) needs a
+						// newer minimum target than Expo's default 15.1
+						deploymentTarget: '16.0',
 						// Note: For i18next and date-fns intlFormat
 						hermesFlags: ['-fuseIntlPlurals', '-fuseIntlDateTimeFormat'],
 					},
@@ -199,14 +201,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 					},
 				},
 			],
-			[
-				'@sentry/react-native/expo',
-				{
-					url: 'https://app.glitchtip.com/',
-					project: 'stump-expo',
-					organization: 'stumpapp',
-				},
-			],
 			// TODO(expo-54): Figure out if this is still needed
 			// [
 			// 	'react-native-edge-to-edge',
@@ -218,14 +212,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 			// 	},
 			// ],
 		],
-		owner: 'stumpapp',
 		experiments: {
 			typedRoutes: true,
-		},
-		extra: {
-			eas: {
-				projectId: 'b1069238-5814-4263-983b-148216e393e5',
-			},
 		},
 	}
 

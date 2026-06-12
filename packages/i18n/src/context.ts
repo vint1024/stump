@@ -8,7 +8,12 @@ export type LocaleContextProps = {
 }
 
 export const getDefaultLocale = (defaultValue: AllowedLocale = 'en-US') => {
-	return 'navigator' in globalThis ? (navigator?.language as AllowedLocale) : defaultValue
+	// navigator.language can be undefined on React Native, so fall back to the
+	// default rather than returning undefined (which downstream locale handling
+	// would crash on)
+	const fromNavigator =
+		'navigator' in globalThis ? (navigator?.language as AllowedLocale | undefined) : undefined
+	return fromNavigator || defaultValue
 }
 
 export const LocaleContext = createContext<LocaleContextProps>({

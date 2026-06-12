@@ -46,6 +46,12 @@ function isAllowedLocale(locale: string): locale is AllowedLocale {
 }
 
 function findClosestLocale(locale: string): AllowedLocale {
+	// Guard against a missing/invalid locale: React Native's navigator.language
+	// can be undefined, which would otherwise throw on the .replace below
+	if (!locale || typeof locale !== 'string') {
+		return 'en-US'
+	}
+
 	const normalized = locale.replace('_', '-')
 
 	if (isAllowedLocale(normalized)) {
