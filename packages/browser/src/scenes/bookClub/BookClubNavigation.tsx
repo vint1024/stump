@@ -1,4 +1,5 @@
 import { cn, cx, Link } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { noop } from 'lodash'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router'
@@ -9,6 +10,7 @@ import { usePreferences } from '@/hooks'
 // TODO(book-clubs): Implement
 // TODO: when viewing a thread, only show something like "<-- Return to chat board"
 export default function BookClubNavigation() {
+	const { t } = useLocaleContext()
 	const location = useLocation()
 	const {
 		preferences: { primaryNavigationMode, layoutMaxWidthPx },
@@ -21,7 +23,7 @@ export default function BookClubNavigation() {
 		const base = [
 			{
 				isActive: location.pathname.match(/\/clubs\/[^/]+\/?(home)?$/),
-				label: 'Home',
+				label: t('scenes.bookClub.BookClubNavigation.home'),
 				to: '.',
 			},
 		]
@@ -34,13 +36,13 @@ export default function BookClubNavigation() {
 			...base,
 			{
 				isActive: location.pathname.match(/\/clubs\/[^/]+\/discussion(\/.*)?$/),
-				label: 'Discussion',
+				label: t('scenes.bookClub.BookClubNavigation.discussion'),
 				onHover: () => prefetch(),
 				to: 'discussion',
 			},
 			{
 				isActive: location.pathname.match(/\/clubs\/[^/]+\/members(\/.*)?$/),
-				label: 'Members',
+				label: t('scenes.bookClub.BookClubNavigation.members'),
 				to: 'members',
 			},
 			{
@@ -49,7 +51,7 @@ export default function BookClubNavigation() {
 				to: 'settings',
 			},
 		]
-	}, [location, viewerIsMember, prefetch])
+	}, [location, viewerIsMember, prefetch, t])
 
 	const preferTopBar = primaryNavigationMode === 'TOPBAR'
 

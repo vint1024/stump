@@ -1,6 +1,7 @@
 import { usePrefetchFiles } from '@stump/client'
 import { cn, Link, useSticky } from '@stump/components'
 import { UserPermission } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router'
 import { useMediaMatch } from 'rooks'
@@ -12,6 +13,7 @@ import { useSeriesContext } from './context'
 import { usePrefetchSeriesBooks } from './tabs/books/SeriesBooksScene'
 
 export default function SeriesNavigation() {
+	const { t } = useLocaleContext()
 	const isMobile = useMediaMatch('(max-width: 768px)')
 	const location = useLocation()
 	const {
@@ -45,7 +47,7 @@ export default function SeriesNavigation() {
 				? [
 						{
 							isActive: location.pathname.match(/\/series\/[^/]+\/files(\/.*)?$/),
-							label: 'Files',
+							label: t('scenes.series.SeriesNavigation.files'),
 							onHover: () => handlePrefetchFiles(),
 							to: 'files',
 						},
@@ -57,7 +59,7 @@ export default function SeriesNavigation() {
 				to: 'settings',
 			},
 		],
-		[location, canAccessFiles, handlePrefetchBooks, handlePrefetchFiles],
+		[location, canAccessFiles, handlePrefetchBooks, handlePrefetchFiles, t],
 	)
 
 	const preferTopBar = primaryNavigationMode == 'TOPBAR'

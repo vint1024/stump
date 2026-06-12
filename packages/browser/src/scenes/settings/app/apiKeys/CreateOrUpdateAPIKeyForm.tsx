@@ -106,8 +106,8 @@ export default function CreateOrUpdateAPIKeyForm({
 				}}
 			>
 				<Input
-					label="Name"
-					placeholder="Koreader Sync"
+					label={t(getFieldKey('name.label'))}
+					placeholder={t(getFieldKey('name.placeholder'))}
 					{...form.register('name')}
 					errorMessage={errors.name?.message}
 					ignoreFill
@@ -151,7 +151,7 @@ export default function CreateOrUpdateAPIKeyForm({
 									disabled={inherit}
 									formatValue={(value: string | string[] | undefined) => {
 										if (Array.isArray(value) && value.length) {
-											return `${value.length} permission${value.length > 1 ? 's' : ''}`
+											return t(getKey('permissionsSelected'), { count: value.length })
 										}
 										return ''
 									}}

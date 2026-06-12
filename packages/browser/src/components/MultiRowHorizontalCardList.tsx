@@ -1,4 +1,5 @@
 import { Button, cn, Heading, Text, ToolTip } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { ChevronLeft, ChevronRight, CircleSlash2 } from 'lucide-react'
 import { forwardRef, ReactNode, useMemo } from 'react'
 import { ScrollerProps, Virtuoso } from 'react-virtuoso'
@@ -27,6 +28,7 @@ export default function MultiRowHorizontalCardList<T>({
 	cardHeight,
 	rowCount: rowCountProp = 'responsive',
 }: Props<T>) {
+	const { t } = useLocaleContext()
 	const {
 		preferences: { enableHideScrollbar },
 	} = usePreferences()
@@ -63,9 +65,9 @@ export default function MultiRowHorizontalCardList<T>({
 								<CircleSlash2 className="h-8 w-8 text-foreground-muted" />
 							</span>
 							<div>
-								<Text>Nothing to show</Text>
+								<Text>{t('components.MultiRowHorizontalCardList.nothingToShow')}</Text>
 								<Text size="sm" variant="muted">
-									No results were returned
+									{t('components.MultiRowHorizontalCardList.noResults')}
 								</Text>
 							</div>
 						</div>
@@ -103,7 +105,11 @@ export default function MultiRowHorizontalCardList<T>({
 				<Heading size="sm">{title}</Heading>
 				<div className={cn('self-end', { hidden: !items.length })}>
 					<div className="gap-2 flex">
-						<ToolTip content="Seek backwards" isDisabled={!canSkipBackward} align="end">
+						<ToolTip
+							content={t('components.MultiRowHorizontalCardList.seekBackwards')}
+							isDisabled={!canSkipBackward}
+							align="end"
+						>
 							<Button
 								variant="ghost"
 								size="icon"
@@ -113,7 +119,11 @@ export default function MultiRowHorizontalCardList<T>({
 								<ChevronLeft className="h-4 w-4" />
 							</Button>
 						</ToolTip>
-						<ToolTip content="Seek Ahead" isDisabled={!canSkipForward} align="end">
+						<ToolTip
+							content={t('components.MultiRowHorizontalCardList.seekAhead')}
+							isDisabled={!canSkipForward}
+							align="end"
+						>
 							<Button
 								variant="ghost"
 								size="icon"

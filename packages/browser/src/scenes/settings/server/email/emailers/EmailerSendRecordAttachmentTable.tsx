@@ -1,4 +1,5 @@
 import { cn, Text } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import {
 	createColumnHelper,
 	flexRender,
@@ -6,7 +7,7 @@ import {
 	SortingState,
 	useReactTable,
 } from '@tanstack/react-table'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
 
 import { getTableModels, SortIcon } from '@/components/table'
@@ -19,11 +20,57 @@ type Props = {
 	attachments: EmailerSendRecord['attachmentMeta']
 }
 export default function EmailerSendRecordAttachmentTable({ attachments }: Props) {
+	const { t } = useLocaleContext()
 	const {
 		preferences: { enableHideScrollbar },
 	} = usePreferences()
 
 	const [sorting, setSorting] = useState<SortingState>([])
+
+	const columns = useMemo(
+		() => [
+			columnHelper.display({
+				id: 'media',
+				cell: ({ row }) => {
+					const {
+						original: { media },
+					} = row
+
+					if (!media) {
+						return <Text size="sm">{t(getKey('notFound'))}</Text>
+					}
+
+					return (
+						<Text size="sm" className="cursor-pointer hover:underline">
+							{media.resolvedName}
+						</Text>
+					)
+				},
+				header: () => (
+					<Text size="sm" className="text-left" variant="muted">
+						{t(getKey('media'))}
+					</Text>
+				),
+			}),
+			columnHelper.accessor('filename', {
+				cell: ({ getValue }) => <Text size="sm">{getValue()}</Text>,
+				header: () => (
+					<Text size="sm" className="text-left" variant="muted">
+						{t(getKey('filename'))}
+					</Text>
+				),
+			}),
+			columnHelper.accessor('size', {
+				cell: ({ getValue }) => <Text size="sm">{formatBytes(getValue())}</Text>,
+				header: () => (
+					<Text size="sm" className="text-left" variant="muted">
+						{t(getKey('size'))}
+					</Text>
+				),
+			}),
+		],
+		[t],
+	)
 
 	const table = useReactTable({
 		columns,
@@ -107,44 +154,6 @@ export default function EmailerSendRecordAttachmentTable({ attachments }: Props)
 }
 
 const columnHelper = createColumnHelper<EmailerSendRecord['attachmentMeta'][number]>()
-const columns = [
-	columnHelper.display({
-		id: 'media',
-		cell: ({ row }) => {
-			const {
-				original: { media },
-			} = row
 
-			if (!media) {
-				return <Text size="sm">Not Found</Text>
-			}
-
-			return (
-				<Text size="sm" className="cursor-pointer hover:underline">
-					{media.resolvedName}
-				</Text>
-			)
-		},
-		header: () => (
-			<Text size="sm" className="text-left" variant="muted">
-				Media
-			</Text>
-		),
-	}),
-	columnHelper.accessor('filename', {
-		cell: ({ getValue }) => <Text size="sm">{getValue()}</Text>,
-		header: () => (
-			<Text size="sm" className="text-left" variant="muted">
-				Filename
-			</Text>
-		),
-	}),
-	columnHelper.accessor('size', {
-		cell: ({ getValue }) => <Text size="sm">{formatBytes(getValue())}</Text>,
-		header: () => (
-			<Text size="sm" className="text-left" variant="muted">
-				Size
-			</Text>
-		),
-	}),
-]
+const LOCALE_BASE = 'scenes.settings.server.email.emailers.EmailerSendRecordAttachmentTable'
+const getKey = (key: string) => `${LOCALE_BASE}.${key}`

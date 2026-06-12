@@ -1,5 +1,6 @@
 import { cn } from '@stump/components'
 import { Media, SmartListGroupedItem } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import {
 	ExpandedState,
 	flexRender,
@@ -38,6 +39,7 @@ const GROUP_ROW_HEIGHT = 40
 const BOOK_HEADER_HEIGHT = 40
 
 export default function GroupedVirtualSmartListTable({ items }: Props) {
+	const { t } = useLocaleContext()
 	const containerRef = useRef<HTMLDivElement>(null)
 	const listRef = useRef<HTMLDivElement>(null)
 	const scrollElement = useScrollElement(containerRef)
@@ -48,8 +50,8 @@ export default function GroupedVirtualSmartListTable({ items }: Props) {
 
 	const isGroupedBySeries = items[0]?.entity?.__typename === 'Series'
 	const groupColumns = useMemo(
-		() => buildGroupColumns(isGroupedBySeries, workingView.groupColumns),
-		[isGroupedBySeries, workingView.groupColumns],
+		() => buildGroupColumns(isGroupedBySeries, workingView.groupColumns, t),
+		[isGroupedBySeries, workingView.groupColumns, t],
 	)
 
 	const groupSorting = useMemo(() => workingView?.groupSorting ?? [], [workingView])

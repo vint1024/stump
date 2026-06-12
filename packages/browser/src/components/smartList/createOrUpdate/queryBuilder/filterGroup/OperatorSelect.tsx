@@ -1,4 +1,5 @@
 import { Button, cn, Command, Popover } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { ChevronsUpDown } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form'
@@ -25,11 +26,33 @@ type Props = {
 type FieldDef = SmartListFormSchema['filters']['groups'][number]['filters'][number]
 
 export default function OperatorSelect({ idx }: Props) {
+	const { t } = useLocaleContext()
 	const { groupIdx } = useFilterGroupContext()
 
 	const form = useFormContext<SmartListFormSchema>()
 
 	const [isOpen, setIsOpen] = useState(false)
+
+	const operatorMap = useMemo<Record<Operation, string>>(
+		() => ({
+			anyOf: t(getKey('operators.anyOf')),
+			contains: t(getKey('operators.contains')),
+			eq: t(getKey('operators.eq')),
+			excludes: t(getKey('operators.excludes')),
+			is: t(getKey('operators.is')),
+			isNot: t(getKey('operators.isNot')),
+			isAnyOf: t(getKey('operators.isAnyOf')),
+			isNoneOf: t(getKey('operators.isNoneOf')),
+			gt: t(getKey('operators.gt')),
+			gte: t(getKey('operators.gte')),
+			lt: t(getKey('operators.lt')),
+			lte: t(getKey('operators.lte')),
+			noneOf: t(getKey('operators.noneOf')),
+			neq: t(getKey('operators.neq')),
+			range: t(getKey('operators.range')),
+		}),
+		[t],
+	)
 
 	const { update } = useFieldArray({
 		control: form.control,
@@ -76,19 +99,19 @@ export default function OperatorSelect({ idx }: Props) {
 
 		return [
 			{
-				label: isConceptual ? 'Match' : 'Equality',
+				label: isConceptual ? t(getKey('match')) : t(getKey('equality')),
 				operators: operators,
 			},
 			...(!isDateField(fieldDef.field) && !isConceptual
 				? [
 						{
-							label: 'List',
+							label: t(getKey('list')),
 							operators: arrayGroup,
 						},
 					]
 				: []),
 		].filter(({ operators }) => operators.length)
-	}, [operators, fieldDef])
+	}, [operators, fieldDef, t])
 
 	useEffect(() => {
 		const allOperators = [...operators, ...operatorGroups.list]
@@ -112,7 +135,7 @@ export default function OperatorSelect({ idx }: Props) {
 						{ 'text-foreground-muted': !fieldDef.operation },
 					)}
 				>
-					{operatorMap[fieldDef.operation] || 'Operator'}
+					{operatorMap[fieldDef.operation] || t(getKey('placeholder'))}
 					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</Popover.Trigger>
@@ -152,20 +175,5 @@ const operatorGroups = {
 	string: ['contains', 'excludes', 'neq', 'eq'] satisfies StringOperation[],
 }
 
-const operatorMap: Record<Operation, string> = {
-	anyOf: 'any in list',
-	contains: 'contains string',
-	eq: 'equal to',
-	excludes: 'excludes string',
-	is: 'is',
-	isNot: 'is not',
-	isAnyOf: 'is any of',
-	isNoneOf: 'is none of',
-	gt: 'greater than',
-	gte: 'greater than or equal to',
-	lt: 'less than',
-	lte: 'less than or equal to',
-	noneOf: 'none in list',
-	neq: 'not equal to',
-	range: 'in range',
-}
+const LOCALE_BASE = 'components.smartList.createOrUpdate.queryBuilder.filterGroup.OperatorSelect'
+const getKey = (key: string) => `${LOCALE_BASE}.${key}`

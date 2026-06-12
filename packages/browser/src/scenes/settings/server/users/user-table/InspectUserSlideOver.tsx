@@ -1,5 +1,6 @@
 import { Sheet } from '@stump/components'
 import { Preformatted } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 
 import { User } from './UserTable'
 
@@ -10,14 +11,19 @@ type Props = {
 
 // TODO: do more than just json dump
 export default function InspectUserSlideOver({ user, onClose }: Props) {
+	const { t } = useLocaleContext()
+
 	return (
 		<Sheet
 			open={!!user}
 			onClose={onClose}
-			title="Inspect user"
-			description="Inspect a user's information and configuration"
+			title={t('scenes.settings.server.users.user-table.InspectUserSlideOver.title')}
+			description={t('scenes.settings.server.users.user-table.InspectUserSlideOver.description')}
 		>
-			<Preformatted title="Raw JSON" content={user} />
+			<Preformatted
+				title={t('scenes.settings.server.users.user-table.InspectUserSlideOver.rawJson')}
+				content={user}
+			/>
 		</Sheet>
 	)
 }

@@ -109,7 +109,10 @@ export default function CreateOrUpdateEmailerForm({ emailer, existingNames, onSu
 				<div className="space-y-1 md:max-w-sm flex flex-col">
 					<Label>{t(`${LOCALE_BASE}.smtpProvider.label`)}</Label>
 					<NativeSelect
-						emptyOption={{ label: 'Custom', value: undefined }}
+						emptyOption={{
+							label: t('scenes.settings.server.email.emailers.CreateOrUpdateEmailerForm.custom'),
+							value: undefined,
+						}}
 						options={[
 							{ label: 'Google', value: 'google' },
 							{ label: 'Outlook', value: 'outlook' },

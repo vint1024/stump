@@ -1,4 +1,5 @@
 import { Avatar, Card, cn, Popover, Text } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { Bell, Server, Settings } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -15,6 +16,7 @@ type Props = {
 }
 
 export default function UserMenu({ variant = 'sidebar' }: Props) {
+	const { t } = useLocaleContext()
 	const [isOpen, setIsOpen] = useState(false)
 
 	const { user } = useAppContext()
@@ -70,7 +72,7 @@ export default function UserMenu({ variant = 'sidebar' }: Props) {
 								onClick={() => setIsOpen(false)}
 							>
 								<Bell className="mr-1.5 h-4 w-4" />
-								Notifications
+								{t('components.UserMenu.notifications')}
 							</Link>
 
 							<Link
@@ -79,7 +81,7 @@ export default function UserMenu({ variant = 'sidebar' }: Props) {
 								onClick={() => setIsOpen(false)}
 							>
 								<Settings className="mr-1.5 h-4 w-4" />
-								Settings
+								{t('components.UserMenu.settings')}
 							</Link>
 						</div>
 
@@ -87,7 +89,7 @@ export default function UserMenu({ variant = 'sidebar' }: Props) {
 							{platform !== 'browser' && (
 								<Link className={linkClasses(isSidebar)} to="/" onClick={() => setIsOpen(false)}>
 									<Server className="mr-1.5 h-4 w-4" />
-									Switch server
+									{t('components.UserMenu.switchServer')}
 								</Link>
 							)}
 

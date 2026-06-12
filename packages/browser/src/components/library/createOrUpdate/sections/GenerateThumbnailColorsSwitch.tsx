@@ -1,10 +1,12 @@
 import { WideSwitch } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { useMemo } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form'
 
 import { CreateOrUpdateLibrarySchema } from '../schema'
 
 export default function GenerateThumbnailColorsSwitch() {
+	const { t } = useLocaleContext()
 	const form = useFormContext<CreateOrUpdateLibrarySchema>()
 
 	const [thumbnailsEnabled, processThumbnailColorsEvenWithoutConfig] = useWatch({
@@ -21,8 +23,10 @@ export default function GenerateThumbnailColorsSwitch() {
 	return (
 		<div className="py-4">
 			<WideSwitch
-				label="Thumbnail colors"
-				description="Extract dominant colors for thumbnails. This is used for thumbnail placeholders and accent colors"
+				label={t('components.library.createOrUpdate.sections.GenerateThumbnailColorsSwitch.label')}
+				description={t(
+					'components.library.createOrUpdate.sections.GenerateThumbnailColorsSwitch.description',
+				)}
 				checked={enabled}
 				disabled={thumbnailsEnabled}
 				onCheckedChange={() =>

@@ -1,5 +1,6 @@
 import { Label, NativeSelect } from '@stump/components'
 import { LibraryModelOrdering, MediaModelOrdering, SeriesModelOrdering } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useMemo } from 'react'
 
 import { OrderingField } from '../context'
@@ -40,6 +41,7 @@ type Props = {
 	onChange?: (value: OrderingField) => void
 }
 export default function OrderBySelect({ entity, value, onChange }: Props) {
+	const { t } = useLocaleContext()
 	const entityOptions = useMemo(
 		() =>
 			options[entity].map((option) => ({ label: (option as string).toLowerCase(), value: option })),
@@ -49,11 +51,14 @@ export default function OrderBySelect({ entity, value, onChange }: Props) {
 	return (
 		<div>
 			<Label htmlFor="orderBy" className="mb-1.5">
-				Order by
+				{t('components.filters.form.OrderBySelect.label')}
 			</Label>
 			<NativeSelect
 				options={entityOptions}
-				emptyOption={{ label: 'Select an option', value: '' }}
+				emptyOption={{
+					label: t('components.filters.form.OrderBySelect.selectOption'),
+					value: '',
+				}}
 				value={value}
 				onChange={(e) => onChange?.(e.target.value as OrderingField)}
 				size="sm"

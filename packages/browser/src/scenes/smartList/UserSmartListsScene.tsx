@@ -119,13 +119,16 @@ export default function UserSmartListsScene() {
 			<header className="h-32 gap-y-2 px-4 flex w-full flex-col justify-center border-b border-edge">
 				<div>
 					<Heading size="lg" bold>
-						Smart lists
+						{t('scenes.smartList.UserSmartListsScene.heading')}
 					</Heading>
-					<Text>Your favorite searches and filters saved for easy access</Text>
+					<Text>{t('scenes.smartList.UserSmartListsScene.subtitle')}</Text>
 				</div>
 
 				<Text variant="muted" size="sm">
-					You have access to {smartLists.length} smart {pluralize('list', smartLists.length)}
+					{t('scenes.smartList.UserSmartListsScene.accessCount', {
+						count: smartLists.length,
+						lists: pluralize('list', smartLists.length),
+					})}
 				</Text>
 			</header>
 

@@ -1,5 +1,6 @@
 import { Badge, Heading, Link, Statistic, Text } from '@stump/components'
 import { BookCardFragment, BookOverviewSceneQuery, Tag } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { ExternalLink } from 'lucide-react'
 import { Suspense } from 'react'
 
@@ -18,6 +19,7 @@ type Props = {
 }
 
 export default function BookOverviewSceneHeader({ media, book, completedAt }: Props) {
+	const { t } = useLocaleContext()
 	const metadata = media.metadata
 	const tags = media.tags as Tag[] | undefined
 	const pages = media.pages ?? 0
@@ -49,17 +51,30 @@ export default function BookOverviewSceneHeader({ media, book, completedAt }: Pr
 
 			{hasStats && (
 				<div className="gap-3 sm:grid-cols-3 md:flex md:flex-wrap md:gap-6 grid grid-cols-2">
-					{pages > 0 && <Statistic.Item label="Pages" value={pages} />}
-					{size > 0 && <Statistic.Item label="Size" value={formatBytes(size) ?? '—'} />}
+					{pages > 0 && (
+						<Statistic.Item label={t('scenes.book.BookOverviewSceneHeader.pages')} value={pages} />
+					)}
+					{size > 0 && (
+						<Statistic.Item
+							label={t('scenes.book.BookOverviewSceneHeader.size')}
+							value={formatBytes(size) ?? '—'}
+						/>
+					)}
 					{media.extension && (
-						<Statistic.Item label="Format" value={media.extension.toUpperCase()} />
+						<Statistic.Item
+							label={t('scenes.book.BookOverviewSceneHeader.format')}
+							value={media.extension.toUpperCase()}
+						/>
 					)}
 					{metadata?.year && metadata.year > 0 && (
-						<Statistic.Item label="Year" value={metadata.year} />
+						<Statistic.Item
+							label={t('scenes.book.BookOverviewSceneHeader.year')}
+							value={metadata.year}
+						/>
 					)}
 					{progressPercent != null && progressPercent > 0 && progressPercent < 100 && (
 						<Statistic.Item
-							label="Progress"
+							label={t('scenes.book.BookOverviewSceneHeader.progress')}
 							value={`${progressPercent}%`}
 							suffix={readProgress?.page ? `(p. ${readProgress.page})` : undefined}
 						/>
@@ -81,7 +96,7 @@ export default function BookOverviewSceneHeader({ media, book, completedAt }: Pr
 					)}
 					{metadata?.ageRating && metadata.ageRating > 0 && (
 						<Badge variant="warning" size="xs" rounded="full">
-							Age {metadata.ageRating}+
+							{t('scenes.book.BookOverviewSceneHeader.ageRating', { value: metadata.ageRating })}
 						</Badge>
 					)}
 				</div>
@@ -89,14 +104,25 @@ export default function BookOverviewSceneHeader({ media, book, completedAt }: Pr
 
 			{completedAt && (
 				<Text size="xs" variant="muted">
-					{(book.readHistory?.length ?? 0) > 1 ? 'Last completed' : 'Completed'} on{' '}
-					{new Intl.DateTimeFormat(undefined, {
-						month: 'long',
-						day: 'numeric',
-						year: 'numeric',
-						hour: 'numeric',
-						minute: '2-digit',
-					}).format(new Date(completedAt))}
+					{(book.readHistory?.length ?? 0) > 1
+						? t('scenes.book.BookOverviewSceneHeader.lastCompletedOn', {
+								date: new Intl.DateTimeFormat(undefined, {
+									month: 'long',
+									day: 'numeric',
+									year: 'numeric',
+									hour: 'numeric',
+									minute: '2-digit',
+								}).format(new Date(completedAt)),
+							})
+						: t('scenes.book.BookOverviewSceneHeader.completedOn', {
+								date: new Intl.DateTimeFormat(undefined, {
+									month: 'long',
+									day: 'numeric',
+									year: 'numeric',
+									hour: 'numeric',
+									minute: '2-digit',
+								}).format(new Date(completedAt)),
+							})}
 				</Text>
 			)}
 
@@ -109,7 +135,7 @@ export default function BookOverviewSceneHeader({ media, book, completedAt }: Pr
 			{hasGenres && (
 				<div className="gap-1 flex flex-col">
 					<Text size="xs" variant="muted">
-						Genres
+						{t('scenes.book.BookOverviewSceneHeader.genres')}
 					</Text>
 					<BadgeList>
 						{metadata!.genres.map((genre) => (
@@ -132,7 +158,7 @@ export default function BookOverviewSceneHeader({ media, book, completedAt }: Pr
 			{hasWriters && (
 				<div className="gap-1 flex flex-col">
 					<Text size="xs" variant="muted">
-						Writers
+						{t('scenes.book.BookOverviewSceneHeader.writers')}
 					</Text>
 					<BadgeList>
 						{metadata!.writers.map((writer) => (
@@ -155,7 +181,7 @@ export default function BookOverviewSceneHeader({ media, book, completedAt }: Pr
 			{hasTags && (
 				<div className="gap-1 flex flex-col">
 					<Text size="xs" variant="muted">
-						Tags
+						{t('scenes.book.BookOverviewSceneHeader.tags')}
 					</Text>
 					<TagList
 						tags={tags}
@@ -167,7 +193,7 @@ export default function BookOverviewSceneHeader({ media, book, completedAt }: Pr
 			{hasLinks && (
 				<div className="gap-1 flex flex-col">
 					<Text size="xs" variant="muted">
-						Links
+						{t('scenes.book.BookOverviewSceneHeader.links')}
 					</Text>
 					<BadgeList>
 						{metadata!.links

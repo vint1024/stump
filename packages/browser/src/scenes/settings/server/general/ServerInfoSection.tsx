@@ -67,7 +67,7 @@ export default function ServerInfoSection() {
 			<div className="gap-12 md:gap-8 flex flex-row flex-wrap">
 				{version && (
 					<div>
-						<Label>Semantic version</Label>
+						<Label>{t('settingsScene.server/general.sections.serverInfo.semanticVersion')}</Label>
 						<Link
 							href={versionUrl}
 							target="__blank"
@@ -85,7 +85,7 @@ export default function ServerInfoSection() {
 
 				{buildChannel && (
 					<div>
-						<Label>Build channel</Label>
+						<Label>{t('settingsScene.server/general.sections.serverInfo.buildChannel')}</Label>
 						<Text size="sm" variant="muted">
 							{toUpper(buildChannel.charAt(0)) + buildChannel.slice(1)}
 						</Text>
@@ -94,7 +94,7 @@ export default function ServerInfoSection() {
 
 				{version && (
 					<div>
-						<Label>Exact commit</Label>
+						<Label>{t('settingsScene.server/general.sections.serverInfo.exactCommit')}</Label>
 						<Link
 							href={commitUrl}
 							target="__blank"
@@ -112,7 +112,7 @@ export default function ServerInfoSection() {
 
 				{version && (
 					<div>
-						<Label>Build date</Label>
+						<Label>{t('settingsScene.server/general.sections.serverInfo.buildDate')}</Label>
 						<Text size="sm" variant="muted">
 							{intlFormat(new Date(version.compileTime), {
 								month: 'long',

@@ -1,5 +1,6 @@
 import { useGraphQLMutation } from '@stump/client'
 import { CreateOrUpdateLibraryInput, graphql, useFragment, UserPermission } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import omit from 'lodash/omit'
 import pick from 'lodash/pick'
@@ -83,6 +84,7 @@ const scanMutation = graphql(`
 
 // Note: library:manage permission is enforced in the parent router
 export default function LibrarySettingsRouter() {
+	const { t } = useLocaleContext()
 	const { checkPermission } = useAppContext()
 	const { library } = useLibraryContext()
 	const { config } = useFragment(LibrarySettingsConfig, library)
@@ -109,8 +111,8 @@ export default function LibrarySettingsRouter() {
 	const { mutate: scan } = useGraphQLMutation(scanMutation, {
 		onError: (error) => {
 			console.error('Failed to scan library', error)
-			toast.error('Failed to scan library', {
-				description: 'Please check the logs for more details',
+			toast.error(t('scenes.library.tabs.settings.LibrarySettingsRouter.scanFailed'), {
+				description: t('scenes.library.tabs.settings.LibrarySettingsRouter.scanFailedDescription'),
 			})
 		},
 	})

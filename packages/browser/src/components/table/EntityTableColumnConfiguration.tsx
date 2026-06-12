@@ -262,13 +262,17 @@ export default function EntityTableColumnConfiguration({ entity, configuration, 
 
 	return (
 		<Sheet
-			title="Configure columns"
-			description="Adjust which columns are displayed in book-exploration tables"
+			title={t('components.table.EntityTableColumnConfiguration.title')}
+			description={t('components.table.EntityTableColumnConfiguration.description')}
 			open={isOpen}
 			onClose={() => setIsOpen(false)}
 			onOpen={() => setIsOpen(true)}
 			trigger={
-				<ToolTip content="Configure columns" size="sm" align="start">
+				<ToolTip
+					content={t('components.table.EntityTableColumnConfiguration.title')}
+					size="sm"
+					align="start"
+				>
 					<IconButton size="xs" variant="ghost" pressEffect={false} onClick={() => setIsOpen(true)}>
 						<Columns className="h-4 w-4" />
 					</IconButton>
@@ -304,14 +308,14 @@ export default function EntityTableColumnConfiguration({ entity, configuration, 
 				>
 					<div className="gap-3 p-4 md:grid-cols-2 grid grid-cols-1">
 						<ColumnBucket
-							title="Visible"
+							title={t('components.table.EntityTableColumnConfiguration.visible')}
 							containerId="visible-container"
 							items={visible}
 							identifiers={visibleIdentifiers}
 							onMoveToOtherList={(id) => handleMoveColumn(id, false)}
 						/>
 						<ColumnBucket
-							title="Hidden"
+							title={t('components.table.EntityTableColumnConfiguration.hidden')}
 							containerId="hidden-container"
 							items={hidden}
 							identifiers={hiddenIdentifiers}
@@ -403,8 +407,12 @@ function ColumnBucket({
 	identifiers,
 	onMoveToOtherList,
 }: ColumnBucketProps) {
+	const { t } = useLocaleContext()
 	const { setNodeRef } = useDroppable({ id: containerId })
-	const moveLabel = title === 'Visible' ? 'Move to hidden' : 'Move to visible'
+	const moveLabel =
+		containerId === 'visible-container'
+			? t('components.table.EntityTableColumnConfiguration.moveToHidden')
+			: t('components.table.EntityTableColumnConfiguration.moveToVisible')
 
 	return (
 		<div ref={setNodeRef} className="rounded-md p-3 border border-edge bg-background">
@@ -430,7 +438,7 @@ function ColumnBucket({
 					{items.length === 0 && (
 						<div className="min-h-10 rounded px-2 py-3 flex items-center justify-center border border-dashed border-edge">
 							<Text size="xs" variant="muted">
-								Drop columns here
+								{t('components.table.EntityTableColumnConfiguration.dropColumnsHere')}
 							</Text>
 						</div>
 					)}

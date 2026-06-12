@@ -23,7 +23,7 @@ export default function ChangeVisibilityConfirmation({
 	return (
 		<ConfirmationModal
 			isOpen={isOpen}
-			title="Change visibility"
+			title={t('scenes.smartList.settings.access.ChangeVisibilityConfirmation.title')}
 			description={description}
 			onConfirm={onConfirm}
 			onClose={onCancel}

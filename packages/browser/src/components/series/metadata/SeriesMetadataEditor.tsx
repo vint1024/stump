@@ -121,7 +121,9 @@ export default function SeriesMetadataEditor({ seriesId, data }: Props) {
 								onClick={() => setShowMissing((prev) => !prev)}
 							/>
 
-							<span className="ml-2">Missing</span>
+							<span className="ml-2">
+								{t('components.series.metadata.SeriesMetadataEditor.missing')}
+							</span>
 						</Label>
 					</div>
 				),
@@ -213,7 +215,7 @@ export default function SeriesMetadataEditor({ seriesId, data }: Props) {
 				cell: () => null,
 			}),
 		],
-		[metadata, paths, checkPermission],
+		[metadata, paths, checkPermission, t],
 	) as ColumnDef<SeriesMetadataEditorRow>[]
 
 	const items = useMemo(
@@ -249,14 +251,14 @@ export default function SeriesMetadataEditor({ seriesId, data }: Props) {
 		},
 		onError: (error) => {
 			console.error('Failed to update metadata', error)
-			toast.error('Failed to update metadata')
+			toast.error(t('components.series.metadata.SeriesMetadataEditor.updateMetadataError'))
 		},
 	})
 
 	const { mutate: setLocked } = useGraphQLMutation(setLockedFieldsMutation, {
 		onError: () => {
 			setLockedFields(new Set(metadata?.lockedFields ?? []))
-			toast.error('Failed to update locked fields')
+			toast.error(t('components.series.metadata.SeriesMetadataEditor.updateLockedFieldsError'))
 		},
 	})
 
@@ -300,9 +302,7 @@ export default function SeriesMetadataEditor({ seriesId, data }: Props) {
 					onCancel: onCancelEdits,
 					onSave: () => form.handleSubmit(onSaveMetadata),
 					lockedFields,
-					onToggleLock: checkPermission(UserPermission.EditMetadata)
-						? onToggleLock
-						: undefined,
+					onToggleLock: checkPermission(UserPermission.EditMetadata) ? onToggleLock : undefined,
 				}}
 			>
 				<form onSubmit={form.handleSubmit(onSaveMetadata)}>

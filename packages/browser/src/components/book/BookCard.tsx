@@ -1,7 +1,7 @@
 import { cn, ProgressBar, Text } from '@stump/components'
 import { FragmentType, graphql, useFragment } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { getColor, serialize, set } from 'colorjs.io/fn'
-import pluralize from 'pluralize'
 import { memo, useCallback, useMemo } from 'react'
 
 import { Link } from '@/context'
@@ -65,6 +65,7 @@ const BookCard = memo(function BookCard({
 	onSelect,
 	fullWidth = true,
 }: Props) {
+	const { t } = useLocaleContext()
 	const data = useFragment(BookCardFragment, fragment)
 	const paths = usePaths()
 
@@ -133,7 +134,7 @@ const BookCard = memo(function BookCard({
 		if (isMissing) {
 			return (
 				<Text size="xs" className="text-amber-500 uppercase">
-					File Missing
+					{t('components.book.BookCard.fileMissing')}
 				</Text>
 			)
 		}
@@ -146,7 +147,7 @@ const BookCard = memo(function BookCard({
 					</Text>
 					{!isEbookProgress && (
 						<Text size="xs" variant="muted">
-							{pagesLeft} {pluralize('page', pagesLeft)} left
+							{t('components.book.BookCard.pagesLeft', { count: pagesLeft })}
 						</Text>
 					)}
 				</div>
@@ -154,7 +155,7 @@ const BookCard = memo(function BookCard({
 		} else if (progressPercent === 100) {
 			return (
 				<Text size="xs" variant="muted">
-					Completed
+					{t('components.book.BookCard.completed')}
 				</Text>
 			)
 		}

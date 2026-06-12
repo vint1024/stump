@@ -1,6 +1,7 @@
 import { useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Avatar, Card } from '@stump/components'
 import { BookClubMembersTableQuery, graphql } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { BookClubMemberRoleSpec } from '@stump/sdk'
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table'
 import upperFirst from 'lodash/upperFirst'
@@ -39,6 +40,7 @@ const removeMutation = graphql(`
 `)
 
 export default function MembersTable() {
+	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 	const { user } = useAppContext()
 	const {
@@ -65,13 +67,13 @@ export default function MembersTable() {
 		onSuccess: () => refetch(),
 		onError: (error) => {
 			console.error('Error removing member:', error)
-			toast.error('Failed to remove member')
+			toast.error(t('scenes.bookClub.tabs.settings.members.MembersTable.removeError'))
 		},
 	})
 
 	const columns = useMemo(
 		() => [
-			...createBaseColumns(roleSpec),
+			...createBaseColumns(roleSpec, t),
 			columnHelper.display({
 				id: 'actions',
 				cell: ({ row: { original } }) => {
@@ -83,7 +85,7 @@ export default function MembersTable() {
 				},
 			}),
 		],
-		[roleSpec, user],
+		[roleSpec, user, t],
 	)
 
 	return (
@@ -128,7 +130,7 @@ type Member = BookClubMembersTableQuery['bookClubById']['members'][number]
 
 const columnHelper = createColumnHelper<Member>()
 
-const createBaseColumns = (spec: BookClubMemberRoleSpec) =>
+const createBaseColumns = (spec: BookClubMemberRoleSpec, t: (key: string) => string) =>
 	[
 		columnHelper.accessor(({ displayName }) => displayName, {
 			cell: ({
@@ -141,7 +143,7 @@ const createBaseColumns = (spec: BookClubMemberRoleSpec) =>
 					<span>{displayName}</span>
 				</div>
 			),
-			header: 'Member',
+			header: t('scenes.bookClub.tabs.settings.members.MembersTable.member'),
 			id: 'display_name',
 		}),
 		columnHelper.accessor('role', {

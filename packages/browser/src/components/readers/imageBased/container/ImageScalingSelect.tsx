@@ -1,5 +1,6 @@
 import { Label, NativeSelect } from '@stump/components'
 import { ReadingImageScaleFit } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useCallback } from 'react'
 
 type Props = {
@@ -8,6 +9,8 @@ type Props = {
 }
 
 export default function ImageScalingSelect({ value, onChange }: Props) {
+	const { t } = useLocaleContext()
+
 	/**
 	 * A change handler for the image scaling select, asserting that the value
 	 * is a valid {@link ReadingImageScaleFit} before setting the scaling method
@@ -26,15 +29,29 @@ export default function ImageScalingSelect({ value, onChange }: Props) {
 
 	return (
 		<div className="py-1.5">
-			<Label htmlFor="image-scaling-fit">Image scaling</Label>
+			<Label htmlFor="image-scaling-fit">
+				{t('components.readers.imageBased.container.ImageScalingSelect.label')}
+			</Label>
 			<NativeSelect
 				id="image-scaling-fit"
 				size="sm"
 				options={[
-					{ label: 'Auto', value: 'AUTO' },
-					{ label: 'Height', value: 'HEIGHT' },
-					{ label: 'Width', value: 'WIDTH' },
-					{ label: 'Original', value: 'NONE' },
+					{
+						label: t('components.readers.imageBased.container.ImageScalingSelect.auto'),
+						value: 'AUTO',
+					},
+					{
+						label: t('components.readers.imageBased.container.ImageScalingSelect.height'),
+						value: 'HEIGHT',
+					},
+					{
+						label: t('components.readers.imageBased.container.ImageScalingSelect.width'),
+						value: 'WIDTH',
+					},
+					{
+						label: t('components.readers.imageBased.container.ImageScalingSelect.original'),
+						value: 'NONE',
+					},
 				]}
 				value={value}
 				onChange={handleChange}

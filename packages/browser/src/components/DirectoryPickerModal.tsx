@@ -1,5 +1,6 @@
 import { useDirectoryListing } from '@stump/client'
 import { Button, CheckBox, cx, Dialog, Input, Text, useBoolean } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { ArrowLeft, Folder } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
@@ -19,6 +20,7 @@ export default function DirectoryPickerModal({
 	startingPath,
 	onPathChange,
 }: Props) {
+	const { t } = useLocaleContext()
 	const virtuosoRef = useRef<VirtuosoHandle>(null)
 
 	const [showHidden, { toggle }] = useBoolean(false)
@@ -80,9 +82,9 @@ export default function DirectoryPickerModal({
 		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 			<Dialog.Content size="md">
 				<Dialog.Header>
-					<Dialog.Title>Select a Directory</Dialog.Title>
+					<Dialog.Title>{t('components.DirectoryPickerModal.title')}</Dialog.Title>
 					<Dialog.Description>
-						Specify the directory where your library is located.
+						{t('components.DirectoryPickerModal.description')}
 					</Dialog.Description>
 					<Dialog.Close onClick={onClose} />
 				</Dialog.Header>
@@ -150,15 +152,15 @@ export default function DirectoryPickerModal({
 				<Dialog.Footer className="gap-3 sm:justify-between sm:gap-0 w-full items-center">
 					<CheckBox
 						variant="primary"
-						label="Show Hidden Directories"
+						label={t('components.DirectoryPickerModal.showHidden')}
 						checked={showHidden}
 						onClick={toggle}
 					/>
 
 					<div className="space-y-2 sm:flex-row sm:justify-end sm:space-x-2 sm:space-y-0 flex w-full flex-col-reverse space-y-reverse">
-						<Button onClick={onClose}>Cancel</Button>
+						<Button onClick={onClose}>{t('components.DirectoryPickerModal.cancel')}</Button>
 						<Button variant="primary" onClick={handleConfirm}>
-							Confirm
+							{t('components.DirectoryPickerModal.confirm')}
 						</Button>
 					</div>
 				</Dialog.Footer>

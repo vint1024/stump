@@ -1,5 +1,5 @@
 import { Badge, cn, Heading, Link, Statistic, Text } from '@stump/components'
-import { formatHumanDuration } from '@stump/i18n'
+import { formatHumanDuration, useLocaleContext } from '@stump/i18n'
 
 import BadgeList from '@/components/BadgeList'
 import ReadMore from '@/components/ReadMore'
@@ -11,8 +11,8 @@ import { formatBytes } from '@/utils/format'
 
 import { useLibraryContext } from './context'
 
-// TODO(localization): Use localized strings for labels etc
 export default function LibraryHeader() {
+	const { t } = useLocaleContext()
 	const {
 		preferences: { primaryNavigationMode, layoutMaxWidthPx, showThumbnailsInHeaders },
 	} = usePreferences()
@@ -50,16 +50,35 @@ export default function LibraryHeader() {
 
 					{stats && (
 						<div className="gap-3 sm:grid-cols-3 md:flex md:flex-wrap md:gap-6 grid grid-cols-2">
-							<Statistic.Item label="Series" value={stats.seriesCount} />
-							<Statistic.Item label="Books" value={stats.bookCount} />
 							<Statistic.Item
-								label="Completed"
+								label={t('scenes.library.LibraryHeader.series')}
+								value={stats.seriesCount}
+							/>
+							<Statistic.Item
+								label={t('scenes.library.LibraryHeader.books')}
+								value={stats.bookCount}
+							/>
+							<Statistic.Item
+								label={t('scenes.library.LibraryHeader.completed')}
 								value={stats.completedBooks}
 								suffix={` / ${stats.bookCount}`}
 							/>
-							<Statistic.Item label="In progress" value={stats.inProgressBooks} />
-							{formattedTime && <Statistic.Item label="Reading time" value={formattedTime} />}
-							{formattedSize && <Statistic.Item label="Total size" value={formattedSize} />}
+							<Statistic.Item
+								label={t('scenes.library.LibraryHeader.inProgress')}
+								value={stats.inProgressBooks}
+							/>
+							{formattedTime && (
+								<Statistic.Item
+									label={t('scenes.library.LibraryHeader.readingTime')}
+									value={formattedTime}
+								/>
+							)}
+							{formattedSize && (
+								<Statistic.Item
+									label={t('scenes.library.LibraryHeader.totalSize')}
+									value={formattedSize}
+								/>
+							)}
 						</div>
 					)}
 
@@ -82,7 +101,7 @@ export default function LibraryHeader() {
 					{hasGenres && (
 						<div className="gap-1 flex flex-col">
 							<Text size="xs" variant="muted">
-								Genres
+								{t('scenes.library.LibraryHeader.genres')}
 							</Text>
 							<BadgeList>
 								{genres.map((genre) => (
@@ -105,7 +124,7 @@ export default function LibraryHeader() {
 					{hasTags && (
 						<div className="gap-1 flex flex-col">
 							<Text size="xs" variant="muted">
-								Tags
+								{t('scenes.library.LibraryHeader.tags')}
 							</Text>
 							<TagList
 								tags={tags}

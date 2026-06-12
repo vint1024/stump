@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, Input } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { useCallback } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
@@ -33,6 +34,8 @@ export const defaultBook = {
 } as BookSchema
 
 export default function CreateOrAddToScheduleForm() {
+	const { t } = useLocaleContext()
+
 	const form = useForm<Schema>({
 		defaultValues: {
 			books: [defaultBook],
@@ -71,7 +74,7 @@ export default function CreateOrAddToScheduleForm() {
 		<Form form={form} onSubmit={handleSubmit}>
 			<Input
 				variant="primary"
-				label="Books to add"
+				label={t('scenes.bookClub.tabs.settings.scheduler.CreateOrAddToScheduleForm.booksToAdd')}
 				type="number"
 				value={books.length}
 				onChange={handleChange}

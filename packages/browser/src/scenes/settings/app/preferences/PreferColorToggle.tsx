@@ -1,18 +1,20 @@
 import { WideSwitch } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 
 // TODO: Implement this
 export default function PreferColorToggle() {
+	const { t } = useLocaleContext()
 	const handleChange = () => {}
 
 	return (
 		<WideSwitch
-			label="Prefer colors"
-			description="Display more of the main accent color instead of monochrome colors"
+			label={t('scenes.settings.app.preferences.PreferColorToggle.label')}
+			description={t('scenes.settings.app.preferences.PreferColorToggle.description')}
 			checked
 			onCheckedChange={handleChange}
 			disabled
 			formId="prefer_accent_color"
-			title="This setting is not currently supported"
+			title={t('scenes.settings.app.preferences.PreferColorToggle.title')}
 		/>
 	)
 }

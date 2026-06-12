@@ -94,6 +94,28 @@ export default function UserPermissionsTable() {
 		)
 	}
 
+	const columns = useMemo(
+		() => [
+			columnHelper.accessor('type', {
+				id: 'permission',
+				header: t('scenes.settings.server.users.UserPermissionsTable.permission'),
+				cell: ({ row }) => {
+					const data = row.original
+					if (data.type === 'group') {
+						return data.groupKey
+					}
+					return data.label
+				},
+			}),
+			columnHelper.display({
+				id: 'enabled',
+				header: 'Enabled',
+				cell: () => null, // We handle this in the custom rendering
+			}),
+		],
+		[t],
+	)
+
 	const table = useReactTable({
 		data: tableData,
 		columns,
@@ -269,25 +291,6 @@ const groups = [
 ]
 
 const columnHelper = createColumnHelper<TableRow>()
-
-const columns = [
-	columnHelper.accessor('type', {
-		id: 'permission',
-		header: 'Permission',
-		cell: ({ row }) => {
-			const data = row.original
-			if (data.type === 'group') {
-				return data.groupKey
-			}
-			return data.label
-		},
-	}),
-	columnHelper.display({
-		id: 'enabled',
-		header: 'Enabled',
-		cell: () => null, // We handle this in the custom rendering
-	}),
-]
 
 export const associatedPermissions: Record<UserPermission, UserPermission[]> = {
 	[UserPermission.CreateBookClub]: [UserPermission.AccessBookClub],

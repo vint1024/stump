@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { UseDirectoryListingFile } from '@stump/client'
 import { cn, Text } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import {
 	createColumnHelper,
 	flexRender,
@@ -21,24 +22,9 @@ import { useFileExplorerContext } from '../context'
 import FileThumbnail from '../FileThumbnail'
 
 const columnHelper = createColumnHelper<UseDirectoryListingFile>()
-const baseColumns = [
-	columnHelper.display({
-		cell: ({
-			row: {
-				original: { path, isDirectory },
-			},
-		}) => <FileThumbnail path={path} isDirectory={isDirectory} />,
-		header: () => (
-			<Text size="sm" variant="secondary">
-				Cover
-			</Text>
-		),
-		id: 'thumbnail',
-		size: 10,
-	}),
-]
 
 export default function FileTable() {
+	const { t } = useLocaleContext()
 	const { files, onSelect, loadMore } = useFileExplorerContext()
 	const { innerWidth } = useWindowSize()
 
@@ -47,7 +33,20 @@ export default function FileTable() {
 	const columns = useMemo(
 		() =>
 			[
-				...baseColumns.slice(0, 1),
+				columnHelper.display({
+					cell: ({
+						row: {
+							original: { path, isDirectory },
+						},
+					}) => <FileThumbnail path={path} isDirectory={isDirectory} />,
+					header: () => (
+						<Text size="sm" variant="secondary">
+							{t('components.explorer.table.FileTable.cover')}
+						</Text>
+					),
+					id: 'thumbnail',
+					size: 10,
+				}),
 				columnHelper.accessor('name', {
 					cell: ({ row: { original: file }, getValue }) => (
 						<Text
@@ -60,7 +59,7 @@ export default function FileTable() {
 					),
 					header: () => (
 						<Text size="sm" variant="secondary">
-							Name
+							{t('components.explorer.table.FileTable.name')}
 						</Text>
 					),
 					size: innerWidth ? innerWidth * 0.2 : 250,
@@ -71,7 +70,7 @@ export default function FileTable() {
 				// which is obviously not what we want
 				enableSorting: false,
 			})),
-		[onSelect, innerWidth],
+		[onSelect, innerWidth, t],
 	)
 
 	const table = useReactTable({

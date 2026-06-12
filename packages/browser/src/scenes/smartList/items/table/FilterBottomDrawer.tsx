@@ -25,7 +25,7 @@ export default function FilterBottomDrawer() {
 
 	return (
 		<Drawer>
-			<ToolTip content="Adjust filter">
+			<ToolTip content={t('scenes.smartList.items.table.FilterBottomDrawer.adjustFilter')}>
 				<Drawer.Trigger asChild>
 					<IconButton variant="ghost">
 						<Filter className="h-4 w-4 text-foreground-muted" />
@@ -62,7 +62,7 @@ export default function FilterBottomDrawer() {
 							<Alert variant="warning">
 								<Construction />
 								<AlertDescription>
-									<span>This functionality is not yet implemented</span>
+									<span>{t('scenes.smartList.items.table.FilterBottomDrawer.notImplemented')}</span>
 								</AlertDescription>
 							</Alert>
 						</div>

@@ -351,6 +351,10 @@
 				"quality": {
 					"label": "Качество",
 					"description": "Качество создаваемых эскизов изображений, между 0 и 1,0"
+				},
+				"enabledSwitch": {
+					"label": "Включено",
+					"description": "Генерировать миниатюры для этой библиотеки"
 				}
 			},
 			"ignoreRules": {
@@ -514,7 +518,8 @@
 					"scaleEvenlyByFactor": "Равномерное масштабирование",
 					"exact": "Точный размер",
 					"scaleDimension": "Явно заданный размер"
-				}
+				},
+				"default": "По умолчанию"
 			},
 			"buttons": {
 				"confirm": "Создать библиотеку"
@@ -541,7 +546,19 @@
 				"series": "Перетащите архив zip сюда",
 				"alt": "Или нажмите для просмотра и загрузки книг с вашего компьютера"
 			},
-			"addedFiles": "Добавленные файлы"
+			"addedFiles": "Добавленные файлы",
+			"toast": {
+				"booksSuccess": "Файлы успешно загружены",
+				"booksError": "Не удалось загрузить книги",
+				"seriesSuccess": "Серия успешно загружена",
+				"seriesError": "Не удалось загрузить серию"
+			},
+			"seriesName": {
+				"label": "Название серии",
+				"description": "Будет использовано как название папки серии. Ваш zip-архив будет распакован сюда.",
+				"placeholder": "Введите название серии"
+			},
+			"moreFiles": "...и ещё {{count}} файлов (прокрутите, чтобы загрузить больше)"
 		}
 	},
 	"librarySettingsScene": {
@@ -1163,7 +1180,7 @@
 		"fields": {
 			"name": {
 				"label": "Название",
-				"placeholder": "Синхронизация Koreader"
+				"placeholder": "Koreader Sync"
 			},
 			"expiration": {
 				"label": "Срок действия",
@@ -1184,7 +1201,8 @@
 				}
 			}
 		},
-		"inheritDisclaimer": "Этот ключ API наследует ваши полные права доступа. Это значит, что он может делать всё, что можете сделать вы. Будьте осторожны с этой настройкой"
+		"inheritDisclaimer": "Этот ключ API наследует ваши полные права доступа. Это значит, что он может делать всё, что можете сделать вы. Будьте осторожны с этой настройкой",
+		"permissionsSelected": "Выбрано прав: {{count}}"
 	},
 	"userSmartListsScene": {
 		"heading": "Умные списки",
@@ -1405,7 +1423,13 @@
 						"removeImage": "Убрать изображение",
 						"removeSelection": "Убрать загруженное изображение",
 						"uploadFailed": "Не удалось загрузить аватар",
-						"removeFailed": "Не удалось убрать аватар"
+						"removeFailed": "Не удалось убрать аватар",
+						"errors": {
+							"fileTooLarge": "Файл слишком большой (максимум 20 МБ)",
+							"unknown": "Неизвестная ошибка",
+							"onlyOneFile": "Допускается только 1 файл",
+							"noFiles": "Файлы не выбраны"
+						}
 					},
 					"buttons": {
 						"confirm": "Сохранить изменения"
@@ -1604,11 +1628,12 @@
 			"sections": {
 				"inspector": {
 					"heading": "Ключ API",
-					"description": "Подробности об этом ключе",
+					"description": "Подробный просмотр этого ключа",
 					"unrestrictedKey": {
 						"heading": "Неограниченный ключ",
 						"description": "Поскольку вы являетесь владельцем сервера, этот ключ имеет неограниченный доступ при настройке наследования разрешений. Пожалуйста, будьте осторожны."
-					}
+					},
+					"title": "API-ключ"
 				},
 				"createKey": {
 					"modal": {
@@ -1802,7 +1827,8 @@
 					"discordPresence": {
 						"label": "Отображение в Discord",
 						"description": "Отображать активность вашего Stump в Discord, используя Discord Rich Presence",
-						"reconnect": "Переподключиться к Discord"
+						"reconnect": "Переподключиться к Discord",
+						"updateError": "Не удалось обновить!"
 					}
 				}
 			}
@@ -1833,7 +1859,11 @@
 							"Похоже, вы используете канал сборки",
 							""
 						]
-					}
+					},
+					"semanticVersion": "Семантическая версия",
+					"buildChannel": "Канал сборки",
+					"exactCommit": "Точный коммит",
+					"buildDate": "Дата сборки"
 				},
 				"helpfulLinks": {
 					"title": "Полезные ссылки",
@@ -1845,7 +1875,10 @@
 				},
 				"serverPublicUrl": {
 					"label": "Общедоступный URL",
-					"description": "URL, по которому сервер доступен извне вашей локальной сети, если применимо. Это даст доступ к пригласительным ссылкам и другим функциям"
+					"description": "URL, по которому сервер доступен извне вашей локальной сети, если применимо. Это даст доступ к пригласительным ссылкам и другим функциям",
+					"updateSuccess": "Публичный URL успешно обновлён",
+					"updateError": "Не удалось обновить публичный URL",
+					"unknownError": "Произошла неизвестная ошибка"
 				},
 				"customEmojis": {
 					"title": "Свои эмодзи",
@@ -1866,7 +1899,10 @@
 					"renameSuccess": "Эмодзи переименован",
 					"renameError": "Не удалось переименовать эмодзи",
 					"deleteSuccess": "Эмодзи удалён",
-					"deleteError": "Не удалось удалить эмодзи"
+					"deleteError": "Не удалось удалить эмодзи",
+					"provideName": "Укажите название эмодзи",
+					"renamePlaceholder": "emoji_name",
+					"previewAlt": "предпросмотр эмодзи"
 				}
 			}
 		},
@@ -2262,7 +2298,16 @@
 					},
 					"table": {
 						"emptyHeading": "Нет зарегистрированных устройств",
-						"emptySubtitle": "Создать новый псевдоним устройства для использования в будущем"
+						"emptySubtitle": "Создать новый псевдоним устройства для использования в будущем",
+						"columns": {
+							"name": "Название",
+							"email": "Эл. почта",
+							"status": "Статус"
+						},
+						"status": {
+							"forbidden": "Запрещено",
+							"allowed": "Разрешено"
+						}
 					}
 				}
 			},
@@ -2571,7 +2616,15 @@
 		"uploadImage": {
 			"emptyState": "Предпросмотр вашего изображения появится здесь",
 			"prompt": "Перетащите изображение сюда или нажмите для выбора",
-			"remove": "Удалить изображение"
+			"remove": "Удалить изображение",
+			"confirmSelection": "Подтвердить выбор",
+			"errors": {
+				"fileTooLarge": "Файл слишком большой (максимум 20 МБ)",
+				"unknown": "Неизвестная ошибка",
+				"onlyOneFile": "Допускается только 1 файл",
+				"noFiles": "Файлы не выбраны",
+				"uploadFailed": "Не удалось загрузить изображение"
+			}
 		}
 	},
 	"common": {
@@ -3352,5 +3405,1073 @@
 	},
 	"epubReader": {
 		"failedToLoad": "Не удалось загрузить книгу"
+	},
+	"AppLayout": {
+		"logoutSuccess": "Вы вышли из системы",
+		"logoutError": "При выходе из системы произошла ошибка. Попробуйте ещё раз."
+	},
+	"components": {
+		"DirectoryPickerModal": {
+			"title": "Выбор папки",
+			"description": "Укажите папку, в которой расположена ваша библиотека.",
+			"showHidden": "Показывать скрытые папки",
+			"cancel": "Отмена",
+			"confirm": "Подтвердить"
+		},
+		"ErrorFallback": {
+			"copiedToClipboard": "Сведения об ошибке скопированы в буфер обмена",
+			"imageAlt": "Иллюстрация неполадки",
+			"criticalError": "Произошла критическая ошибка",
+			"emptyMessage": "Сообщение об ошибке было пустым.",
+			"goHomeTitle": "Вернуться на главную",
+			"goHome": "На главную",
+			"reportBugTitle": "Сообщить об этой ошибке как о возможном баге на GitHub",
+			"reportBug": "Сообщить об ошибке",
+			"copyDetailsTitle": "Скопировать сведения об ошибке в буфер обмена",
+			"copyDetails": "Скопировать сведения об ошибке"
+		},
+		"HorizontalCardList": {
+			"nothingToShow": "Нечего показать",
+			"noResults": "Нет результатов для отображения",
+			"seekBackwards": "Прокрутить назад",
+			"seekAhead": "Прокрутить вперёд"
+		},
+		"MultiRowHorizontalCardList": {
+			"nothingToShow": "Нечего показать",
+			"noResults": "Результаты не найдены",
+			"seekBackwards": "Прокрутить назад",
+			"seekAhead": "Прокрутить вперёд"
+		},
+		"ServerStatusOverlay": {
+			"notConnected": "Сервер не подключён",
+			"checkConnection": "Проверьте подключение к интернету.",
+			"clickHere": "Нажмите здесь",
+			"changeServerUrl": "чтобы изменить URL сервера."
+		},
+		"UserMenu": {
+			"notifications": "Уведомления",
+			"settings": "Настройки",
+			"switchServer": "Сменить сервер"
+		},
+		"book": {
+			"BookCard": {
+				"fileMissing": "Файл отсутствует",
+				"pagesLeft": "осталось {{count}} стр.",
+				"completed": "Завершено"
+			},
+			"BookSearch": {
+				"searchPlaceholder": "Поиск книги..."
+			},
+			"BookSearchOverlay": {
+				"searchForBook": "Поиск книги",
+				"description": "Используйте строку поиска ниже, чтобы найти книгу"
+			},
+			"metadata": {
+				"MediaMetadataEditor": {
+					"missing": "Отсутствует",
+					"updateError": "Не удалось обновить метаданные",
+					"lockedFieldsError": "Не удалось обновить заблокированные поля"
+				}
+			}
+		},
+		"bookClub": {
+			"DeleteBookClubConfirmation": {
+				"deleteError": "Не удалось удалить книжный клуб",
+				"title": "Удалить книжный клуб",
+				"description": "Вы уверены, что хотите удалить этот клуб? Это действие нельзя отменить.",
+				"confirmText": "Удалить клуб"
+			},
+			"books": {
+				"BookClubBookItem": {
+					"started": "Начато {{when}}",
+					"completed": "Завершено {{count}} {{days}} назад",
+					"added": "Добавлено {{when}}",
+					"currentlyReading": "Сейчас читается",
+					"pastBook": "Прошлая книга",
+					"untitled": "Без названия",
+					"externalLink": "Внешняя ссылка",
+					"accessBook": "Открыть книгу",
+					"readFor": "Читалось {{count}} {{days}}",
+					"notCompletedYet": "Ещё не завершено"
+				},
+				"BookClubBooks": {
+					"hidePastBooks": "Скрыть прошлые книги",
+					"showPastBooks": "Показать прошлые книги",
+					"emptyTitle": "Нет книг для отображения",
+					"emptySubtitle": "В клубе нет запланированных книг",
+					"createSchedule": "Создать расписание",
+					"books": "Книги"
+				}
+			}
+		},
+		"explorer": {
+			"FileExplorer": {
+				"emptyTitle": "Нет файлов",
+				"emptySubtitle": "Эта папка пуста"
+			},
+			"FileExplorerProvider": {
+				"noDbEntry": "Для этого файла не найдена связанная запись в базе данных",
+				"unknownError": "Произошла неизвестная ошибка"
+			},
+			"table": {
+				"FileTable": {
+					"cover": "Обложка",
+					"name": "Название"
+				}
+			},
+			"upload": {
+				"UploadMenu": {
+					"tooltip": "Загрузить",
+					"addBooks": "Добавить книги",
+					"addSeries": "Добавить серию"
+				}
+			}
+		},
+		"filters": {
+			"FilterDisplay": {
+				"isAnyOf": "входит в",
+				"is": "равно",
+				"matches": "совпадает с",
+				"matchesAnyOf": "совпадает с любым из"
+			},
+			"FilterSlideOver": {
+				"notImplemented": "Ещё не реализовано",
+				"title": "Параметры фильтра",
+				"description": "Используйте параметры ниже, чтобы сузить поиск",
+				"filter": "Фильтр",
+				"clearFilters": "Очистить фильтры",
+				"applyFilters": "Применить фильтры"
+			},
+			"URLFilterDrawer": {
+				"title": "Настройка фильтров URL",
+				"description": "Настройте фильтры, применённые к текущему виду",
+				"tooltip": "Настроить фильтры",
+				"clearFilters": "Очистить фильтры",
+				"applyFilters": "Применить фильтры"
+			},
+			"URLPageSize": {
+				"perPage": "на странице"
+			},
+			"URLPagination": {
+				"ofPages": "из {{pages}}",
+				"previousPage": "Предыдущая страница",
+				"nextPage": "Следующая страница"
+			},
+			"form": {
+				"AgeRatingFilter": {
+					"label": "Возрастной рейтинг",
+					"anyAgeLabel": "Любой возраст",
+					"anyAgeDescription": "Фильтр по возрастному рейтингу не применяется",
+					"customLabel": "От N лет и старше",
+					"customDescription": "Будут показаны только {{variant}} с возрастным рейтингом N или ниже, где N — число, которое вы вводите ниже"
+				},
+				"ExtensionSelect": {
+					"label": "Расширение",
+					"any": "Любое"
+				},
+				"OrderBySelect": {
+					"label": "Сортировать по",
+					"selectOption": "Выберите вариант"
+				},
+				"MediaFilterForm": {
+					"onlyFromSeries": "Показывать только варианты, доступные в серии",
+					"genre": "Жанр",
+					"writer": "Сценарист",
+					"penciller": "Карандашник",
+					"colorist": "Колорист",
+					"letterer": "Леттерер",
+					"inker": "Контурщик",
+					"publisher": "Издатель",
+					"editor": "Редактор",
+					"character": "Персонаж"
+				},
+				"ReadStatusSelect": {
+					"label": "Статус прочтения",
+					"completed": "Прочитано",
+					"reading": "Читается",
+					"unread": "Не прочитано"
+				},
+				"SeriesFilterForm": {
+					"status": {
+						"label": "Статус",
+						"options": {
+							"continuing": "Продолжается",
+							"ended": "Завершена"
+						}
+					}
+				},
+				"OrderByDirection": {
+					"descending": "По убыванию",
+					"ascending": "По возрастанию"
+				}
+			},
+			"Search": {
+				"search": "Поиск",
+				"unavailable": "Эта функция сейчас недоступна"
+			}
+		},
+		"jobs": {
+			"JobOverlay": {
+				"jobInProgress": "Задача выполняется",
+				"tasks": "Задачи ({{completed}}/{{total}})"
+			}
+		},
+		"library": {
+			"LastVisitedLibrary": {
+				"lastVisited": "Последнее посещение"
+			},
+			"createOrUpdate": {
+				"sections": {
+					"GenerateThumbnailColorsSwitch": {
+						"label": "Цвета миниатюр",
+						"description": "Извлекать доминирующие цвета миниатюр. Используется для заполнителей миниатюр и акцентных цветов"
+					}
+				}
+			},
+			"DeleteLibraryConfirmation": {
+				"deleteError": "Произошла ошибка при удалении библиотеки"
+			}
+		},
+		"markdown": {
+			"MarkdownEditor": {
+				"write": "Написать",
+				"preview": "Предпросмотр",
+				"addSpoiler": "Добавить спойлер",
+				"tagUser": "Упомянуть пользователя"
+			},
+			"MarkdownPreview": {
+				"clickToReveal": "Нажмите, чтобы показать",
+				"clickToHide": "Нажмите, чтобы скрыть"
+			}
+		},
+		"metadata": {
+			"metadataEditor": {
+				"ResetMetadata": {
+					"deleteMetadata": "Удалить метаданные",
+					"selectImpact": "Выберите область удаления",
+					"confirmDelete": "Удалить",
+					"seriesLabel": "Серия",
+					"seriesDescription": "Удалить только метаданные этой серии",
+					"booksLabel": "Книги",
+					"booksDescription": "Удалить все метаданные книг этой серии",
+					"everythingLabel": "Всё",
+					"everythingDescription": "Удалить все метаданные всего, что связано с этой серией",
+					"cannotBeUndone": "Это действие нельзя отменить",
+					"permanentWarning": "Это безвозвратно удалит все метаданные выбранных элементов. Для повторного создания метаданных потребуется запустить сканирование вручную"
+				},
+				"cells": {
+					"NumberCell": {
+						"resetField": "Сбросить поле"
+					},
+					"TextCell": {
+						"resetField": "Сбросить поле"
+					},
+					"BadgeListCell": {
+						"removeItem": "Удалить элемент"
+					},
+					"InlineBadgeListInput": {
+						"removeItem": "Удалить элемент"
+					},
+					"LockFieldButton": {
+						"unlockField": "Разблокировать поле",
+						"lockField": "Заблокировать поле"
+					}
+				},
+				"MetadataEditorTable": {
+					"noMetadata": "Нет метаданных"
+				}
+			},
+			"metadataMatching": {
+				"PendingMatchesTable": {
+					"reviewMatch": "Проверить совпадение",
+					"unknownEntity": "Неизвестно",
+					"acceptAllSuccess": "Все ожидающие совпадения приняты"
+				}
+			}
+		},
+		"navigation": {
+			"sidebar": {
+				"Logout": {
+					"title": "Выйти",
+					"description": "Вы уверены, что хотите выйти?",
+					"confirmText": "Выйти",
+					"tooltip": "Выйти"
+				},
+				"SignOut": {
+					"title": "Выйти",
+					"description": "Вы уверены, что хотите выйти?",
+					"confirmText": "Выйти",
+					"label": "Выйти"
+				}
+			},
+			"topbar": {
+				"sections": {
+					"UserMenu": {
+						"logoutError": "Произошла ошибка при выходе. Пожалуйста, попробуйте снова.",
+						"notifications": "Уведомления",
+						"logout": "Выйти"
+					},
+					"library": {
+						"LibraryNavigationItem": {
+							"noLibraries": "Нет библиотек",
+							"noLibrariesDescription": "У вас пока нет библиотек",
+							"libraries": "Библиотеки",
+							"createLibrary": "Создать библиотеку",
+							"seeAll": "Показать все"
+						}
+					}
+				}
+			}
+		},
+		"readers": {
+			"epub": {
+				"EpubReaderHeader": {
+					"bookOverview": "Обзор книги"
+				},
+				"controls": {
+					"FontSizeControl": {
+						"fontSize": "Размер шрифта",
+						"previewCap": "Предпросмотр шрифта ограничен 50px"
+					},
+					"LineHeightControl": {
+						"lineHeight": "Высота строки"
+					},
+					"ReadingDirection": {
+						"label": "Направление чтения",
+						"leftToRight": "Слева направо",
+						"rightToLeft": "Справа налево"
+					},
+					"ReadingMode": {
+						"label": "Режим чтения",
+						"paged": "Постранично",
+						"continuous": "Непрерывно"
+					},
+					"SearchCommand": {
+						"spineItem": "Элемент {{index}}",
+						"noResults": "Ничего не найдено.",
+						"placeholder": "Введите запрос для поиска"
+					},
+					"ThemeControls": {
+						"title": "Тема и настройки",
+						"appearance": "Внешний вид"
+					},
+					"FontFamily": {
+						"default": "По умолчанию"
+					},
+					"FullScreenToggle": {
+						"exitFullscreen": "Выйти из полноэкранного режима",
+						"enterFullscreen": "Полноэкранный режим"
+					}
+				},
+				"locations": {
+					"Bookmarks": {
+						"empty": "Нет закладок"
+					},
+					"LocationManager": {
+						"title": "Навигация по книге",
+						"contents": "Содержание",
+						"bookmarks": "Закладки",
+						"annotations": "Примечания"
+					},
+					"TableOfContents": {
+						"ariaLabel": "Содержание"
+					}
+				},
+				"EpubJsReader": {
+					"failedToNavigate": "Не удалось перейти, проверьте целостность файла EPUB",
+					"loadErrorDescription": "Возможно, у вас нет права читать эту книгу, либо файл отсутствует или повреждён"
+				}
+			},
+			"imageBased": {
+				"container": {
+					"BrightnessControl": {
+						"label": "Яркость"
+					},
+					"DoubleSpreadBehavior": {
+						"label": "Разворот",
+						"auto": "Авто",
+						"always": "Всегда",
+						"off": "Выключено"
+					},
+					"ImageScalingSelect": {
+						"label": "Масштаб изображения",
+						"auto": "Авто",
+						"height": "По высоте",
+						"width": "По ширине",
+						"original": "Оригинал"
+					},
+					"NextInSeries": {
+						"nextUp": "Далее:",
+						"read": "Читать"
+					},
+					"ReaderFooter": {
+						"readingTime": "Время чтения: {{time}}",
+						"pageOf": "{{current}} из {{total}}"
+					},
+					"ReaderHeader": {
+						"goToBookOverview": "Перейти к обзору книги"
+					},
+					"ReaderSettings": {
+						"mode": "Режим",
+						"imageOptions": "Параметры изображения",
+						"preferences": "Настройки",
+						"separateSecondPage": "Отделять вторую страницу",
+						"panZoomWithoutCtrl": "Перемещение и масштаб без Ctrl / Cmd",
+						"tapSidesToNavigate": "Касание по краям для навигации",
+						"readingTimer": "Таймер чтения",
+						"experimentalAnimatedReader": "Экспериментальная анимированная читалка"
+					},
+					"ReadingDirectionSelect": {
+						"label": "Направление чтения",
+						"leftToRight": "Слева направо",
+						"rightToLeft": "Справа налево"
+					},
+					"ReadingModeSelect": {
+						"label": "Поток",
+						"verticalScroll": "Вертикальная прокрутка",
+						"horizontalScroll": "Горизонтальная прокрутка",
+						"paged": "Постранично"
+					},
+					"TimerMenu": {
+						"startTimer": "Запустить таймер",
+						"stopTimer": "Остановить таймер",
+						"resetTimer": "Сбросить таймер"
+					},
+					"SettingsDialog": {
+						"book": "Книга",
+						"global": "Глобально"
+					}
+				}
+			},
+			"pdf": {
+				"NativePDFViewer": {
+					"failedToLoadPrefix": "Не удалось загрузить PDF.",
+					"clickHere": "Нажмите здесь",
+					"failedToLoadSuffix": "чтобы попробовать скачать его напрямую."
+				}
+			}
+		},
+		"series": {
+			"SeriesCard": {
+				"seriesMissing": "Серия отсутствует"
+			},
+			"StackedSeriesCard": {
+				"seriesMissing": "Серия отсутствует"
+			},
+			"metadata": {
+				"SeriesMetadataEditor": {
+					"missing": "Отсутствует",
+					"updateMetadataError": "Не удалось обновить метаданные",
+					"updateLockedFieldsError": "Не удалось обновить заблокированные поля"
+				}
+			}
+		},
+		"smartList": {
+			"createOrUpdate": {
+				"sections": {
+					"FilterConfigJSON": {
+						"showJSON": "Показать JSON",
+						"description": "Просмотр исходного JSON-представления фильтров"
+					}
+				},
+				"queryBuilder": {
+					"filterGroup": {
+						"OperatorSelect": {
+							"list": "Список",
+							"match": "Совпадение",
+							"equality": "Равенство",
+							"placeholder": "Оператор",
+							"operators": {
+								"anyOf": "любой из списка",
+								"contains": "содержит строку",
+								"eq": "равно",
+								"excludes": "не содержит строку",
+								"is": "является",
+								"isNot": "не является",
+								"isAnyOf": "является любым из",
+								"isNoneOf": "не является ни одним из",
+								"gt": "больше чем",
+								"gte": "больше или равно",
+								"lt": "меньше чем",
+								"lte": "меньше или равно",
+								"noneOf": "ни одного из списка",
+								"neq": "не равно",
+								"range": "в диапазоне"
+							}
+						},
+						"filterValue": {
+							"EnumValue": {
+								"finished": "Прочитано",
+								"notStarted": "Не начато",
+								"abandoned": "Брошено"
+							}
+						}
+					}
+				}
+			}
+		},
+		"table": {
+			"Table": {
+				"to": "по",
+				"of": "из",
+				"nothingToShow": "Нет данных для отображения",
+				"showRows": "Показать {{count}} строк"
+			},
+			"TableFilterInput": {
+				"placeholder": "Фильтр данных"
+			},
+			"TableFooter": {
+				"to": "по",
+				"of": "из"
+			},
+			"EntityTableColumnConfiguration": {
+				"title": "Настроить столбцы",
+				"description": "Выберите, какие столбцы отображаются в таблицах просмотра книг",
+				"visible": "Видимые",
+				"hidden": "Скрытые",
+				"moveToHidden": "Переместить в скрытые",
+				"moveToVisible": "Переместить в видимые",
+				"dropColumnsHere": "Перетащите столбцы сюда"
+			}
+		},
+		"PagePopoverForm": {
+			"validation": "Введите число от 1 до {{max}}.",
+			"label": "Перейти на другую страницу",
+			"description": "Введите число от 1 до {{max}}."
+		},
+		"ReadMore": {
+			"readLess": "Свернуть",
+			"readMore": "Читать далее"
+		}
+	},
+	"scenes": {
+		"book": {
+			"BookActionMenu": {
+				"toast": {
+					"completionError": "Не удалось обновить статус прочтения книги",
+					"deleteSessionError": "Не удалось удалить текущий сеанс",
+					"deleteHistoryError": "Не удалось удалить историю чтения"
+				},
+				"menu": {
+					"continueReading": "Продолжить чтение",
+					"readFromBeginning": "Читать с начала",
+					"incognitoMode": "Режим инкогнито",
+					"nativePdfViewer": "Встроенный просмотр PDF",
+					"markAsRead": "Отметить как прочитанное",
+					"clearProgress": "Сбросить прогресс",
+					"deleteHistory": "Удалить историю",
+					"manage": "Управление",
+					"email": "Отправить по почте"
+				},
+				"download": "Скачать"
+			},
+			"BookFileInformation": {
+				"title": "Информация о файле",
+				"size": "Размер: {{value}}",
+				"format": "Формат: {{value}}",
+				"hash": "Хеш: {{value}}",
+				"relativePath": "Относительный путь: {{value}}"
+			},
+			"BookOverviewScene": {
+				"bookNotFound": "Книга не найдена",
+				"metadata": "Метаданные"
+			},
+			"BookOverviewSceneHeader": {
+				"pages": "Страницы",
+				"size": "Размер",
+				"format": "Формат",
+				"year": "Год",
+				"progress": "Прогресс",
+				"ageRating": "{{value}}+",
+				"lastCompletedOn": "Последний раз прочитано {{date}}",
+				"completedOn": "Прочитано {{date}}",
+				"genres": "Жанры",
+				"writers": "Авторы",
+				"tags": "Теги",
+				"links": "Ссылки"
+			},
+			"BooksAfterCursor": {
+				"nextInSeries": "Далее в серии",
+				"emptyTitle": "Нечего показать",
+				"emptyDescription": "После этой книги больше нет"
+			},
+			"DeleteHistoryConfirmation": {
+				"title": "Удалить историю чтения",
+				"description": "Вы уверены, что хотите удалить историю чтения?",
+				"alertTitle": "Это действие необратимо",
+				"alertDescription": "После удаления историю прочтения восстановить не получится"
+			},
+			"settings": {
+				"BookTagEditor": {
+					"heading": "Теги",
+					"description": "Назначьте теги этой книге"
+				},
+				"BookThumbnailSelector": {
+					"uploadError": "Не удалось загрузить изображение",
+					"updateError": "Не удалось обновить миниатюру",
+					"dialogTitle": "Выбор миниатюры",
+					"dialogDescription": "Выберите страницу этой книги для использования в качестве новой миниатюры",
+					"cancel": "Отмена",
+					"confirm": "Подтвердить выбор"
+				}
+			},
+			"EmailBookDialog": {
+				"sendErrors": "При отправке письма (писем) возникли ошибки. Подробности смотрите в логах",
+				"sendFailed": "Не удалось отправить письмо"
+			}
+		},
+		"bookClub": {
+			"BookClubHeader": {
+				"createdBy": "Создатель",
+				"created": "Создан"
+			},
+			"UserBookClubsScene": {
+				"active": "Активен",
+				"inactive": "Неактивен",
+				"memberCount": "Участников: {{count}}",
+				"goToClub": "Перейти к клубу",
+				"noClubs": "Вы не состоите ни в одном книжном клубе",
+				"explorePublic": "Найти публичные книжные клубы",
+				"yourClubs": "Ваши клубы",
+				"helmet": "Книжные клубы"
+			},
+			"tabs": {
+				"settings": {
+					"members": {
+						"RemoveMemberConfirmation": {
+							"title": "Удалить участника",
+							"description": "Вы уверены, что хотите удалить этого участника?",
+							"confirm": "Подтвердить"
+						},
+						"MembersTable": {
+							"removeError": "Не удалось удалить участника",
+							"member": "Участник"
+						},
+						"MemberActionMenu": {
+							"remove": "Удалить"
+						}
+					},
+					"roles": {
+						"MemberSpecDisplay": {
+							"heading": "Свои названия",
+							"description": "Вы можете переопределить название по умолчанию для любой роли. Это чисто косметическое изменение и не влияет на права доступа",
+							"roleColumn": "Роль",
+							"showAsColumn": "Отображать как"
+						}
+					},
+					"scheduler": {
+						"AddBookCard": {
+							"removeSelection": "Сбросить выбор",
+							"pickBookHeading": "Выберите книгу",
+							"pickBookDescription": "Вы можете добавить книгу из своей библиотеки",
+							"externalBookHeading": "Добавить внешнюю книгу",
+							"externalBookDescription": "Если вы хотите добавить книгу, которой нет в вашей библиотеке, укажите сведения о ней здесь",
+							"titleLabel": "Название",
+							"authorLabel": "Автор",
+							"bookUrlLabel": "URL книги",
+							"dividerOr": "ИЛИ",
+							"dividerAndThen": "А ЗАТЕМ",
+							"configureDatesHeading": "Настройте даты",
+							"configureDatesDescription": "Если не указано, даты начала и окончания будут установлены по разумному умолчанию на основе даты окончания предыдущей книги",
+							"startDateLabel": "Дата начала",
+							"endDateLabel": "Дата окончания"
+						},
+						"CreateOrAddToScheduleForm": {
+							"booksToAdd": "Книг для добавления"
+						}
+					},
+					"basics": {
+						"BasicSettingsScene": {
+							"updateClub": "Обновить клуб"
+						}
+					}
+				}
+			},
+			"BookClubNavigation": {
+				"home": "Главная",
+				"discussion": "Обсуждение",
+				"members": "Участники"
+			}
+		},
+		"createLibrary": {
+			"CreateLibraryScene": {
+				"errorTitle": "Не удалось создать библиотеку"
+			}
+		},
+		"error": {
+			"FourOhFour": {
+				"message": "Похоже, страница, которую вы ищете, не существует!",
+				"goHome": "На главную",
+				"reportIssue": "Сообщить о проблеме"
+			}
+		},
+		"library": {
+			"LibraryHeader": {
+				"series": "Серии",
+				"books": "Книги",
+				"completed": "Завершено",
+				"inProgress": "В процессе",
+				"readingTime": "Время чтения",
+				"totalSize": "Общий размер",
+				"genres": "Жанры",
+				"tags": "Теги"
+			},
+			"tabs": {
+				"settings": {
+					"LibrarySettingsRouter": {
+						"scanFailed": "Не удалось выполнить сканирование библиотеки",
+						"scanFailedDescription": "Подробности смотрите в логах"
+					},
+					"integrations": {
+						"analysis": {
+							"LibraryAnalysisScene": {
+								"workInProgress": "В разработке",
+								"workInProgressDescription": "Эта страница имеет ограниченную функциональность и находится в разработке"
+							}
+						}
+					},
+					"options": {
+						"thumbnails": {
+							"DeleteLibraryThumbnails": {
+								"deleteSuccess": "Миниатюры библиотеки удалены",
+								"deleteError": "Произошла ошибка при удалении миниатюр библиотеки",
+								"heading": "Удаление миниатюр",
+								"description": "Удалить все сгенерированные миниатюры этой библиотеки",
+								"button": "Удалить миниатюры",
+								"modalTitle": "Удалить миниатюры библиотеки",
+								"modalDescription": "Вы уверены, что хотите удалить все миниатюры этой библиотеки?",
+								"alertTitle": "Это действие нельзя отменить",
+								"alertDescription": "Удаление миниатюр библиотеки удалит все сгенерированные изображения, и вам придётся вручную пересоздать их"
+							},
+							"LibraryThumbnailSelector": {
+								"uploadFailed": "Не удалось загрузить изображение",
+								"updateFailed": "Не удалось обновить миниатюру",
+								"choosePage": "Выберите страницу этой книги для новой миниатюры",
+								"selectBook": "Выберите книгу из серии",
+								"selectSeries": "Выберите серию из библиотеки",
+								"goBack": "Назад",
+								"label": "Выбор миниатюры",
+								"labelDescription": "Выберите другую миниатюру для этой библиотеки: из книги или загрузите свою",
+								"dialogTitle": "Выбор миниатюры",
+								"cancel": "Отмена",
+								"confirm": "Подтвердить выбор"
+							},
+							"ProcessLibraryThumbnails": {
+								"label": "Обработка цветов миниатюр",
+								"description": "Извлечь отсутствующие метаданные о цветах миниатюр или принудительно пересоздать их для всех миниатюр",
+								"button": "Извлечь цвета",
+								"missingOnly": "Только отсутствующие",
+								"reprocessAll": "Обработать все заново"
+							},
+							"RegenerateThumbnails": {
+								"label": "Пересоздание миниатюр",
+								"description": "Сгенерировать отсутствующие миниатюры или принудительно пересоздать все миниатюры",
+								"button": "Сгенерировать миниатюры",
+								"createMissingOnly": "Создать только отсутствующие",
+								"forceRecreateAll": "Принудительно пересоздать все"
+							}
+						},
+						"scanner": {
+							"customScan": {
+								"ScanConfigForm": {
+									"rebuildMetadata": {
+										"label": "Пересобрать метаданные",
+										"description": "Пересобрать метаданные для всех книг в библиотеке"
+									},
+									"rebuildHashes": {
+										"label": "Пересобрать хеши",
+										"description": "Пересобрать хеши для всех книг в библиотеке"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"LibraryNavigation": {
+				"files": "Файлы"
+			}
+		},
+		"series": {
+			"SeriesHeader": {
+				"books": "Книги",
+				"completed": "Завершено",
+				"inProgress": "В процессе",
+				"readingTime": "Время чтения",
+				"totalSize": "Общий размер",
+				"genres": "Жанры",
+				"tags": "Теги",
+				"links": "Ссылки"
+			},
+			"tabs": {
+				"settings": {
+					"SeriesTagEditor": {
+						"heading": "Теги",
+						"description": "Назначьте теги этой серии"
+					},
+					"SeriesThumbnailSelector": {
+						"uploadError": "Не удалось загрузить изображение",
+						"updateError": "Не удалось обновить миниатюру",
+						"dialogTitle": "Выберите миниатюру",
+						"choosePage": "Выберите страницу из этой книги для новой миниатюры",
+						"selectBook": "Выберите книгу из серии",
+						"goBack": "Назад",
+						"cancel": "Отмена",
+						"confirm": "Подтвердить выбор"
+					}
+				}
+			},
+			"SeriesNavigation": {
+				"files": "Файлы"
+			}
+		},
+		"settings": {
+			"app": {
+				"apiKeys": {
+					"DeleteAPIKeyConfirmModal": {
+						"title": "Удалить API-ключ",
+						"description": "Всё, что использует этот ключ, немедленно потеряет аутентификацию",
+						"confirmText": "Удалить ключ"
+					}
+				},
+				"preferences": {
+					"DebugSettings": {
+						"heading": "Настройки отладки",
+						"description": "Они отсутствуют в продакшене, но полезны для отладки",
+						"queryToolsLabel": "Инструменты запросов",
+						"queryToolsDescription": "Включить инструменты отладки запросов"
+					},
+					"PreferColorToggle": {
+						"label": "Предпочитать цвета",
+						"description": "Отображать больше основного акцентного цвета вместо монохромных цветов",
+						"title": "Эта настройка пока не поддерживается"
+					}
+				},
+				"reader": {
+					"DefaultFontFamily": {
+						"default": "По умолчанию"
+					}
+				}
+			},
+			"server": {
+				"email": {
+					"devices": {
+						"DeleteDeviceConfirmation": {
+							"deleteError": "Не удалось удалить устройство",
+							"title": "Удалить устройство",
+							"description": "Вы уверены, что хотите удалить это устройство?",
+							"confirmText": "Удалить устройство"
+						}
+					},
+					"emailers": {
+						"EmailerListItem": {
+							"notUsedYet": "Ещё не использовался",
+							"primaryEmailer": "Основной отправитель"
+						},
+						"EmailerSendRecordAttachmentTable": {
+							"notFound": "Не найдено",
+							"media": "Книга",
+							"filename": "Имя файла",
+							"size": "Размер"
+						},
+						"CreateOrUpdateEmailerForm": {
+							"custom": "Свой"
+						},
+						"EmailerSendHistoryTable": {
+							"sentAt": "Отправлено",
+							"recipient": "Получатель",
+							"sender": "Отправитель",
+							"unknown": "Неизвестно",
+							"attachments": "Вложения",
+							"none": "Нет",
+							"hide": "Скрыть",
+							"show": "Показать"
+						}
+					}
+				},
+				"jobs": {
+					"JobActionMenu": {
+						"invalidStateTitle": "Эта задача находится в недопустимом состоянии",
+						"invalidStateDescription": "Проверьте логи сервера и сообщите об этой проблеме",
+						"unknownError": "Произошла неизвестная ошибка",
+						"cancel": "Отмена",
+						"viewData": "Просмотр данных",
+						"viewLogs": "Просмотр логов",
+						"clearLogs": "Очистить логи",
+						"delete": "Удалить"
+					},
+					"JobDataInspector": {
+						"title": "Данные задачи",
+						"description": "Итоговый результат задачи после её завершения",
+						"rawJson": "Исходный JSON"
+					}
+				},
+				"users": {
+					"create-or-update": {
+						"AccountDetails": {
+							"usernameLabel": "Имя пользователя",
+							"usernamePlaceholder": "Имя пользователя",
+							"passwordLabel": "Пароль",
+							"passwordPlaceholder": "Пароль",
+							"generateRandomPassword": "Сгенерировать случайный пароль"
+						},
+						"MaxSessionsAllowed": {
+							"label": "Макс. число сессий",
+							"description": "Максимальное число одновременно действующих сессий. Если пользователь попытается войти после достижения этого лимита, самая старая сессия будет аннулирована."
+						},
+						"CreateOrUpdateUserForm": {
+							"accountDetailsHeading": "Данные учётной записи",
+							"accountDetailsDescription": "Пользователь может изменить эти значения в любой момент"
+						},
+						"UserRestrictionsForm": {
+							"heading": "Контроль доступа"
+						}
+					},
+					"login-activity": {
+						"LoginActivitySection": {
+							"heading": "История аутентификации",
+							"description": "Все попытки входа регистрируются и сохраняются в целях безопасности"
+						},
+						"LoginActivityTable": {
+							"emptyHeading": "Нет активности входов",
+							"emptySubtitle": "Вы же сами это очистили, верно?"
+						}
+					},
+					"user-table": {
+						"InspectUserSlideOver": {
+							"title": "Просмотр пользователя",
+							"description": "Просмотр информации и настроек пользователя",
+							"rawJson": "Сырой JSON"
+						},
+						"UserActionMenu": {
+							"lockError": "Произошла ошибка при блокировке пользователя",
+							"deleteSessionsError": "Произошла ошибка при удалении сессий пользователя",
+							"inspect": "Просмотр",
+							"clearSessions": "Очистить сессии",
+							"edit": "Изменить",
+							"delete": "Удалить",
+							"lockAccount": "Заблокировать аккаунт",
+							"unlockAccount": "Разблокировать аккаунт"
+						},
+						"UserTableSection": {
+							"heading": "Существующие учётные записи",
+							"description": "Список всех существующих учётных записей на сервере",
+							"createUser": "Создать пользователя"
+						},
+						"DeleteUserModal": {
+							"title": "Удаление учётной записи пользователя",
+							"description": "Вы уверены, что хотите удалить этого пользователя? Если выбрать полное удаление, пользователь и все его данные будут удалены безвозвратно.",
+							"hardDeleteLabel": "Полное удаление пользователя",
+							"cancel": "Отмена",
+							"deleteUser": "Удалить пользователя"
+						}
+					},
+					"UsersStats": {
+						"users": "Пользователи",
+						"booksCompleted": "Книг прочитано",
+						"booksInProgress": "Книг в процессе",
+						"powerReader": "Самый активный читатель",
+						"booksCount": "книг: {{count}}"
+					},
+					"UserPermissionsTable": {
+						"permission": "Право доступа"
+					},
+					"loginActivity": {
+						"LoginActivityTable": {
+							"user": "Пользователь",
+							"timestamp": "Время",
+							"ipAddress": "IP-адрес",
+							"userAgent": "User-agent",
+							"authResult": "Результат входа",
+							"authSuccess": "Успешно",
+							"authFailure": "Неудача"
+						}
+					},
+					"UserTable": {
+						"user": "Пользователь",
+						"createdAt": "Создан",
+						"lastLogin": "Последний вход",
+						"role": "Роль",
+						"serverOwner": "Владелец сервера",
+						"member": "Участник",
+						"never": "Никогда",
+						"sessions": "Сессии",
+						"sessionsTooltip": "Количество активных (не истёкших) сессий входа этого пользователя",
+						"status": "Статус",
+						"locked": "Заблокирован",
+						"active": "Активен"
+					}
+				},
+				"general": {
+					"ServerStats": {
+						"libraries": "Библиотеки",
+						"series": "Серии",
+						"books": "Книги",
+						"diskUsage": "Использование диска"
+					}
+				},
+				"logs": {
+					"persistedLogs": {
+						"PersistedLogsTable": {
+							"time": "Время",
+							"level": "Уровень",
+							"message": "Сообщение",
+							"jobId": "ID задачи"
+						}
+					}
+				}
+			},
+			"SettingsNavigation": {
+				"section": "Раздел"
+			}
+		},
+		"smartList": {
+			"items": {
+				"table": {
+					"TableColumnsBottomDrawer": {
+						"selectAtLeastOne": "Необходимо выбрать хотя бы один столбец",
+						"adjustColumns": "Настроить столбцы",
+						"title": "Настройка таблицы",
+						"subtitle": "Выберите, какие столбцы показывать или скрыть",
+						"groupColumns": "Столбцы группировки",
+						"groupColumnsDescription": "Это влияет только на родительскую таблицу, по которой группируются книги",
+						"bookColumns": "Столбцы книг",
+						"bookColumnsDescription": "Это влияет только на вложенные таблицы книг",
+						"enableMultiSort": "Включить множественную сортировку",
+						"enableMultiSortDescription": "Сортировка по столбцу отменяет предыдущую сортировку. Эта настройка позволяет вместо этого комбинировать их",
+						"save": "Сохранить",
+						"cancel": "Отмена"
+					},
+					"FilterBottomDrawer": {
+						"adjustFilter": "Настроить фильтр",
+						"notImplemented": "Эта функция ещё не реализована"
+					},
+					"groupColumns": {
+						"collapse": "Свернуть",
+						"expand": "Развернуть",
+						"collapseAll": "Свернуть все",
+						"expandAll": "Развернуть все",
+						"series": "Серия",
+						"library": "Библиотека",
+						"books": "Книги",
+						"nameOption": "Название ({{scope}})",
+						"seriesScope": "серия",
+						"libraryScope": "библиотека"
+					}
+				}
+			},
+			"UserSmartListsScene": {
+				"heading": "Умные списки",
+				"subtitle": "Ваши избранные поисковые запросы и фильтры, сохранённые для быстрого доступа",
+				"accessCount": "Вам доступно {{count}} умных {{lists}}"
+			},
+			"settings": {
+				"access": {
+					"ChangeVisibilityConfirmation": {
+						"title": "Изменить видимость"
+					}
+				}
+			}
+		}
 	}
 }

@@ -95,8 +95,8 @@ export default function APIKeyInspector({ apiKey, onClose }: Props) {
 		<Sheet
 			open={!!apiKey}
 			onClose={onClose}
-			title="API key"
-			description="A detailed view of this key"
+			title={t(getKey('title'))}
+			description={t(getKey('description'))}
 		>
 			<div className="flex flex-col">
 				<div className="px-4 py-2" data-testid="name-meta">

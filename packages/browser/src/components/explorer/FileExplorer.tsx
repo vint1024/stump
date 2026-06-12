@@ -1,3 +1,5 @@
+import { useLocaleContext } from '@stump/i18n'
+
 import GenericEmptyState from '@/components/GenericEmptyState'
 
 import { useFileExplorerContext } from './context'
@@ -8,12 +10,16 @@ import { FileTable } from './table'
 // This is not optimal, and should be refactored to issue one query and match on the client
 
 export default function FileExplorer() {
+	const { t } = useLocaleContext()
 	const { files, layout } = useFileExplorerContext()
 
 	if (!files.length) {
 		return (
 			<div className="px-4 flex h-full w-full items-center justify-center">
-				<GenericEmptyState title="No files" subtitle="This folder is empty" />
+				<GenericEmptyState
+					title={t('components.explorer.FileExplorer.emptyTitle')}
+					subtitle={t('components.explorer.FileExplorer.emptySubtitle')}
+				/>
 			</div>
 		)
 	}

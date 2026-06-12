@@ -42,6 +42,48 @@ export default function DevicesTable({ onSelectForUpdate }: Props) {
 
 	const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
 
+	const baseColumns = useMemo(
+		() =>
+			[
+				columnHelper.accessor('name', {
+					cell: ({ getValue }) => <Text size="sm">{getValue()}</Text>,
+					header: () => (
+						<Text size="sm" variant="muted">
+							{t(`${LOCALE_BASE}.columns.name`)}
+						</Text>
+					),
+				}),
+				columnHelper.accessor('email', {
+					cell: ({ getValue }) => <Text size="sm">{getValue()}</Text>,
+					header: () => (
+						<Text size="sm" variant="muted">
+							{t(`${LOCALE_BASE}.columns.email`)}
+						</Text>
+					),
+				}),
+				columnHelper.display({
+					cell: ({
+						row: {
+							original: { forbidden },
+						},
+					}) => (
+						<Badge size="sm" variant={forbidden ? 'warning' : 'default'}>
+							{forbidden
+								? t(`${LOCALE_BASE}.status.forbidden`)
+								: t(`${LOCALE_BASE}.status.allowed`)}
+						</Badge>
+					),
+					header: () => (
+						<Text size="sm" variant="muted">
+							{t(`${LOCALE_BASE}.columns.status`)}
+						</Text>
+					),
+					id: 'status',
+				}),
+			] as ColumnDef<RegisteredEmailDevice>[],
+		[t],
+	)
+
 	const columns = useMemo(
 		() => [
 			...baseColumns,
@@ -57,7 +99,7 @@ export default function DevicesTable({ onSelectForUpdate }: Props) {
 				size: 0,
 			}),
 		],
-		[onSelectForUpdate, canEditEmailer],
+		[onSelectForUpdate, canEditEmailer, baseColumns],
 	)
 
 	if (!devices?.length) {
@@ -112,38 +154,3 @@ export default function DevicesTable({ onSelectForUpdate }: Props) {
 const LOCALE_BASE = 'settingsScene.server/email.sections.devices.table'
 
 const columnHelper = createColumnHelper<RegisteredEmailDevice>()
-const baseColumns = [
-	columnHelper.accessor('name', {
-		cell: ({ getValue }) => <Text size="sm">{getValue()}</Text>,
-		header: () => (
-			<Text size="sm" variant="muted">
-				Name
-			</Text>
-		),
-	}),
-	columnHelper.accessor('email', {
-		cell: ({ getValue }) => <Text size="sm">{getValue()}</Text>,
-		header: () => (
-			<Text size="sm" variant="muted">
-				Email
-			</Text>
-		),
-	}),
-	columnHelper.display({
-		cell: ({
-			row: {
-				original: { forbidden },
-			},
-		}) => (
-			<Badge size="sm" variant={forbidden ? 'warning' : 'default'}>
-				{forbidden ? 'Forbidden' : 'Allowed'}
-			</Badge>
-		),
-		header: () => (
-			<Text size="sm" variant="muted">
-				Status
-			</Text>
-		),
-		id: 'status',
-	}),
-] as ColumnDef<RegisteredEmailDevice>[]

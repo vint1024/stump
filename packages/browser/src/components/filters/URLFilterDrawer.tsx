@@ -1,4 +1,5 @@
 import { Button, IconButton, Sheet, ToolTip } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import { Bolt } from 'lucide-react'
 import { Suspense, useCallback, useMemo, useState } from 'react'
 import { useMediaMatch } from 'rooks'
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export default function URLFilterDrawer({ entity }: Props) {
+	const { t } = useLocaleContext()
 	const { filters, setFilters } = useFilterContext()
 
 	const [isOpen, setIsOpen] = useState(false)
@@ -44,10 +46,10 @@ export default function URLFilterDrawer({ entity }: Props) {
 			open={isOpen}
 			onClose={() => setIsOpen(false)}
 			onOpen={() => setIsOpen(true)}
-			title="Configure URL filters"
-			description="Adjust the filters applied to the current view"
+			title={t('components.filters.URLFilterDrawer.title')}
+			description={t('components.filters.URLFilterDrawer.description')}
 			trigger={
-				<ToolTip content="Configure filters" size="sm">
+				<ToolTip content={t('components.filters.URLFilterDrawer.tooltip')} size="sm">
 					<span className="relative inline-flex">
 						<IconButton
 							variant="ghost"
@@ -79,11 +81,11 @@ export default function URLFilterDrawer({ entity }: Props) {
 						variant="danger"
 						onClick={handleClearFilters}
 					>
-						Clear filters
+						{t('components.filters.URLFilterDrawer.clearFilters')}
 					</Button>
 
 					<Button size="sm" type="submit" form="filter-form" className="w-full">
-						Apply filters
+						{t('components.filters.URLFilterDrawer.applyFilters')}
 					</Button>
 				</div>
 			}

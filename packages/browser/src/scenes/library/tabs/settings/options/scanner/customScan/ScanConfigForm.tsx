@@ -94,16 +94,24 @@ export default function ScanConfigForm({ onScan }: Props) {
 			{variant === 'custom' && (
 				<div className="gap-6 p-4 flex flex-col">
 					<WideSwitch
-						label="Rebuild metadata"
-						description="Rebuild metadata for all books in the library"
+						label={t(
+							'scenes.library.tabs.settings.options.scanner.customScan.ScanConfigForm.rebuildMetadata.label',
+						)}
+						description={t(
+							'scenes.library.tabs.settings.options.scanner.customScan.ScanConfigForm.rebuildMetadata.description',
+						)}
 						name="config.regenMeta"
 						checked={regenMeta}
 						onCheckedChange={(value) => form.setValue('config.regenMeta', value)}
 					/>
 
 					<WideSwitch
-						label="Rebuild hashes"
-						description="Rebuild hashes for all books in the library"
+						label={t(
+							'scenes.library.tabs.settings.options.scanner.customScan.ScanConfigForm.rebuildHashes.label',
+						)}
+						description={t(
+							'scenes.library.tabs.settings.options.scanner.customScan.ScanConfigForm.rebuildHashes.description',
+						)}
 						name="config.regenHashes"
 						checked={regenHashes}
 						onCheckedChange={(value) => form.setValue('config.regenHashes', value)}
