@@ -16,7 +16,7 @@ use models::{
 };
 use sea_orm::{
 	prelude::*, sea_query::Query, Condition, DatabaseBackend, FromQueryResult, JoinType,
-	QueryOrder, QuerySelect, QueryTrait, Statement,
+	PaginatorTrait, QueryOrder, QuerySelect, QueryTrait, Statement,
 };
 
 use crate::{
@@ -141,11 +141,8 @@ impl Series {
 	}
 
 	async fn media_count(&self, ctx: &Context<'_>) -> Result<i64> {
-		let loader = ctx.data::<DataLoader<SeriesCountLoader>>()?;
-		let series_id = self.model.id.clone();
-		let media_count = loader.load_one(series_id).await?.unwrap_or(0i64);
-
-		Ok(media_count)
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		series_media_count_for_user(ctx, user, self.model.id.clone()).await
 	}
 
 	async fn media_alphabet(&self, ctx: &Context<'_>) -> Result<HashMap<String, i64>> {
@@ -386,11 +383,32 @@ impl Series {
 	}
 }
 
+/// The number of books in a series the user can actually see. A user with
+/// content rules or an age restriction gets a filtered count (so the shown
+/// total matches the visible book list and the progress numbers stay
+/// consistent); everyone else uses the fast batched loader.
+async fn series_media_count_for_user(
+	ctx: &Context<'_>,
+	user: &models::entity::user::AuthUser,
+	series_id: String,
+) -> Result<i64> {
+	if !user.content_rules.is_empty() || user.age_restriction.is_some() {
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+		let count = media::Entity::find_for_user(user)
+			.filter(media::Column::SeriesId.eq(series_id))
+			.count(conn)
+			.await?;
+		Ok(count as i64)
+	} else {
+		let loader = ctx.data::<DataLoader<SeriesCountLoader>>()?;
+		Ok(loader.load_one(series_id).await?.unwrap_or(0i64))
+	}
+}
+
 async fn get_series_progress(ctx: &Context<'_>, series_id: String) -> Result<(i64, i64)> {
 	let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 
-	let loader = ctx.data::<DataLoader<SeriesCountLoader>>()?;
-	let media_count = loader.load_one(series_id.clone()).await?.unwrap_or(0i64);
+	let media_count = series_media_count_for_user(ctx, user, series_id.clone()).await?;
 
 	let finished_loader = ctx.data::<DataLoader<SeriesFinishedCountLoader>>()?;
 	let finished_count = finished_loader

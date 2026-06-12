@@ -37,6 +37,46 @@ pub struct SeriesMutation;
 
 #[Object]
 impl SeriesMutation {
+	/// Permanently delete a single series and all of its books from the
+	/// database. Files on disk are NOT touched. This is the per-series
+	/// counterpart to "Clean Library" — handy for removing a series whose
+	/// folder is gone (status "Missing") without wiping the whole library.
+	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageLibrary)")]
+	async fn delete_series(&self, ctx: &Context<'_>, id: ID) -> Result<bool> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let core = ctx.data::<CoreContext>()?;
+		let conn = core.conn.as_ref();
+
+		// Access control: the user must be able to see the series
+		let series =
+			series::Entity::find_series_ident_for_user_and_id(user, id.to_string())
+				.into_model::<series::SeriesIdentSelect>()
+				.one(conn)
+				.await?
+				.ok_or("Series not found")?;
+
+		let txn = conn.begin().await?;
+		// Books first — FK cascades take care of metadata, tags, reading
+		// sessions, bookmarks, etc. The files on disk are left alone.
+		media::Entity::delete_many()
+			.filter(media::Column::SeriesId.eq(series.id.clone()))
+			.exec(&txn)
+			.await?;
+		// Drop any merge-map entries that fed books into this series, so a
+		// later scan doesn't try to route them to a now-deleted target.
+		series_merge::Entity::delete_many()
+			.filter(series_merge::Column::TargetSeriesId.eq(series.id.clone()))
+			.exec(&txn)
+			.await?;
+		series::Entity::delete_by_id(series.id.clone())
+			.exec(&txn)
+			.await?;
+		txn.commit().await?;
+
+		tracing::debug!(series_id = %series.id, "Deleted series");
+		Ok(true)
+	}
+
 	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageLibrary)")]
 	async fn analyze_series(
 		&self,
