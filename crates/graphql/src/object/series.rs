@@ -304,16 +304,7 @@ impl Series {
 
 	async fn read_count(&self, ctx: &Context<'_>) -> Result<i64> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
-		let finished_loader = ctx.data::<DataLoader<SeriesFinishedCountLoader>>()?;
-		let finished_count = finished_loader
-			.load_one(FinishedCountLoaderKey {
-				user_id: user.id.clone(),
-				series_id: self.model.id.clone(),
-			})
-			.await?
-			.unwrap_or(0i64);
-
-		Ok(finished_count)
+		series_finished_count_for_user(ctx, user, self.model.id.clone()).await
 	}
 
 	async fn unread_count(&self, ctx: &Context<'_>) -> Result<i64> {
@@ -384,15 +375,16 @@ impl Series {
 }
 
 /// The number of books in a series the user can actually see. A user with
-/// content rules or an age restriction gets a filtered count (so the shown
-/// total matches the visible book list and the progress numbers stay
-/// consistent); everyone else uses the fast batched loader.
+/// content rules gets a filtered count (so the shown total matches the visible
+/// book list and the progress numbers stay consistent, and the count agrees
+/// with the all-books-hidden series visibility filter); everyone else uses the
+/// fast batched loader, preserving the pre-existing behavior.
 async fn series_media_count_for_user(
 	ctx: &Context<'_>,
 	user: &models::entity::user::AuthUser,
 	series_id: String,
 ) -> Result<i64> {
-	if !user.content_rules.is_empty() || user.age_restriction.is_some() {
+	if !user.content_rules.is_empty() {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 		let count = media::Entity::find_for_user(user)
 			.filter(media::Column::SeriesId.eq(series_id))
@@ -405,19 +397,45 @@ async fn series_media_count_for_user(
 	}
 }
 
+/// The number of books in a series the user has finished AND can still see.
+/// Mirrors [`series_media_count_for_user`] (same gate) so the progress numbers
+/// stay consistent with the displayed total — otherwise a restricted user who
+/// finished a now-hidden book could read >100% complete.
+async fn series_finished_count_for_user(
+	ctx: &Context<'_>,
+	user: &models::entity::user::AuthUser,
+	series_id: String,
+) -> Result<i64> {
+	if !user.content_rules.is_empty() {
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+		let finished_media = Query::select()
+			.column(finished_reading_session::Column::MediaId)
+			.from(finished_reading_session::Entity)
+			.and_where(finished_reading_session::Column::UserId.eq(user.id.clone()))
+			.to_owned();
+		let count = media::Entity::find_for_user(user)
+			.filter(media::Column::SeriesId.eq(series_id))
+			.filter(media::Column::Id.in_subquery(finished_media))
+			.count(conn)
+			.await?;
+		Ok(count as i64)
+	} else {
+		let loader = ctx.data::<DataLoader<SeriesFinishedCountLoader>>()?;
+		Ok(loader
+			.load_one(FinishedCountLoaderKey {
+				user_id: user.id.clone(),
+				series_id,
+			})
+			.await?
+			.unwrap_or(0i64))
+	}
+}
+
 async fn get_series_progress(ctx: &Context<'_>, series_id: String) -> Result<(i64, i64)> {
 	let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 
 	let media_count = series_media_count_for_user(ctx, user, series_id.clone()).await?;
-
-	let finished_loader = ctx.data::<DataLoader<SeriesFinishedCountLoader>>()?;
-	let finished_count = finished_loader
-		.load_one(FinishedCountLoaderKey {
-			user_id: user.id.clone(),
-			series_id,
-		})
-		.await?
-		.unwrap_or(0i64);
+	let finished_count = series_finished_count_for_user(ctx, user, series_id).await?;
 
 	Ok((media_count, finished_count))
 }

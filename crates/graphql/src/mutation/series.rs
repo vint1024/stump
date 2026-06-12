@@ -18,7 +18,7 @@ use stump_core::{
 	database::SQLITE_BIND_LIMIT,
 	filesystem::{
 		image::{
-			generate_book_thumbnail, GenerateThumbnailOptions,
+			generate_book_thumbnail, remove_thumbnails, GenerateThumbnailOptions,
 			ThumbnailGenerationJobParams,
 		},
 		media::analysis::{AnalysisJobConfig, MediaAnalysisJobScope},
@@ -58,10 +58,13 @@ impl SeriesMutation {
 		let txn = conn.begin().await?;
 		// Books first — FK cascades take care of metadata, tags, reading
 		// sessions, bookmarks, etc. The files on disk are left alone.
-		media::Entity::delete_many()
+		let deleted_media_ids = media::Entity::delete_many()
 			.filter(media::Column::SeriesId.eq(series.id.clone()))
-			.exec(&txn)
-			.await?;
+			.exec_with_returning(&txn)
+			.await?
+			.into_iter()
+			.map(|m| m.id)
+			.collect::<Vec<_>>();
 		// Drop any merge-map entries that fed books into this series, so a
 		// later scan doesn't try to route them to a now-deleted target.
 		series_merge::Entity::delete_many()
@@ -72,6 +75,24 @@ impl SeriesMutation {
 			.exec(&txn)
 			.await?;
 		txn.commit().await?;
+
+		// Best-effort thumbnail cleanup, mirroring clean_library so deleting a
+		// series doesn't leave orphaned cached thumbnails on disk.
+		let thumbnails_dir = core.config.get_thumbnails_dir();
+		if !deleted_media_ids.is_empty() {
+			if let Err(error) =
+				remove_thumbnails(&deleted_media_ids, &thumbnails_dir).await
+			{
+				tracing::error!(
+					?error,
+					"Failed to remove thumbnails for deleted series media"
+				);
+			}
+		}
+		if let Err(error) = remove_thumbnails(&[series.id.clone()], &thumbnails_dir).await
+		{
+			tracing::error!(?error, "Failed to remove thumbnail for deleted series");
+		}
 
 		tracing::debug!(series_id = %series.id, "Deleted series");
 		Ok(true)

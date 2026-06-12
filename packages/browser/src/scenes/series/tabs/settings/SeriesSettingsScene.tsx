@@ -242,6 +242,7 @@ export default function SeriesSettingsScene() {
 							description={t('seriesSettingsScene.delete.confirm.description')}
 							confirmText={t('seriesSettingsScene.delete.confirm.confirm')}
 							confirmVariant="danger"
+							confirmIsLoading={isDeleting}
 							isOpen={showDeleteConfirm}
 							onClose={() => setShowDeleteConfirm(false)}
 							onConfirm={() => deleteSeries({ id: series.id })}
