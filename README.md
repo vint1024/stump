@@ -1,3 +1,46 @@
+# Stump — vint1024 fork
+
+> **This is a fork of [Stump](https://github.com/stumpapp/stump)**, forked at tag **`v0.1.4`**.
+>
+> - Fork repository: <https://git.vint1024.net/vint1024/stump.git>
+> - Upstream (original): <https://github.com/stumpapp/stump>
+> - Current fork version: **`0.1.4-vint-0.2.0`** (build channel `Dev-vint`)
+>
+> **All modifications in this fork were developed with heavy assistance from AI tooling.**
+
+## What this fork adds
+
+### Server &amp; features
+
+- **EPUB streaming for read-only users** — manifest + per-resource endpoints so users without download permission can read EPUBs in the browser/app
+- **Multiple folders per library**
+- **Reversible series merging**
+- **Content access rules** by tag / genre / publisher (Unicode case-folded)
+- **Series visibility** — hide a series when all of its books are hidden by content rules; per-user book counts
+- **Write metadata back into EPUB files** — with an opt-in backup flag and backup cleanup
+- **Server-side EPUB cover placeholder** + WebP / GIF / SVG thumbnail support
+- **Series thumbnail regeneration** (incl. a regenerate-from-cover button)
+- Content rules in the user-creation form; tag / genre / publisher autocomplete; single-series deletion
+- Fixes: metadata lock hidden without `EditMetadata` permission; writeback / file-watcher race; cross-origin EPUB reader credentials; an N+1 query; owner-rule handling
+
+### UI
+
+- **Full Russian localization of the web UI** — 616 i18n keys across 165 components (multi-pass sweep to complete coverage)
+
+### Packaging
+
+- Versioned `0.1.4-vint-0.2.0`, build channel `Dev-vint`, rebranded build notice
+- Docker `arm64` image (`stump:vint-dev`)
+
+> A separate experimental mobile rebrand (_Vint Books_) lives on branch `feat/mobile-vint-books`.
+> A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>
+
+The fork keeps the upstream **MIT** license.
+
+---
+
+<sub>The original upstream README follows.</sub>
+
 <p align="center">
   <img alt="Stump's logo. It depicts a young individual sitting on a tree stump reading a book. Inspired by the developer's childhood, where they spent a significant amount of time reading on a tree stump in their backyard" src="./.github/images/logo.png" style="width: 30%" />
   <br />
