@@ -25,6 +25,7 @@ mod m20260505_231341_jwt_secrets;
 mod m20260611_000000_library_extra_paths;
 mod m20260611_000001_series_merges;
 mod m20260611_000002_content_access_rules;
+mod m20260613_000000_device_public_keys;
 
 pub struct Migrator;
 
@@ -56,6 +57,7 @@ impl MigratorTrait for Migrator {
 			Box::new(m20260611_000000_library_extra_paths::Migration),
 			Box::new(m20260611_000001_series_merges::Migration),
 			Box::new(m20260611_000002_content_access_rules::Migration),
+			Box::new(m20260613_000000_device_public_keys::Migration),
 		]
 	}
 }

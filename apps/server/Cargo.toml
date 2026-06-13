@@ -41,6 +41,10 @@ serde_qs = { version = "0.14.0", features = ["axum"] }
 serde-untagged = "0.1.2"
 serde_with.workspace = true
 sha2 = "0.10"
+# E3 offline content protection (ECIES over P-256): ephemeral ECDH + HKDF + AES-GCM
+p256 = { version = "0.13", features = ["ecdh"] }
+aes-gcm = "0.10"
+hkdf = "0.12"
 stump_core = { path = "../../core" }
 apalis.workspace = true
 apalis-cron.workspace = true

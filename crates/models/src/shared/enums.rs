@@ -772,6 +772,8 @@ pub enum UserPermission {
 	UploadFile,
 	/// Grant access to download files from a library
 	DownloadFile,
+	/// Read books offline with per-device encryption (fork-only /offline endpoint). Distinct from DownloadFile.
+	OfflineRead,
 	/// Grant access to create a library
 	CreateLibrary,
 	/// Grant access to edit basic details about the library

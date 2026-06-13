@@ -3,13 +3,14 @@ use axum::{
 	http::HeaderMap,
 	middleware,
 	response::IntoResponse,
-	routing::get,
-	Extension, Router,
+	routing::{get, post},
+	Extension, Json, Router,
 };
+use base64::Engine;
 use graphql::data::AuthContext;
 use models::{
-	entity::{library, library_config, media, series, user::AuthUser},
-	shared::image_processor_options::SupportedImageFormat,
+	entity::{device_public_key, library, library_config, media, series, user::AuthUser},
+	shared::{enums::UserPermission, image_processor_options::SupportedImageFormat},
 };
 use sea_orm::{prelude::*, sea_query::Query, QuerySelect};
 use stump_core::{
@@ -24,7 +25,7 @@ use crate::{
 	config::state::AppState,
 	errors::{APIError, APIResult},
 	middleware::auth::auth_middleware,
-	utils::{http::ImageResponse, serve_media},
+	utils::{http::ImageResponse, offline_crypto::wrap_for_device, serve_media},
 };
 
 pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
@@ -34,8 +35,10 @@ pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
 			Router::new()
 				.route("/thumbnail", get(get_media_thumbnail_handler))
 				.route("/page/{page}", get(get_media_page))
-				.route("/file", get(get_media_file)),
+				.route("/file", get(get_media_file))
+				.route("/offline", post(get_media_offline)),
 		)
+		.route("/media/device", post(register_device))
 		.layer(middleware::from_fn_with_state(app_state, auth_middleware))
 }
 
@@ -163,4 +166,114 @@ async fn get_media_page(
 		};
 
 	Ok(ImageResponse::from(content))
+}
+
+// ── E3 offline reading (per-device encrypted delivery) ──────────────────────────
+
+#[derive(serde::Deserialize)]
+pub(crate) struct RegisterDeviceInput {
+	device_id: String,
+	/// The device's P-256 public key, base64 of the X9.63 uncompressed point (65 bytes).
+	public_key: String,
+}
+
+/// Register (or update) a device's public key, so offline book content can be
+/// wrapped to it. The private key never leaves the device's Secure Enclave.
+pub(crate) async fn register_device(
+	State(ctx): State<AppState>,
+	Extension(req): Extension<AuthContext>,
+	Json(input): Json<RegisterDeviceInput>,
+) -> APIResult<impl IntoResponse> {
+	let user = req.user();
+	let public_key = base64::engine::general_purpose::STANDARD
+		.decode(input.public_key.as_bytes())
+		.map_err(|_| APIError::BadRequest("Invalid public key".to_string()))?;
+	if public_key.len() != 65 {
+		return Err(APIError::BadRequest(
+			"Public key must be a 65-byte X9.63 point".to_string(),
+		));
+	}
+
+	let conn = ctx.conn.as_ref();
+	let existing = device_public_key::Entity::find()
+		.filter(device_public_key::Column::UserId.eq(user.id.clone()))
+		.filter(device_public_key::Column::DeviceId.eq(input.device_id.clone()))
+		.one(conn)
+		.await?;
+
+	if let Some(model) = existing {
+		let mut active: device_public_key::ActiveModel = model.into();
+		active.public_key = sea_orm::Set(public_key);
+		active.update(conn).await?;
+	} else {
+		device_public_key::ActiveModel {
+			id: sea_orm::Set(uuid::Uuid::new_v4().to_string()),
+			user_id: sea_orm::Set(user.id.clone()),
+			device_id: sea_orm::Set(input.device_id),
+			public_key: sea_orm::Set(public_key),
+			created_at: sea_orm::Set(chrono::Utc::now().into()),
+		}
+		.insert(conn)
+		.await?;
+	}
+
+	Ok(Json(serde_json::json!({ "ok": true })))
+}
+
+#[derive(serde::Deserialize)]
+pub(crate) struct OfflineInput {
+	device_id: String,
+}
+
+#[derive(serde::Serialize)]
+pub(crate) struct OfflineResponse {
+	/// AES-256-GCM(content_key, book), base64.
+	blob: String,
+	/// Ephemeral P-256 public key (X9.63), base64.
+	ephemeral_pub: String,
+	/// AES-256-GCM(kek, content_key) where kek = HKDF(ECDH(device, ephemeral)), base64.
+	wrapped_key: String,
+}
+
+/// Return the book encrypted for offline reading, with the content key wrapped to
+/// the requesting device's registered public key. Gated by `OfflineRead`: a user
+/// without `DownloadFile` can read offline but never receives the plaintext file.
+pub(crate) async fn get_media_offline(
+	Path(id): Path<String>,
+	State(ctx): State<AppState>,
+	Extension(req): Extension<AuthContext>,
+	Json(input): Json<OfflineInput>,
+) -> APIResult<impl IntoResponse> {
+	let user = req
+		.user_and_enforce_permissions(&[UserPermission::OfflineRead])
+		.map_err(|_| APIError::forbidden_discreet())?;
+	let conn = ctx.conn.as_ref();
+
+	let book = media::Entity::find_for_user(&user)
+		.filter(media::Column::Id.eq(id))
+		.into_model::<media::MediaIdentSelect>()
+		.one(conn)
+		.await?
+		.ok_or(APIError::NotFound("Book not found".to_string()))?;
+
+	let device = device_public_key::Entity::find()
+		.filter(device_public_key::Column::UserId.eq(user.id.clone()))
+		.filter(device_public_key::Column::DeviceId.eq(input.device_id))
+		.one(conn)
+		.await?
+		.ok_or(APIError::BadRequest("Device not registered".to_string()))?;
+
+	let plaintext = tokio::fs::read(&book.path).await.map_err(|e| {
+		APIError::InternalServerError(format!("Failed to read book file: {e}"))
+	})?;
+
+	let wrapped = wrap_for_device(&plaintext, &device.public_key)
+		.map_err(|e| APIError::InternalServerError(format!("Encryption failed: {e}")))?;
+
+	let b64 = base64::engine::general_purpose::STANDARD;
+	Ok(Json(OfflineResponse {
+		blob: b64.encode(wrapped.blob),
+		ephemeral_pub: b64.encode(wrapped.ephemeral_pub),
+		wrapped_key: b64.encode(wrapped.wrapped_key),
+	}))
 }
