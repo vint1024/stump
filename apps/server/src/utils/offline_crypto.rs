@@ -38,6 +38,15 @@ pub enum OfflineCryptoError {
 	Kdf,
 }
 
+/// Validate that `device_pub_x963` is a real P-256 point (uncompressed SEC1, 65
+/// bytes) and not the identity. Lets `register_device` reject a malformed key up
+/// front (400) instead of failing later inside `wrap_for_device` (500).
+pub fn validate_device_key(device_pub_x963: &[u8]) -> Result<(), OfflineCryptoError> {
+	PublicKey::from_sec1_bytes(device_pub_x963)
+		.map(|_| ())
+		.map_err(|_| OfflineCryptoError::BadDeviceKey)
+}
+
 fn seal(key: &[u8; 32], plaintext: &[u8]) -> Result<Vec<u8>, OfflineCryptoError> {
 	let cipher = Aes256Gcm::new(key.into());
 	let mut nonce_bytes = [0u8; 12];

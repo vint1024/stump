@@ -3564,6 +3564,8 @@ enum UserPermission {
 	UPLOAD_FILE
 	"Grant access to download files from a library"
 	DOWNLOAD_FILE
+	"Read books offline with per-device encryption (fork-only /offline endpoint). Distinct from DownloadFile."
+	OFFLINE_READ
 	"Grant access to create a library"
 	CREATE_LIBRARY
 	"Grant access to edit basic details about the library"

@@ -12,7 +12,11 @@ use models::{
 	entity::{device_public_key, library, library_config, media, series, user::AuthUser},
 	shared::{enums::UserPermission, image_processor_options::SupportedImageFormat},
 };
-use sea_orm::{prelude::*, sea_query::Query, QuerySelect};
+use sea_orm::{
+	prelude::*,
+	sea_query::{OnConflict, Query},
+	QuerySelect,
+};
 use stump_core::{
 	config::StumpConfig,
 	filesystem::{
@@ -25,7 +29,11 @@ use crate::{
 	config::state::AppState,
 	errors::{APIError, APIResult},
 	middleware::auth::auth_middleware,
-	utils::{http::ImageResponse, offline_crypto::wrap_for_device, serve_media},
+	utils::{
+		http::ImageResponse,
+		offline_crypto::{validate_device_key, wrap_for_device},
+		serve_media,
+	},
 };
 
 pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
@@ -170,6 +178,16 @@ async fn get_media_page(
 
 // ── E3 offline reading (per-device encrypted delivery) ──────────────────────────
 
+/// Max accepted length of a client-supplied `device_id` (defensive bound).
+const MAX_DEVICE_ID_LEN: usize = 256;
+/// Max registered devices per user, to bound row growth from a misbehaving or
+/// hostile client. Re-registering an existing device does not count against this.
+const MAX_DEVICES_PER_USER: u64 = 50;
+/// Max book size we will encrypt for offline delivery in a single in-memory pass.
+/// The whole file is read, encrypted, and base64-encoded in RAM (~3.3× peak), so
+/// we cap it to avoid OOM/DoS. 1 GiB covers any realistic book.
+const MAX_OFFLINE_BOOK_BYTES: u64 = 1024 * 1024 * 1024;
+
 #[derive(serde::Deserialize)]
 pub(crate) struct RegisterDeviceInput {
 	device_id: String,
@@ -185,6 +203,11 @@ pub(crate) async fn register_device(
 	Json(input): Json<RegisterDeviceInput>,
 ) -> APIResult<impl IntoResponse> {
 	let user = req.user();
+
+	if input.device_id.is_empty() || input.device_id.len() > MAX_DEVICE_ID_LEN {
+		return Err(APIError::BadRequest("Invalid device id".to_string()));
+	}
+
 	let public_key = base64::engine::general_purpose::STANDARD
 		.decode(input.public_key.as_bytes())
 		.map_err(|_| APIError::BadRequest("Invalid public key".to_string()))?;
@@ -193,29 +216,46 @@ pub(crate) async fn register_device(
 			"Public key must be a 65-byte X9.63 point".to_string(),
 		));
 	}
+	// Reject anything that is not a real P-256 point now (400), rather than
+	// failing later when wrapping content for this device (which would 500).
+	validate_device_key(&public_key).map_err(|_| {
+		APIError::BadRequest("Public key is not a valid P-256 point".to_string())
+	})?;
 
 	let conn = ctx.conn.as_ref();
-	let existing = device_public_key::Entity::find()
-		.filter(device_public_key::Column::UserId.eq(user.id.clone()))
-		.filter(device_public_key::Column::DeviceId.eq(input.device_id.clone()))
-		.one(conn)
-		.await?;
 
-	if let Some(model) = existing {
-		let mut active: device_public_key::ActiveModel = model.into();
-		active.public_key = sea_orm::Set(public_key);
-		active.update(conn).await?;
-	} else {
-		device_public_key::ActiveModel {
-			id: sea_orm::Set(uuid::Uuid::new_v4().to_string()),
-			user_id: sea_orm::Set(user.id.clone()),
-			device_id: sea_orm::Set(input.device_id),
-			public_key: sea_orm::Set(public_key),
-			created_at: sea_orm::Set(chrono::Utc::now().into()),
-		}
-		.insert(conn)
+	// Bound the number of devices a single user may register (new devices only;
+	// re-registering an existing device is an idempotent update below).
+	let existing_count = device_public_key::Entity::find()
+		.filter(device_public_key::Column::UserId.eq(user.id.clone()))
+		.filter(device_public_key::Column::DeviceId.ne(input.device_id.clone()))
+		.count(conn)
 		.await?;
+	if existing_count >= MAX_DEVICES_PER_USER {
+		return Err(APIError::BadRequest(
+			"Too many registered devices".to_string(),
+		));
 	}
+
+	// Idempotent upsert keyed on the (user_id, device_id) unique index — race-safe
+	// under concurrent double-registration (no check-then-act 500).
+	device_public_key::Entity::insert(device_public_key::ActiveModel {
+		id: sea_orm::Set(uuid::Uuid::new_v4().to_string()),
+		user_id: sea_orm::Set(user.id.clone()),
+		device_id: sea_orm::Set(input.device_id),
+		public_key: sea_orm::Set(public_key),
+		created_at: sea_orm::Set(chrono::Utc::now().into()),
+	})
+	.on_conflict(
+		OnConflict::columns(vec![
+			device_public_key::Column::UserId,
+			device_public_key::Column::DeviceId,
+		])
+		.update_column(device_public_key::Column::PublicKey)
+		.to_owned(),
+	)
+	.exec(conn)
+	.await?;
 
 	Ok(Json(serde_json::json!({ "ok": true })))
 }
@@ -263,12 +303,33 @@ pub(crate) async fn get_media_offline(
 		.await?
 		.ok_or(APIError::BadRequest("Device not registered".to_string()))?;
 
+	// Guard memory before reading: the whole file is held in RAM and encrypted.
+	let metadata = tokio::fs::metadata(&book.path).await.map_err(|e| {
+		tracing::error!(error = ?e, "Failed to stat book file for offline delivery");
+		APIError::NotFound("Book file not found".to_string())
+	})?;
+	if metadata.len() > MAX_OFFLINE_BOOK_BYTES {
+		return Err(APIError::BadRequest(
+			"Book is too large for offline delivery".to_string(),
+		));
+	}
+
 	let plaintext = tokio::fs::read(&book.path).await.map_err(|e| {
-		APIError::InternalServerError(format!("Failed to read book file: {e}"))
+		tracing::error!(error = ?e, "Failed to read book file for offline delivery");
+		APIError::InternalServerError("Failed to read book file".to_string())
 	})?;
 
-	let wrapped = wrap_for_device(&plaintext, &device.public_key)
-		.map_err(|e| APIError::InternalServerError(format!("Encryption failed: {e}")))?;
+	// AES-GCM over the whole book is CPU-bound; keep it off the async worker.
+	let device_pub = device.public_key;
+	let wrapped =
+		tokio::task::spawn_blocking(move || wrap_for_device(&plaintext, &device_pub))
+			.await
+			.map_err(|e| {
+				APIError::InternalServerError(format!("Encryption task failed: {e}"))
+			})?
+			.map_err(|_| {
+				APIError::InternalServerError("Encryption failed".to_string())
+			})?;
 
 	let b64 = base64::engine::general_purpose::STANDARD;
 	Ok(Json(OfflineResponse {
