@@ -1,6 +1,6 @@
 use async_graphql::{Context, Object, Result, ID};
 use models::entity::{book_club, book_club_book, book_club_member};
-use sea_orm::{prelude::*, ColumnTrait, QueryFilter, QueryOrder, QuerySelect};
+use sea_orm::{prelude::*, ColumnTrait, Condition, QueryFilter, QueryOrder, QuerySelect};
 
 use crate::{
 	data::{AuthContext, CoreContext},
@@ -130,18 +130,43 @@ impl BookClubQuery {
 		let mut query = book_club_book::Entity::find()
 			.filter(book_club_book::Column::BookClubId.eq(book_club_id.as_ref()))
 			.filter(book_club_book::Column::CompletedAt.is_not_null())
+			// Most-recently-completed first; id breaks ties for a stable keyset.
+			.order_by_desc(book_club_book::Column::CompletedAt)
 			.order_by_desc(book_club_book::Column::Id);
-		if let Some(after) = &pagination.after {
-			query = query.filter(book_club_book::Column::Id.lt(after.as_str()));
+		// Keyset cursor "<completedAt rfc3339>|<id>": page rows strictly older than
+		// the cursor in (completedAt desc, id desc) order — correct across ties.
+		// A malformed cursor is an error (not a silent reset to page one).
+		if let Some(after) = pagination.after.as_ref() {
+			let (ca_str, id_str) =
+				after.split_once('|').ok_or("Invalid pagination cursor")?;
+			let ca = DateTimeWithTimeZone::parse_from_rfc3339(ca_str)
+				.map_err(|_| "Invalid pagination cursor")?;
+			query = query.filter(
+				Condition::any()
+					.add(book_club_book::Column::CompletedAt.lt(ca))
+					.add(
+						Condition::all()
+							.add(book_club_book::Column::CompletedAt.eq(ca))
+							.add(book_club_book::Column::Id.lt(id_str)),
+					),
+			);
 		}
 
 		let books = query.limit(limit).all(conn).await?;
 
+		let cursor_of = |b: &book_club_book::Model| {
+			format!(
+				"{}|{}",
+				b.completed_at.map(|d| d.to_rfc3339()).unwrap_or_default(),
+				b.id
+			)
+		};
 		let current_cursor = pagination
 			.after
-			.or_else(|| books.first().map(|b| b.id.clone()));
-		let next_cursor = match books.last().map(|b| b.id.clone()) {
-			Some(id) if books.len() == limit as usize => Some(id),
+			.clone()
+			.or_else(|| books.first().map(&cursor_of));
+		let next_cursor = match books.last().map(&cursor_of) {
+			Some(c) if books.len() == limit as usize => Some(c),
 			_ => None,
 		};
 
