@@ -14,6 +14,7 @@ pub mod bookmark;
 pub mod collection;
 pub mod content_access_rule;
 pub mod custom_emoji;
+pub mod device_public_key;
 pub mod emailer;
 pub mod emailer_send_record;
 pub mod favorite_library;

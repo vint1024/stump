@@ -305,6 +305,7 @@ export const associatedPermissions: Record<UserPermission, UserPermission[]> = {
 	[UserPermission.AccessKoboSync]: [],
 	[UserPermission.AccessSmartList]: [],
 	[UserPermission.DownloadFile]: [],
+	[UserPermission.OfflineRead]: [],
 	[UserPermission.FileExplorer]: [],
 	[UserPermission.UploadFile]: [UserPermission.ScanLibrary],
 	[UserPermission.CreateLibrary]: [UserPermission.EditLibrary],

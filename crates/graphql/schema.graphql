@@ -563,8 +563,23 @@ type CreatedOrUpdatedManyMedia {
 	libraryId: String!
 }
 
+type CursorPaginatedBookClubBookResponse {
+	nodes: [BookClubBook!]!
+	cursorInfo: CursorPaginationInfo!
+}
+
 type CursorPaginatedBookClubDiscussionMessageResponse {
 	nodes: [BookClubDiscussionMessage!]!
+	cursorInfo: CursorPaginationInfo!
+}
+
+type CursorPaginatedBookClubDiscussionResponse {
+	nodes: [BookClubDiscussion!]!
+	cursorInfo: CursorPaginationInfo!
+}
+
+type CursorPaginatedBookClubMemberResponse {
+	nodes: [BookClubMember!]!
 	cursorInfo: CursorPaginationInfo!
 }
 
@@ -2508,6 +2523,12 @@ type Query {
 	bookClubDiscussionMessage(id: ID!): BookClubDiscussionMessage!
 	"Get messages in a discussion"
 	bookClubDiscussionMessages(discussionId: ID!, parentId: ID, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubDiscussionMessageResponse!
+	"A club's members, cursor-paginated (for clubs too large to load the full members array)"
+	bookClubMembers(bookClubId: ID!, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubMemberResponse!
+	"A club's archived (completed) books, cursor-paginated"
+	bookClubPreviousBooks(bookClubId: ID!, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubBookResponse!
+	"A club's discussions, cursor-paginated"
+	bookClubDiscussionsPaginated(bookClubId: ID!, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubDiscussionResponse!
 	previousBookClubDiscussions(bookClubId: ID!): [BookClubDiscussion!]!
 	"Get all pending invitations for the current user"
 	myBookClubInvitations: [BookClubInvitation!]!
@@ -3564,6 +3585,8 @@ enum UserPermission {
 	UPLOAD_FILE
 	"Grant access to download files from a library"
 	DOWNLOAD_FILE
+	"Read books offline with per-device encryption (fork-only /offline endpoint). Distinct from DownloadFile."
+	OFFLINE_READ
 	"Grant access to create a library"
 	CREATE_LIBRARY
 	"Grant access to edit basic details about the library"

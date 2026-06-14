@@ -12,6 +12,7 @@ use crate::{
 		series::SeriesLoader,
 		series_count::SeriesCountLoader,
 		series_finished_count::SeriesFinishedCountLoader,
+		user::UserLoader,
 	},
 	mutation::Mutation,
 	query::Query,
@@ -96,6 +97,7 @@ pub fn add_data_loaders<
 			MediaAnalysisLoader::new(conn.clone()),
 			tokio::spawn,
 		))
+		.data(DataLoader::new(UserLoader::new(conn.clone()), tokio::spawn))
 }
 
 pub fn build_schema_bare() -> AppSchema {

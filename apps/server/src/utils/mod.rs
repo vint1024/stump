@@ -1,5 +1,6 @@
 mod auth;
 pub mod http;
+pub mod offline_crypto;
 mod serde;
 pub mod serve_media;
 mod signal;

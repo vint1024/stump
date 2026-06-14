@@ -1,4 +1,4 @@
-import { useGraphQL } from '@stump/client'
+import { useInfiniteCursorGraphQL } from '@stump/client'
 import { ButtonOrLink, cn, Heading, ScrollArea, Text } from '@stump/components'
 import { graphql } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
@@ -16,12 +16,15 @@ import BookClubBookItem from './BookClubBookItem'
 // - settings (full width)
 
 const query = graphql(`
-	query BookClubBooksScene($id: ID!) {
-		bookClubById(id: $id) {
-			id
-			previousBooks {
+	query BookClubBooksScene($id: ID!, $pagination: CursorPagination!) {
+		bookClubPreviousBooks(bookClubId: $id, pagination: $pagination) {
+			nodes {
 				id
 				...BookClubBookItem
+			}
+			cursorInfo {
+				nextCursor
+				limit
 			}
 		}
 	}
@@ -38,23 +41,18 @@ export default function BookClubBooks() {
 	 */
 	const [showPastBooks, togglePastBooks] = useToggle()
 
-	const { data: pastQueryData } = useGraphQL(
+	const { data, hasNextPage, isFetchingNextPage, fetchNextPage } = useInfiniteCursorGraphQL(
 		query,
 		['bookClubBooks', 'pastBooks', bookClub.id],
 		{
 			id: bookClub.id,
+			pagination: { limit: 20 },
 		},
 		{
 			enabled: showPastBooks,
-			initialData: {
-				bookClubById: {
-					id: bookClub.id,
-					previousBooks: [],
-				},
-			},
 		},
 	)
-	const pastBooks = pastQueryData?.bookClubById.previousBooks || []
+	const pastBooks = data?.pages.flatMap((page) => page.bookClubPreviousBooks.nodes) ?? []
 
 	// TODO(book-clubs): animate the transition between showing and hiding past books, probably just
 	// break out the past books into separate list?
@@ -87,6 +85,20 @@ export default function BookClubBooks() {
 							{pastBooks?.map((book) => (
 								<BookClubBookItem key={book.id} data={book} />
 							))}
+							{hasNextPage && (
+								<div className="ml-3">
+									<button
+										className="rounded-sm p-1 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-50"
+										type="button"
+										disabled={isFetchingNextPage}
+										onClick={() => fetchNextPage()}
+									>
+										<Text className="cursor-pointer underline" size="sm" variant="muted">
+											{t('components.bookClub.books.BookClubBooks.loadMore')}
+										</Text>
+									</button>
+								</div>
+							)}
 						</>
 					)}
 				</ol>
