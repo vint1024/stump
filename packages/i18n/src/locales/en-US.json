@@ -3497,6 +3497,7 @@
 				"BookClubBooks": {
 					"hidePastBooks": "Hide past books",
 					"showPastBooks": "Show past books",
+					"loadMore": "Load more",
 					"emptyTitle": "No books to display",
 					"emptySubtitle": "The club has no books scheduled",
 					"createSchedule": "Create a schedule",
@@ -4045,7 +4046,8 @@
 						},
 						"MembersTable": {
 							"removeError": "Failed to remove member",
-							"member": "Member"
+							"member": "Member",
+							"loadMore": "Load more members"
 						},
 						"MemberActionMenu": {
 							"remove": "Remove"

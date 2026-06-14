@@ -1,5 +1,5 @@
-import { useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
-import { Avatar, Card } from '@stump/components'
+import { useGraphQLMutation, useInfiniteCursorGraphQL } from '@stump/client'
+import { Avatar, Card, Text } from '@stump/components'
 import { BookClubMembersTableQuery, graphql } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
 import { BookClubMemberRoleSpec } from '@stump/sdk'
@@ -16,16 +16,19 @@ import MemberActionMenu from './MemberActionMenu'
 import RemoveMemberConfirmation from './RemoveMemberConfirmation'
 
 const query = graphql(`
-	query BookClubMembersTable($id: ID!) {
-		bookClubById(id: $id) {
-			id
-			members {
+	query BookClubMembersTable($id: ID!, $pagination: CursorPagination!) {
+		bookClubMembers(bookClubId: $id, pagination: $pagination) {
+			nodes {
 				id
 				avatarUrl
 				isCreator
 				displayName
 				role
 				userId
+			}
+			cursorInfo {
+				nextCursor
+				limit
 			}
 		}
 	}
@@ -41,24 +44,19 @@ const removeMutation = graphql(`
 
 export default function MembersTable() {
 	const { t } = useLocaleContext()
-	const { sdk } = useSDK()
 	const { user } = useAppContext()
 	const {
 		club: { id, roleSpec },
 	} = useBookClubManagement()
 
-	// TODO: implement backend pagination for better scalability
-	const {
-		data: {
-			bookClubById: { members },
-		},
-		refetch,
-	} = useSuspenseGraphQL(query, sdk.cacheKey('bookClubById', [id, 'members']), { id })
-
-	const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
-	const pageCount = useMemo(
-		() => Math.ceil(members?.length ?? 0 / pagination.pageSize),
-		[members, pagination.pageSize],
+	const { data, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } =
+		useInfiniteCursorGraphQL(query, ['bookClubMembers', id], {
+			id,
+			pagination: { limit: 50 },
+		})
+	const members = useMemo(
+		() => data?.pages.flatMap((page) => page.bookClubMembers.nodes) ?? [],
+		[data],
 	)
 
 	const [removingMember, setRemovingMember] = useState<Member | null>(null)
@@ -107,26 +105,42 @@ export default function MembersTable() {
 					sortable
 					columns={columns}
 					options={{
+						// Cursor-paginated via the "Load more" button below — render every
+						// loaded member on a single page so the table's offset pager (which
+						// can't drive a forward-only cursor) stays inert/disabled.
 						manualPagination: true,
-						onPaginationChange: setPagination,
-						pageCount,
+						pageCount: 1,
 						state: {
 							columnPinning: {
 								right: ['actions'],
 							},
-							pagination,
+							pagination: { pageIndex: 0, pageSize: members.length || 10 },
 						},
 					}}
 					data={members ?? []}
 					fullWidth
 					cellClassName="bg-background"
 				/>
+				{hasNextPage && (
+					<div className="p-2 flex justify-center">
+						<button
+							type="button"
+							disabled={isFetchingNextPage}
+							onClick={() => fetchNextPage()}
+							className="rounded-sm p-1 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-50"
+						>
+							<Text className="cursor-pointer underline" size="sm" variant="muted">
+								{t('scenes.bookClub.tabs.settings.members.MembersTable.loadMore')}
+							</Text>
+						</button>
+					</div>
+				)}
 			</Card>
 		</>
 	)
 }
 
-type Member = BookClubMembersTableQuery['bookClubById']['members'][number]
+type Member = BookClubMembersTableQuery['bookClubMembers']['nodes'][number]
 
 const columnHelper = createColumnHelper<Member>()
 

@@ -615,10 +615,28 @@ export type CreatedOrUpdatedManyMedia = {
   seriesId: Scalars['String']['output'];
 };
 
+export type CursorPaginatedBookClubBookResponse = {
+  __typename?: 'CursorPaginatedBookClubBookResponse';
+  cursorInfo: CursorPaginationInfo;
+  nodes: Array<BookClubBook>;
+};
+
 export type CursorPaginatedBookClubDiscussionMessageResponse = {
   __typename?: 'CursorPaginatedBookClubDiscussionMessageResponse';
   cursorInfo: CursorPaginationInfo;
   nodes: Array<BookClubDiscussionMessage>;
+};
+
+export type CursorPaginatedBookClubDiscussionResponse = {
+  __typename?: 'CursorPaginatedBookClubDiscussionResponse';
+  cursorInfo: CursorPaginationInfo;
+  nodes: Array<BookClubDiscussion>;
+};
+
+export type CursorPaginatedBookClubMemberResponse = {
+  __typename?: 'CursorPaginatedBookClubMemberResponse';
+  cursorInfo: CursorPaginationInfo;
+  nodes: Array<BookClubMember>;
 };
 
 /** A simple cursor-based pagination input object */
@@ -3442,6 +3460,12 @@ export type Query = {
   bookClubDiscussionMessages: CursorPaginatedBookClubDiscussionMessageResponse;
   /** Get all discussions for a book club, ordered by pinned first, then by date created */
   bookClubDiscussions: Array<BookClubDiscussion>;
+  /** A club's discussions, cursor-paginated */
+  bookClubDiscussionsPaginated: CursorPaginatedBookClubDiscussionResponse;
+  /** A club's members, cursor-paginated (for clubs too large to load the full members array) */
+  bookClubMembers: CursorPaginatedBookClubMemberResponse;
+  /** A club's archived (completed) books, cursor-paginated */
+  bookClubPreviousBooks: CursorPaginatedBookClubBookResponse;
   /** Get a single suggestion by ID */
   bookClubSuggestion: BookClubBookSuggestion;
   /** Get all suggestions for a book club */
@@ -3607,6 +3631,24 @@ export type QueryBookClubDiscussionMessagesArgs = {
 
 export type QueryBookClubDiscussionsArgs = {
   bookClubId: Scalars['ID']['input'];
+};
+
+
+export type QueryBookClubDiscussionsPaginatedArgs = {
+  bookClubId: Scalars['ID']['input'];
+  pagination?: CursorPagination;
+};
+
+
+export type QueryBookClubMembersArgs = {
+  bookClubId: Scalars['ID']['input'];
+  pagination?: CursorPagination;
+};
+
+
+export type QueryBookClubPreviousBooksArgs = {
+  bookClubId: Scalars['ID']['input'];
+  pagination?: CursorPagination;
 };
 
 
@@ -4843,6 +4885,8 @@ export enum UserPermission {
   MetadataProviderManage = 'METADATA_PROVIDER_MANAGE',
   /** Grant access to read metadata provider configurations */
   MetadataProviderRead = 'METADATA_PROVIDER_READ',
+  /** Read books offline with per-device encryption (fork-only /offline endpoint). Distinct from DownloadFile. */
+  OfflineRead = 'OFFLINE_READ',
   /** Grant access to read jobs */
   ReadJobs = 'READ_JOBS',
   /** Grant access to read notifiers */
@@ -5639,13 +5683,14 @@ export type BookClubBookItemFragment = { __typename?: 'BookClubBook', id: string
 
 export type BookClubBooksSceneQueryVariables = Exact<{
   id: Scalars['ID']['input'];
+  pagination: CursorPagination;
 }>;
 
 
-export type BookClubBooksSceneQuery = { __typename?: 'Query', bookClubById: { __typename?: 'BookClub', id: string, previousBooks: Array<(
+export type BookClubBooksSceneQuery = { __typename?: 'Query', bookClubPreviousBooks: { __typename?: 'CursorPaginatedBookClubBookResponse', nodes: Array<(
       { __typename?: 'BookClubBook', id: string }
       & { ' $fragmentRefs'?: { 'BookClubBookItemFragment': BookClubBookItemFragment } }
-    )> } };
+    )>, cursorInfo: { __typename?: 'CursorPaginationInfo', nextCursor?: string | null, limit: number } } };
 
 export type MediaAtPathQueryVariables = Exact<{
   path: Scalars['String']['input'];
@@ -6085,10 +6130,11 @@ export type BookClubBasicSettingsSceneQuery = { __typename?: 'Query', bookClubs:
 
 export type BookClubMembersTableQueryVariables = Exact<{
   id: Scalars['ID']['input'];
+  pagination: CursorPagination;
 }>;
 
 
-export type BookClubMembersTableQuery = { __typename?: 'Query', bookClubById: { __typename?: 'BookClub', id: string, members: Array<{ __typename?: 'BookClubMember', id: string, avatarUrl?: string | null, isCreator: boolean, displayName?: string | null, role: BookClubMemberRole, userId: string }> } };
+export type BookClubMembersTableQuery = { __typename?: 'Query', bookClubMembers: { __typename?: 'CursorPaginatedBookClubMemberResponse', nodes: Array<{ __typename?: 'BookClubMember', id: string, avatarUrl?: string | null, isCreator: boolean, displayName?: string | null, role: BookClubMemberRole, userId: string }>, cursorInfo: { __typename?: 'CursorPaginationInfo', nextCursor?: string | null, limit: number } } };
 
 export type RemoveBookClubMemberMutationVariables = Exact<{
   bookClubId: Scalars['ID']['input'];
@@ -10316,12 +10362,15 @@ export const DeleteBookClubConfirmationDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<DeleteBookClubConfirmationMutation, DeleteBookClubConfirmationMutationVariables>;
 export const BookClubBooksSceneDocument = new TypedDocumentString(`
-    query BookClubBooksScene($id: ID!) {
-  bookClubById(id: $id) {
-    id
-    previousBooks {
+    query BookClubBooksScene($id: ID!, $pagination: CursorPagination!) {
+  bookClubPreviousBooks(bookClubId: $id, pagination: $pagination) {
+    nodes {
       id
       ...BookClubBookItem
+    }
+    cursorInfo {
+      nextCursor
+      limit
     }
   }
 }
@@ -11572,16 +11621,19 @@ export const BookClubBasicSettingsSceneDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<BookClubBasicSettingsSceneQuery, BookClubBasicSettingsSceneQueryVariables>;
 export const BookClubMembersTableDocument = new TypedDocumentString(`
-    query BookClubMembersTable($id: ID!) {
-  bookClubById(id: $id) {
-    id
-    members {
+    query BookClubMembersTable($id: ID!, $pagination: CursorPagination!) {
+  bookClubMembers(bookClubId: $id, pagination: $pagination) {
+    nodes {
       id
       avatarUrl
       isCreator
       displayName
       role
       userId
+    }
+    cursorInfo {
+      nextCursor
+      limit
     }
   }
 }
