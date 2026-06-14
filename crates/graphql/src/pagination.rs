@@ -1,8 +1,10 @@
 use crate::object::{
-	author::Author, book_club_discussion_message::BookClubDiscussionMessage,
-	directory_listing::DirectoryListing, job::Job, library::Library, log::Log,
-	media::Media, missing_entity::MissingEntity, reading_list::ReadingList,
-	series::Series, user::User,
+	author::Author, book_club_book::BookClubBook,
+	book_club_discussion::BookClubDiscussion,
+	book_club_discussion_message::BookClubDiscussionMessage,
+	book_club_member::BookClubMember, directory_listing::DirectoryListing, job::Job,
+	library::Library, log::Log, media::Media, missing_entity::MissingEntity,
+	reading_list::ReadingList, series::Series, user::User,
 };
 use async_graphql::{
 	CustomValidator, InputObject, InputValueError, OneofObject, OutputType, Result,
@@ -261,6 +263,15 @@ impl OffsetPaginationInfo {
 #[graphql(concrete(
 	name = "CursorPaginatedBookClubDiscussionMessageResponse",
 	params(BookClubDiscussionMessage)
+))]
+#[graphql(concrete(
+	name = "CursorPaginatedBookClubMemberResponse",
+	params(BookClubMember)
+))]
+#[graphql(concrete(name = "CursorPaginatedBookClubBookResponse", params(BookClubBook)))]
+#[graphql(concrete(
+	name = "CursorPaginatedBookClubDiscussionResponse",
+	params(BookClubDiscussion)
 ))]
 pub struct CursorPaginatedResponse<T>
 where

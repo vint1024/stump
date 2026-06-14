@@ -94,6 +94,50 @@ impl BookClubDiscussionQuery {
 			.collect())
 	}
 
+	/// Discussions for a club, cursor-paginated (by id) — for clubs with many
+	/// discussions. Ordered by id ascending; the `isPinned` flag is on each node.
+	async fn book_club_discussions_paginated(
+		&self,
+		ctx: &Context<'_>,
+		book_club_id: ID,
+		#[graphql(default)] pagination: CursorPagination,
+	) -> Result<CursorPaginatedResponse<BookClubDiscussion>> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+
+		verify_read_access(book_club_id.as_ref(), user, conn).await?;
+
+		let limit = pagination.limit.min(100);
+		let mut query = book_club_discussion::Entity::find()
+			.filter(book_club_discussion::Column::BookClubId.eq(book_club_id.as_ref()))
+			.order_by_asc(book_club_discussion::Column::Id);
+		if let Some(after) = &pagination.after {
+			query = query.filter(book_club_discussion::Column::Id.gt(after.as_str()));
+		}
+
+		let discussions = query.limit(limit).all(conn).await?;
+
+		let current_cursor = pagination
+			.after
+			.or_else(|| discussions.first().map(|d| d.id.clone()));
+		let next_cursor = match discussions.last().map(|d| d.id.clone()) {
+			Some(id) if discussions.len() == limit as usize => Some(id),
+			_ => None,
+		};
+
+		Ok(CursorPaginatedResponse {
+			nodes: discussions
+				.into_iter()
+				.map(BookClubDiscussion::from)
+				.collect(),
+			cursor_info: CursorPaginationInfo {
+				current_cursor,
+				next_cursor,
+				limit,
+			},
+		})
+	}
+
 	/// Get a single message by ID
 	async fn book_club_discussion_message(
 		&self,
