@@ -10,7 +10,7 @@ A clear and concise description of the PR.
 - Reasoning
 - Additional context
 
-How to contribute: https://github.com/stumpapp/stump?tab=contributing-ov-file
+How to contribute: https://github.com/stumpapp/stump/blob/main/.github/CONTRIBUTING.md
 
 ## Screenshots
 
@@ -22,7 +22,7 @@ Screenshots or a screen recording of the visual changes associated with this PR.
 
 Please read each item and check the boxes:
 
-- [ ] I read the [contributing guidelines](https://github.com/stumpapp/stump?tab=contributing-ov-file)
+- [ ] I read the [contributing guidelines](https://github.com/stumpapp/stump/blob/main/.github/CONTRIBUTING.md)
 - [ ] I searched for existing issues or pull requests that may be related to my contribution
 - [ ] This PR is based into `nightly` and not `main`
 - [ ] I added tests and/or documentation for my changes if applicable
@@ -31,5 +31,5 @@ Please read each item and check the boxes:
 
 By contributing to Stump, you agree that your contributions will be licensed under the following licenses (where applicable):
 
-- The [expo application](./apps/expo/LICENSE) is licensed under [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)
+- The [expo application](https://github.com/stumpapp/stump/blob/main/apps/expo/LICENSE) is licensed under [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)
 - All other code in the repository is licensed under [MIT License](https://www.tldrlegal.com/license/mit-license)
