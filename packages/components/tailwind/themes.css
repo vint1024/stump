@@ -68,6 +68,14 @@
 	--color-thumbnail-stack-series: #3d3a3a;
 	--color-thumbnail-stack-library-start: #2e2b2b;
 	--color-thumbnail-stack-library-end: #3d3a3a;
+
+	/* MARK: gradients — used by the "Enable gradients" toggle for themes that opt
+	   in (THEMES_WITH_GRADIENTS). Default to the solid bg so the utility classes
+	   exist; each gradient-enabled theme overrides these four below. */
+	--color-background-gradient-from: #161719;
+	--color-background-gradient-to: #161719;
+	--color-sidebar-gradient-from: #151517;
+	--color-sidebar-gradient-to: #151517;
 }
 
 @layer base {
@@ -671,6 +679,12 @@
 	--color-thumbnail-stack-series: #2A2735;
 	--color-thumbnail-stack-library-start: #15131D;
 	--color-thumbnail-stack-library-end: #2A2735;
+
+	/* gradient (Enable gradients toggle) */
+	--color-background-gradient-from: #1F1735;
+	--color-background-gradient-to: #0B0A10;
+	--color-sidebar-gradient-from: #271C42;
+	--color-sidebar-gradient-to: #0B0A10;
 }
 
 .gold {
@@ -737,6 +751,12 @@
 	--color-thumbnail-stack-series: #2A2A31;
 	--color-thumbnail-stack-library-start: #15151A;
 	--color-thumbnail-stack-library-end: #2A2A31;
+
+	/* gradient (Enable gradients toggle) */
+	--color-background-gradient-from: #2E2516;
+	--color-background-gradient-to: #0A0A0C;
+	--color-sidebar-gradient-from: #3A2F19;
+	--color-sidebar-gradient-to: #0A0A0C;
 }
 
 .emerald {
@@ -803,6 +823,12 @@
 	--color-thumbnail-stack-series: #20302C;
 	--color-thumbnail-stack-library-start: #111716;
 	--color-thumbnail-stack-library-end: #20302C;
+
+	/* gradient (Enable gradients toggle) */
+	--color-background-gradient-from: #0F2C23;
+	--color-background-gradient-to: #090C0B;
+	--color-sidebar-gradient-from: #11372B;
+	--color-sidebar-gradient-to: #090C0B;
 }
 
 .noir {
@@ -869,6 +895,12 @@
 	--color-thumbnail-stack-series: #29292C;
 	--color-thumbnail-stack-library-start: #161618;
 	--color-thumbnail-stack-library-end: #29292C;
+
+	/* gradient (Enable gradients toggle) */
+	--color-background-gradient-from: #2F1617;
+	--color-background-gradient-to: #0C0C0D;
+	--color-sidebar-gradient-from: #3B191B;
+	--color-sidebar-gradient-to: #0C0C0D;
 }
 
 .vibranium-light {
@@ -935,6 +967,12 @@
 	--color-thumbnail-stack-series: #DBD8E4;
 	--color-thumbnail-stack-library-start: #FFFFFF;
 	--color-thumbnail-stack-library-end: #DBD8E4;
+
+	/* gradient (Enable gradients toggle) */
+	--color-background-gradient-from: #DED6F0;
+	--color-background-gradient-to: #E9E7F0;
+	--color-sidebar-gradient-from: #DAD0F0;
+	--color-sidebar-gradient-to: #E9E7F0;
 }
 
 .gold-light {
@@ -1001,5 +1039,11 @@
 	--color-thumbnail-stack-series: #E0DACB;
 	--color-thumbnail-stack-library-start: #FFFFFF;
 	--color-thumbnail-stack-library-end: #E0DACB;
+
+	/* gradient (Enable gradients toggle) */
+	--color-background-gradient-from: #E8DECB;
+	--color-background-gradient-to: #EFEADF;
+	--color-sidebar-gradient-from: #E5DAC5;
+	--color-sidebar-gradient-to: #EFEADF;
 }
 

@@ -84,4 +84,13 @@ export const DARK_THEMES = [
 	'emerald',
 	'noir',
 ]
-export const THEMES_WITH_GRADIENTS = ['cosmic']
+export const THEMES_WITH_GRADIENTS = [
+	'cosmic',
+	// NoirPanther themes define --color-*-gradient-from/to (see themes.css)
+	'vibranium',
+	'gold',
+	'emerald',
+	'noir',
+	'vibranium-light',
+	'gold-light',
+]

@@ -102,7 +102,12 @@ export default function LoginOrClaimScene() {
 			return (
 				<div className="gap-4 px-2 flex shrink-0 items-center justify-center">
 					<img src="/assets/favicon.png" width="80" height="80" />
-					<Heading variant="gradient" size="3xl" className="font-bold">
+					<Heading
+						variant="gradient"
+						size="3xl"
+						// Neon glow in the theme accent (vibranium on the login screen).
+						className="font-bold [filter:drop-shadow(0_0_6px_var(--color-fill-brand))_drop-shadow(0_0_18px_var(--color-fill-brand))]"
+					>
 						NoirPanther
 					</Heading>
 				</div>
