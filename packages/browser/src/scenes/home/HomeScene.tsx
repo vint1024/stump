@@ -39,7 +39,7 @@ export default function HomeScene() {
 	const helmet = (
 		<Helmet>
 			{/* Doing this so Helmet splits the title into an array, I'm not just insane lol */}
-			<title>Stump | {'Home'}</title>
+			<title>NoirPanther | {'Home'}</title>
 		</Helmet>
 	)
 

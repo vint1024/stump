@@ -1,18 +1,26 @@
-# Stump — vint1024 fork
+# NoirPanther server
 
-> **This is a fork of [Stump](https://github.com/stumpapp/stump)**, forked at tag **`v0.1.4`**.
+> **NoirPanther server is a fork of [Stump](https://github.com/stumpapp/stump)**, forked at tag **`v0.1.4`**.
 >
-> - Fork repository: <https://git.vint1024.net/vint1024/stump.git>
+> - Fork repository: <https://git.vint1024.net/vint1024/stump.git> (mirror: <https://github.com/vint1024/stump>)
 > - Upstream (original): <https://github.com/stumpapp/stump>
-> - Current fork version: **`0.1.4-vint-0.2.0`** (build channel `Dev-vint`)
+> - **Semantic version `v0.1.4`** — the same release as upstream Stump (everything in Stump 0.1.4 plus the additions below). The exact build is identified by its commit hash; the build channel is **`NoirPanther (stable)`**.
 >
 > **All modifications in this fork were developed with heavy assistance from AI tooling.**
 
 ## What this fork adds
 
+### Brand / UI
+
+- **Rebranded to "NoirPanther server"** — name, panther emblem, favicons, splash and PWA manifest
+- **Six NoirPanther themes** ported from the NoirPanther mobile client — _Vibranium_ (default), _Golden Eye_, _Emerald Gaze_, _Cinematic Noir_, and the _Vibranium · Light_ / _Golden Eye · Light_ variants (the upstream Stump themes are kept too)
+- **Full Russian localization of the web UI** — 616+ i18n keys across 165 components (multi-pass sweep to complete coverage)
+- Server-info screen surfaces the fork identity, our GitHub / changelog links, and the upstream-equivalent version
+
 ### Server &amp; features
 
 - **EPUB streaming for read-only users** — manifest + per-resource endpoints so users without download permission can read EPUBs in the browser/app
+- **Offline reading with encryption (E3)** — an `/offline` endpoint that wraps the content key to a device's Secure-Enclave public key, gated by an `OfflineRead` capability (no download permission required)
 - **Multiple folders per library**
 - **Reversible series merging**
 - **Content access rules** by tag / genre / publisher (Unicode case-folded)
@@ -20,19 +28,15 @@
 - **Write metadata back into EPUB files** — with an opt-in backup flag and backup cleanup
 - **Server-side EPUB cover placeholder** + WebP / GIF / SVG thumbnail support
 - **Series thumbnail regeneration** (incl. a regenerate-from-cover button)
+- **Book clubs at scale** — cursor-paginated members / past books / discussions, keyset discussion history, and DataLoader fixes for the member graph
 - Content rules in the user-creation form; tag / genre / publisher autocomplete; single-series deletion
-- Fixes: metadata lock hidden without `EditMetadata` permission; writeback / file-watcher race; cross-origin EPUB reader credentials; an N+1 query; owner-rule handling
-
-### UI
-
-- **Full Russian localization of the web UI** — 616 i18n keys across 165 components (multi-pass sweep to complete coverage)
+- Fixes: metadata lock hidden without `EditMetadata` permission; writeback / file-watcher race; cross-origin EPUB reader credentials; N+1 queries; owner-rule handling; `OfflineRead` permission checks
 
 ### Packaging
 
-- Versioned `0.1.4-vint-0.2.0`, build channel `Dev-vint`, rebranded build notice
-- Docker `arm64` image (`stump:vint-dev`)
+- Semantic version **`v0.1.4`** (build identifier `0.1.4-vint-*` internally), build channel **`NoirPanther (stable)`**
+- Docker `arm64` image
 
-> A separate experimental mobile rebrand (_Vint Books_) lives on branch `feat/mobile-vint-books`.
 > A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>
 
 The fork keeps the upstream **MIT** license.

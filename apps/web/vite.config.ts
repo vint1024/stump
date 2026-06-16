@@ -43,9 +43,9 @@ export default defineConfig({
 			// TODO(pwa): Add more manifest definitions for better overall experience
 			manifest: {
 				id: 'stump',
-				name: 'Stump PWA',
-				short_name: 'Stump',
-				theme_color: '#161719',
+				name: 'NoirPanther PWA',
+				short_name: 'NoirPanther',
+				theme_color: '#0b0a10',
 				icons: [
 					{
 						src: '/assets/favicon-16x16.png',

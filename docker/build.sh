@@ -5,7 +5,9 @@ _FORMAT=${FORMAT:-auto}
 _PLATFORMS=${PLATFORMS:-linux/amd64}
 _TAGS=${TAGS:-"aaronleopold/stump:nightly"}
 _GIT_REV=${GIT_REV:-$(git rev-parse --short HEAD)}
-_BUILD_CHANNEL=${BUILD_CHANNEL:-}
+# NoirPanther ships a single stable channel; the Server-info screen shows it as
+# "NoirPanther (stable)". Override with BUILD_CHANNEL=nightly/experimental if needed.
+_BUILD_CHANNEL=${BUILD_CHANNEL:-stable}
 _PUSH=${PUSH:-false}
 
 FORMATTED_TAGS=""

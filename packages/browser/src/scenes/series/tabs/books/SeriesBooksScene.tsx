@@ -369,7 +369,7 @@ function SeriesBooksScene() {
 		>
 			<div className="pb-4 md:pb-0 flex flex-1 flex-col">
 				<Helmet>
-					<title>Stump | {series.resolvedName || ''}</title>
+					<title>NoirPanther | {series.resolvedName || ''}</title>
 				</Helmet>
 
 				<section ref={containerRef} id="grid-top-indicator" className="h-0" />

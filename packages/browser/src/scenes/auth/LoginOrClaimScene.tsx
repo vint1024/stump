@@ -103,7 +103,7 @@ export default function LoginOrClaimScene() {
 				<div className="gap-4 px-2 flex shrink-0 items-center justify-center">
 					<img src="/assets/favicon.png" width="80" height="80" />
 					<Heading variant="gradient" size="3xl" className="font-bold">
-						Stump
+						NoirPanther
 					</Heading>
 				</div>
 			)

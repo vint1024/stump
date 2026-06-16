@@ -5,19 +5,23 @@ import { useMemo } from 'react'
 export default function ApplicationVersion() {
 	const version = useStumpVersion()
 
+	// Show the upstream-equivalent base version (v0.1.4); the fork suffix on the
+	// build is represented by the exact commit shown alongside it.
+	const baseSemver = version?.semver?.split('-')[0]
+
 	const url = useMemo(() => {
 		if (!version) return undefined
 
-		const { rev, semver } = version
-		const repoUrl = 'https://github.com/stumpapp/stump'
-		if (semver && semver !== '0.0.0') {
-			return `${repoUrl}/releases/tag/v${semver}`
+		const { rev } = version
+		const repoUrl = 'https://github.com/vint1024/stump'
+		if (baseSemver && baseSemver !== '0.0.0') {
+			return `${repoUrl}/releases/tag/v${baseSemver}`
 		} else if (rev) {
 			return `${repoUrl}/commit/${rev}`
 		} else {
 			return repoUrl
 		}
-	}, [version])
+	}, [version, baseSemver])
 
 	if (!version) return null
 
@@ -30,7 +34,7 @@ export default function ApplicationVersion() {
 			underline={false}
 		>
 			<span>
-				v{version.semver}
+				v{baseSemver}
 				{!!version.rev && ` - ${version.rev}`}
 			</span>
 		</Link>

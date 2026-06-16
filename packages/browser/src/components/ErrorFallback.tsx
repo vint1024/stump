@@ -50,7 +50,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 					</ButtonOrLink>
 					<ButtonOrLink
 						title={t('components.ErrorFallback.reportBugTitle')}
-						href="https://github.com/stumpapp/stump/issues/new/choose"
+						href="https://github.com/vint1024/stump/issues/new/choose"
 						target="_blank"
 					>
 						{t('components.ErrorFallback.reportBug')} <ExternalLink className="ml-2 h-4 w-4" />

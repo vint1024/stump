@@ -115,7 +115,7 @@ export default function UserBookClubsScene() {
 			className={cx({ 'flex h-full items-center justify-center': !bookClubs?.length })}
 		>
 			<Helmet>
-				<title>Stump | {t('scenes.bookClub.UserBookClubsScene.helmet')}</title>
+				<title>NoirPanther | {t('scenes.bookClub.UserBookClubsScene.helmet')}</title>
 			</Helmet>
 
 			{renderContent()}

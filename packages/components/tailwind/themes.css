@@ -600,3 +600,406 @@
 	--color-thumbnail-stack-library-start: #331e11;
 	--color-thumbnail-stack-library-end: #543c2f;
 }
+
+/* ===================================================================== */
+/* MARK: NoirPanther themes (ported from the NoirPanther mobile client)   */
+/* Default app theme is "vibranium" (see useTheme.ts). Light variants are  */
+/* NoirPanther themes are dark unless their name ends in -light.           */
+/* ===================================================================== */
+
+.vibranium {
+	/* NoirPanther theme — vibranium (dark) */
+	--color-background: #0B0A10;
+	--color-background-inverse: #ffffff;
+	--color-background-overlay: #232030;
+	--color-background-overlay-hover: #1E1B29;
+	--color-background-surface: #15131D;
+	--color-background-surface-hover: #1E1B29;
+	--color-background-surface-secondary: #232030;
+
+	--color-edge: #2A2735;
+	--color-edge-brand: #8B5CF6;
+	--color-edge-danger: #E5484D;
+	--color-edge-info: #4C9AED;
+	--color-edge-strong: #ffffff;
+	--color-edge-subtle: #211E2B;
+	--color-edge-success: #34B27B;
+	--color-edge-warning: #E0A82E;
+
+	--color-fill-brand: #8B5CF6;
+	--color-fill-brand-hover: #A78BFA;
+	--color-fill-brand-secondary: rgba(139,92,246,0.16);
+	--color-fill-danger: #E5484D;
+	--color-fill-danger-hover: #EC6B6F;
+	--color-fill-danger-secondary: #E5484D26;
+	--color-fill-disabled: #9A95AC;
+	--color-fill-info: #4C9AED;
+	--color-fill-info-hover: #4C9AED;
+	--color-fill-info-secondary: #4C9AED26;
+	--color-fill-success: #34B27B;
+	--color-fill-success-hover: #34B27B;
+	--color-fill-success-secondary: rgba(52,178,123,0.15);
+	--color-fill-warning: #E0A82E;
+	--color-fill-warning-hover: #E0A82E;
+	--color-fill-warning-secondary: #E0A82E26;
+	--color-fill-on-black: #1E1B29;
+	--color-fill-on-black-muted: #15131D;
+
+	--color-foreground: #EFEDF5;
+	--color-foreground-brand: #8B5CF6;
+	--color-foreground-disabled: #9A95AC;
+	--color-foreground-muted: #9A95AC;
+	--color-foreground-subtle: #C4C0D0;
+	--color-foreground-on-inverse: #0B0A10;
+	--color-foreground-on-black: #C4C0D0;
+	--color-foreground-on-black-muted: #9A95AC;
+
+	--color-sidebar: #0B0A10;
+	--color-sidebar-inverse: #ffffff;
+	--color-sidebar-overlay: #0B0A10;
+	--color-sidebar-overlay-hover: #1E1B29;
+	--color-sidebar-surface: #15131D;
+	--color-sidebar-surface-hover: #1E1B29;
+	--color-sidebar-surface-secondary: #232030;
+
+	--color-scrollbar: #0B0A10;
+	--color-scrollbar-thumb: hsla(0, 0%, 100%, 0.4);
+	--color-scrollbar-thumb-hover: hsla(0, 0%, 100%, 0.3);
+
+	--color-thumbnail-border: rgba(233, 234, 235, 0.1);
+	--color-thumbnail-placeholder: #1E1B29;
+	--color-thumbnail-stack-series: #2A2735;
+	--color-thumbnail-stack-library-start: #15131D;
+	--color-thumbnail-stack-library-end: #2A2735;
+}
+
+.gold {
+	/* NoirPanther theme — gold (dark) */
+	--color-background: #0A0A0C;
+	--color-background-inverse: #ffffff;
+	--color-background-overlay: #24242C;
+	--color-background-overlay-hover: #1F1F26;
+	--color-background-surface: #15151A;
+	--color-background-surface-hover: #1F1F26;
+	--color-background-surface-secondary: #24242C;
+
+	--color-edge: #2A2A31;
+	--color-edge-brand: #E8B349;
+	--color-edge-danger: #E5484D;
+	--color-edge-info: #4C9AED;
+	--color-edge-strong: #ffffff;
+	--color-edge-subtle: #1F1F25;
+	--color-edge-success: #34B27B;
+	--color-edge-warning: #E0A82E;
+
+	--color-fill-brand: #E8B349;
+	--color-fill-brand-hover: #F0C66B;
+	--color-fill-brand-secondary: rgba(232,179,73,0.16);
+	--color-fill-danger: #E5484D;
+	--color-fill-danger-hover: #EC6B6F;
+	--color-fill-danger-secondary: #E5484D26;
+	--color-fill-disabled: #9C988E;
+	--color-fill-info: #4C9AED;
+	--color-fill-info-hover: #4C9AED;
+	--color-fill-info-secondary: #4C9AED26;
+	--color-fill-success: #34B27B;
+	--color-fill-success-hover: #34B27B;
+	--color-fill-success-secondary: rgba(52,178,123,0.15);
+	--color-fill-warning: #E0A82E;
+	--color-fill-warning-hover: #E0A82E;
+	--color-fill-warning-secondary: #E0A82E26;
+	--color-fill-on-black: #1F1F26;
+	--color-fill-on-black-muted: #15151A;
+
+	--color-foreground: #F2EFE9;
+	--color-foreground-brand: #E8B349;
+	--color-foreground-disabled: #9C988E;
+	--color-foreground-muted: #9C988E;
+	--color-foreground-subtle: #C9C5BC;
+	--color-foreground-on-inverse: #0A0A0C;
+	--color-foreground-on-black: #C9C5BC;
+	--color-foreground-on-black-muted: #9C988E;
+
+	--color-sidebar: #0A0A0C;
+	--color-sidebar-inverse: #ffffff;
+	--color-sidebar-overlay: #0A0A0C;
+	--color-sidebar-overlay-hover: #1F1F26;
+	--color-sidebar-surface: #15151A;
+	--color-sidebar-surface-hover: #1F1F26;
+	--color-sidebar-surface-secondary: #24242C;
+
+	--color-scrollbar: #0A0A0C;
+	--color-scrollbar-thumb: hsla(0, 0%, 100%, 0.4);
+	--color-scrollbar-thumb-hover: hsla(0, 0%, 100%, 0.3);
+
+	--color-thumbnail-border: rgba(233, 234, 235, 0.1);
+	--color-thumbnail-placeholder: #1F1F26;
+	--color-thumbnail-stack-series: #2A2A31;
+	--color-thumbnail-stack-library-start: #15151A;
+	--color-thumbnail-stack-library-end: #2A2A31;
+}
+
+.emerald {
+	/* NoirPanther theme — emerald (dark) */
+	--color-background: #090C0B;
+	--color-background-inverse: #ffffff;
+	--color-background-overlay: #1E2724;
+	--color-background-overlay-hover: #19211F;
+	--color-background-surface: #111716;
+	--color-background-surface-hover: #19211F;
+	--color-background-surface-secondary: #1E2724;
+
+	--color-edge: #20302C;
+	--color-edge-brand: #2DD4A0;
+	--color-edge-danger: #E5484D;
+	--color-edge-info: #4C9AED;
+	--color-edge-strong: #ffffff;
+	--color-edge-subtle: #18211E;
+	--color-edge-success: #34B27B;
+	--color-edge-warning: #E0A82E;
+
+	--color-fill-brand: #2DD4A0;
+	--color-fill-brand-hover: #5BE0B8;
+	--color-fill-brand-secondary: rgba(45,212,160,0.16);
+	--color-fill-danger: #E5484D;
+	--color-fill-danger-hover: #EC6B6F;
+	--color-fill-danger-secondary: #E5484D26;
+	--color-fill-disabled: #8FA39A;
+	--color-fill-info: #4C9AED;
+	--color-fill-info-hover: #4C9AED;
+	--color-fill-info-secondary: #4C9AED26;
+	--color-fill-success: #34B27B;
+	--color-fill-success-hover: #34B27B;
+	--color-fill-success-secondary: rgba(52,178,123,0.15);
+	--color-fill-warning: #E0A82E;
+	--color-fill-warning-hover: #E0A82E;
+	--color-fill-warning-secondary: #E0A82E26;
+	--color-fill-on-black: #19211F;
+	--color-fill-on-black-muted: #111716;
+
+	--color-foreground: #ECF2EE;
+	--color-foreground-brand: #2DD4A0;
+	--color-foreground-disabled: #8FA39A;
+	--color-foreground-muted: #8FA39A;
+	--color-foreground-subtle: #BDC9C3;
+	--color-foreground-on-inverse: #090C0B;
+	--color-foreground-on-black: #BDC9C3;
+	--color-foreground-on-black-muted: #8FA39A;
+
+	--color-sidebar: #090C0B;
+	--color-sidebar-inverse: #ffffff;
+	--color-sidebar-overlay: #090C0B;
+	--color-sidebar-overlay-hover: #19211F;
+	--color-sidebar-surface: #111716;
+	--color-sidebar-surface-hover: #19211F;
+	--color-sidebar-surface-secondary: #1E2724;
+
+	--color-scrollbar: #090C0B;
+	--color-scrollbar-thumb: hsla(0, 0%, 100%, 0.4);
+	--color-scrollbar-thumb-hover: hsla(0, 0%, 100%, 0.3);
+
+	--color-thumbnail-border: rgba(233, 234, 235, 0.1);
+	--color-thumbnail-placeholder: #19211F;
+	--color-thumbnail-stack-series: #20302C;
+	--color-thumbnail-stack-library-start: #111716;
+	--color-thumbnail-stack-library-end: #20302C;
+}
+
+.noir {
+	/* NoirPanther theme — noir (dark) */
+	--color-background: #0C0C0D;
+	--color-background-inverse: #ffffff;
+	--color-background-overlay: #252528;
+	--color-background-overlay-hover: #202022;
+	--color-background-surface: #161618;
+	--color-background-surface-hover: #202022;
+	--color-background-surface-secondary: #252528;
+
+	--color-edge: #29292C;
+	--color-edge-brand: #E5484D;
+	--color-edge-danger: #E5484D;
+	--color-edge-info: #4C9AED;
+	--color-edge-strong: #ffffff;
+	--color-edge-subtle: #1E1E20;
+	--color-edge-success: #34B27B;
+	--color-edge-warning: #E0A82E;
+
+	--color-fill-brand: #E5484D;
+	--color-fill-brand-hover: #EC6B6F;
+	--color-fill-brand-secondary: rgba(229,72,77,0.16);
+	--color-fill-danger: #E5484D;
+	--color-fill-danger-hover: #EC6B6F;
+	--color-fill-danger-secondary: #E5484D26;
+	--color-fill-disabled: #8B8D93;
+	--color-fill-info: #4C9AED;
+	--color-fill-info-hover: #4C9AED;
+	--color-fill-info-secondary: #4C9AED26;
+	--color-fill-success: #34B27B;
+	--color-fill-success-hover: #34B27B;
+	--color-fill-success-secondary: rgba(52,178,123,0.15);
+	--color-fill-warning: #E0A82E;
+	--color-fill-warning-hover: #E0A82E;
+	--color-fill-warning-secondary: #E0A82E26;
+	--color-fill-on-black: #202022;
+	--color-fill-on-black-muted: #161618;
+
+	--color-foreground: #F5F5F4;
+	--color-foreground-brand: #E5484D;
+	--color-foreground-disabled: #8B8D93;
+	--color-foreground-muted: #8B8D93;
+	--color-foreground-subtle: #C4C5C9;
+	--color-foreground-on-inverse: #0C0C0D;
+	--color-foreground-on-black: #C4C5C9;
+	--color-foreground-on-black-muted: #8B8D93;
+
+	--color-sidebar: #0C0C0D;
+	--color-sidebar-inverse: #ffffff;
+	--color-sidebar-overlay: #0C0C0D;
+	--color-sidebar-overlay-hover: #202022;
+	--color-sidebar-surface: #161618;
+	--color-sidebar-surface-hover: #202022;
+	--color-sidebar-surface-secondary: #252528;
+
+	--color-scrollbar: #0C0C0D;
+	--color-scrollbar-thumb: hsla(0, 0%, 100%, 0.4);
+	--color-scrollbar-thumb-hover: hsla(0, 0%, 100%, 0.3);
+
+	--color-thumbnail-border: rgba(233, 234, 235, 0.1);
+	--color-thumbnail-placeholder: #202022;
+	--color-thumbnail-stack-series: #29292C;
+	--color-thumbnail-stack-library-start: #161618;
+	--color-thumbnail-stack-library-end: #29292C;
+}
+
+.vibranium-light {
+	/* NoirPanther theme — vibranium-light (light) */
+	--color-background: #E9E7F0;
+	--color-background-inverse: #17151F;
+	--color-background-overlay: #EDEBF3;
+	--color-background-overlay-hover: #F4F2F8;
+	--color-background-surface: #FFFFFF;
+	--color-background-surface-hover: #F4F2F8;
+	--color-background-surface-secondary: #EDEBF3;
+
+	--color-edge: #DBD8E4;
+	--color-edge-brand: #7C3AED;
+	--color-edge-danger: #DC2626;
+	--color-edge-info: #2563EB;
+	--color-edge-strong: #17151F;
+	--color-edge-subtle: #E7E4EE;
+	--color-edge-success: #1F9D57;
+	--color-edge-warning: #B7791F;
+
+	--color-fill-brand: #7C3AED;
+	--color-fill-brand-hover: #6D28D9;
+	--color-fill-brand-secondary: rgba(124,58,237,0.12);
+	--color-fill-danger: #DC2626;
+	--color-fill-danger-hover: #B91C1C;
+	--color-fill-danger-secondary: #DC262626;
+	--color-fill-disabled: #6B6680;
+	--color-fill-info: #2563EB;
+	--color-fill-info-hover: #2563EB;
+	--color-fill-info-secondary: #2563EB26;
+	--color-fill-success: #1F9D57;
+	--color-fill-success-hover: #1F9D57;
+	--color-fill-success-secondary: rgba(31,157,87,0.12);
+	--color-fill-warning: #B7791F;
+	--color-fill-warning-hover: #B7791F;
+	--color-fill-warning-secondary: #B7791F26;
+	--color-fill-on-black: #F4F2F8;
+	--color-fill-on-black-muted: #FFFFFF;
+
+	--color-foreground: #17151F;
+	--color-foreground-brand: #7C3AED;
+	--color-foreground-disabled: #6B6680;
+	--color-foreground-muted: #6B6680;
+	--color-foreground-subtle: #44414F;
+	--color-foreground-on-inverse: #ffffff;
+	--color-foreground-on-black: #44414F;
+	--color-foreground-on-black-muted: #6B6680;
+
+	--color-sidebar: #E9E7F0;
+	--color-sidebar-inverse: #17151F;
+	--color-sidebar-overlay: #E9E7F0;
+	--color-sidebar-overlay-hover: #F4F2F8;
+	--color-sidebar-surface: #FFFFFF;
+	--color-sidebar-surface-hover: #F4F2F8;
+	--color-sidebar-surface-secondary: #EDEBF3;
+
+	--color-scrollbar: #E9E7F0;
+	--color-scrollbar-thumb: hsla(0, 0%, 0%, 0.3);
+	--color-scrollbar-thumb-hover: hsla(0, 0%, 0%, 0.5);
+
+	--color-thumbnail-border: rgba(31, 33, 35, 0.1);
+	--color-thumbnail-placeholder: #F4F2F8;
+	--color-thumbnail-stack-series: #DBD8E4;
+	--color-thumbnail-stack-library-start: #FFFFFF;
+	--color-thumbnail-stack-library-end: #DBD8E4;
+}
+
+.gold-light {
+	/* NoirPanther theme — gold-light (light) */
+	--color-background: #EFEADF;
+	--color-background-inverse: #1C1A15;
+	--color-background-overlay: #F1ECE2;
+	--color-background-overlay-hover: #F7F4ED;
+	--color-background-surface: #FFFFFF;
+	--color-background-surface-hover: #F7F4ED;
+	--color-background-surface-secondary: #F1ECE2;
+
+	--color-edge: #E0DACB;
+	--color-edge-brand: #A6731B;
+	--color-edge-danger: #DC2626;
+	--color-edge-info: #2563EB;
+	--color-edge-strong: #1C1A15;
+	--color-edge-subtle: #EBE6DA;
+	--color-edge-success: #1F9D57;
+	--color-edge-warning: #B7791F;
+
+	--color-fill-brand: #A6731B;
+	--color-fill-brand-hover: #8A5E12;
+	--color-fill-brand-secondary: rgba(166,115,27,0.12);
+	--color-fill-danger: #DC2626;
+	--color-fill-danger-hover: #B91C1C;
+	--color-fill-danger-secondary: #DC262626;
+	--color-fill-disabled: #6E695E;
+	--color-fill-info: #2563EB;
+	--color-fill-info-hover: #2563EB;
+	--color-fill-info-secondary: #2563EB26;
+	--color-fill-success: #1F9D57;
+	--color-fill-success-hover: #1F9D57;
+	--color-fill-success-secondary: rgba(31,157,87,0.12);
+	--color-fill-warning: #B7791F;
+	--color-fill-warning-hover: #B7791F;
+	--color-fill-warning-secondary: #B7791F26;
+	--color-fill-on-black: #F7F4ED;
+	--color-fill-on-black-muted: #FFFFFF;
+
+	--color-foreground: #1C1A15;
+	--color-foreground-brand: #A6731B;
+	--color-foreground-disabled: #6E695E;
+	--color-foreground-muted: #6E695E;
+	--color-foreground-subtle: #46423A;
+	--color-foreground-on-inverse: #ffffff;
+	--color-foreground-on-black: #46423A;
+	--color-foreground-on-black-muted: #6E695E;
+
+	--color-sidebar: #EFEADF;
+	--color-sidebar-inverse: #1C1A15;
+	--color-sidebar-overlay: #EFEADF;
+	--color-sidebar-overlay-hover: #F7F4ED;
+	--color-sidebar-surface: #FFFFFF;
+	--color-sidebar-surface-hover: #F7F4ED;
+	--color-sidebar-surface-secondary: #F1ECE2;
+
+	--color-scrollbar: #EFEADF;
+	--color-scrollbar-thumb: hsla(0, 0%, 0%, 0.3);
+	--color-scrollbar-thumb-hover: hsla(0, 0%, 0%, 0.5);
+
+	--color-thumbnail-border: rgba(31, 33, 35, 0.1);
+	--color-thumbnail-placeholder: #F7F4ED;
+	--color-thumbnail-stack-series: #E0DACB;
+	--color-thumbnail-stack-library-start: #FFFFFF;
+	--color-thumbnail-stack-library-end: #E0DACB;
+}
+

@@ -12,11 +12,10 @@ import {
 } from '@stump/components'
 import { useLocaleContext } from '@stump/i18n'
 import { intlFormat } from 'date-fns'
-import toUpper from 'lodash/toUpper'
 import { Info } from 'lucide-react'
 import { useMemo } from 'react'
 
-const REPO_URL = 'https://github.com/stumpapp/stump'
+const REPO_URL = 'https://github.com/vint1024/stump'
 const IS_DEV = import.meta.env.DEV
 
 export default function ServerInfoSection() {
@@ -24,9 +23,13 @@ export default function ServerInfoSection() {
 
 	const { t } = useLocaleContext()
 
+	// Display the upstream-equivalent semantic version (v0.1.4): the build carries
+	// a fork suffix (e.g. 0.1.4-vint-0.3.0); the exact build is the commit below.
+	const baseSemver = useMemo(() => version?.semver?.split('-')[0], [version])
+
 	const versionUrl = useMemo(
-		() => (version?.semver ? `${REPO_URL}/releases/tag/v${version.semver}` : REPO_URL),
-		[version],
+		() => (baseSemver ? `${REPO_URL}/releases/tag/v${baseSemver}` : REPO_URL),
+		[baseSemver],
 	)
 
 	const commitUrl = useMemo(
@@ -34,10 +37,14 @@ export default function ServerInfoSection() {
 		[version],
 	)
 
-	const buildChannel = useMemo(
-		() => version?.buildChannel ?? (IS_DEV ? 'local' : undefined),
+	// The fork ships a single "stable" channel; default to it so the field always
+	// shows, and surface it as "NoirPanther (<channel>)" while keeping the raw
+	// value for the non-stable warning below.
+	const rawChannel = useMemo(
+		() => version?.buildChannel || (IS_DEV ? 'local' : 'stable'),
 		[version],
 	)
+	const buildChannel = `NoirPanther (${rawChannel})`
 
 	return (
 		<div className="gap-4 flex flex-col">
@@ -48,7 +55,7 @@ export default function ServerInfoSection() {
 				</Text>
 			</div>
 
-			{buildChannel && buildChannel !== 'stable' && (
+			{rawChannel !== 'stable' && (
 				<Alert variant="info">
 					<Info className="h-4 w-4" />
 					<AlertTitle>
@@ -56,9 +63,7 @@ export default function ServerInfoSection() {
 					</AlertTitle>
 					<AlertDescription className="flex">
 						{t('settingsScene.server/general.sections.serverInfo.nonStableChannel.description.0')}{' '}
-						<span className="font-semibold">
-							{toUpper(buildChannel.charAt(0)) + buildChannel.slice(1)}
-						</span>{' '}
+						<span className="font-semibold">{buildChannel}</span>{' '}
 						{t('settingsScene.server/general.sections.serverInfo.nonStableChannel.description.1')}
 					</AlertDescription>
 				</Alert>
@@ -78,19 +83,17 @@ export default function ServerInfoSection() {
 							)}
 							underline={false}
 						>
-							<span>v{version.semver}</span>
+							<span>v{baseSemver}</span>
 						</Link>
 					</div>
 				)}
 
-				{buildChannel && (
-					<div>
-						<Label>{t('settingsScene.server/general.sections.serverInfo.buildChannel')}</Label>
-						<Text size="sm" variant="muted">
-							{toUpper(buildChannel.charAt(0)) + buildChannel.slice(1)}
-						</Text>
-					</div>
-				)}
+				<div>
+					<Label>{t('settingsScene.server/general.sections.serverInfo.buildChannel')}</Label>
+					<Text size="sm" variant="muted">
+						{buildChannel}
+					</Text>
+				</div>
 
 				{version && (
 					<div>

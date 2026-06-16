@@ -12,7 +12,7 @@ export default function DesktopSettingsScene() {
 	return (
 		<SceneContainer>
 			<Helmet>
-				<title>Stump | {t('settingsScene.app/desktop.helmet')}</title>
+				<title>NoirPanther | {t('settingsScene.app/desktop.helmet')}</title>
 			</Helmet>
 
 			<ContentContainer>

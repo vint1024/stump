@@ -97,8 +97,8 @@ const RouterContainer = (props: StumpClientProps) => {
 		>
 			<SDKProvider baseURL={baseUrl || ''} authMethod={props.authMethod || 'session'}>
 				{showQueryTools && <ReactQueryDevtools position="right" />}
-				<Helmet defaultTitle="Stump">
-					<title>Stump</title>
+				<Helmet defaultTitle="NoirPanther">
+					<title>NoirPanther</title>
 				</Helmet>
 				<AppRouter />
 				<Toaster />

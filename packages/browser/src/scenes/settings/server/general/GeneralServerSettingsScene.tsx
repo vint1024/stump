@@ -26,7 +26,7 @@ export default function GeneralServerSettingsScene() {
 	return (
 		<SceneContainer>
 			<Helmet>
-				<title>Stump | {t('settingsScene.server/general.helmet')}</title>
+				<title>NoirPanther | {t('settingsScene.server/general.helmet')}</title>
 			</Helmet>
 
 			<ContentContainer>

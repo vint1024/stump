@@ -7,7 +7,7 @@
 	},
 	"authScene": {
 		"claimHeading": "Inicializovat váš server",
-		"claimText": "Tento server Stump není inicializovaný. Pro vytvoření účtu použijte níže uvedený formulář. Po vytvoření budete mít plný přístup ke všem funkcím serveru.",
+		"claimText": "Tento server NoirPanther není inicializovaný. Pro vytvoření účtu použijte níže uvedený formulář. Po vytvoření budete mít plný přístup ke všem funkcím serveru.",
 		"form": {
 			"validation": {
 				"missingUsername": "Jméno uživatele je vyžadováno",
@@ -391,7 +391,7 @@
 			"convertOptions": {
 				"section": {
 					"heading": "Konverze souboru",
-					"description": "Stump je schopný převádět určité formáty souborů do více kompatibilních"
+					"description": "NoirPanther je schopný převádět určité formáty souborů do více kompatibilních"
 				},
 				"rarToZip": {
 					"label": "Převést RAR na ZIP",
@@ -439,7 +439,7 @@
 				},
 				"options": {
 					"label": "Vzor knihovny",
-					"description": "Nastavení, které určuje, jak bude Stump organizovat vaši knihovnu",
+					"description": "Nastavení, které určuje, jak bude NoirPanther organizovat vaši knihovnu",
 					"collectionPriority": {
 						"label": "Priorita sbírky",
 						"description": "Každá složka na nejvyšší úrovni kořene knihovny je jedna série"
@@ -768,14 +768,14 @@
 				},
 				"metadataWriteback": {
 					"heading": "Write metadata to files",
-					"description": "Embed the metadata stored in Stump into every epub file of this library (OPF), so it travels with the files. Archives are rewritten atomically; this modifies your files on disk",
+					"description": "Embed the metadata stored in NoirPanther into every epub file of this library (OPF), so it travels with the files. Archives are rewritten atomically; this modifies your files on disk",
 					"keepBackup": "Keep a .bak copy of each original file",
 					"writeAll": "Write metadata to all files",
 					"cleanBackups": "Delete .bak backups",
 					"confirm": {
 						"title": "Write metadata into every epub?",
-						"withBackup": "Every epub in this library will be rewritten with the metadata stored in Stump. Originals are kept as .bak files next to the books.",
-						"withoutBackup": "Every epub in this library will be rewritten with the metadata stored in Stump. No backups will be kept.",
+						"withBackup": "Every epub in this library will be rewritten with the metadata stored in NoirPanther. Originals are kept as .bak files next to the books.",
+						"withoutBackup": "Every epub in this library will be rewritten with the metadata stored in NoirPanther. No backups will be kept.",
 						"confirm": "Start writeback"
 					},
 					"toasts": {
@@ -1314,7 +1314,7 @@
 					"description": "Změnit filtry pro tuto relaci zobrazení",
 					"rawData": {
 						"heading": "Syrová data filtru",
-						"description": "Stump zpracuje filtry takto"
+						"description": "NoirPanther zpracuje filtry takto"
 					},
 					"buttons": {
 						"save": "Uložit",
@@ -1417,7 +1417,7 @@
 					"avatarPicker": {
 						"label": "Avatar",
 						"heading": "Upload avatar",
-						"subtitle": "You can upload any image to use as your avatar for social features in Stump",
+						"subtitle": "You can upload any image to use as your avatar for social features in NoirPanther",
 						"dropzone": "Drop an image or click to select",
 						"changeImage": "Change Image",
 						"removeImage": "Remove Image",
@@ -1441,8 +1441,8 @@
 					},
 					"heading": "Jazyk a lokalizace",
 					"subtitle": [
-						"Stump podporuje více jazyků a místních jazykových mutací, nastavte si je níže. Prosím, zvažte pomoc při zlepšování kvality",
-						"Přeložte Stump",
+						"NoirPanther podporuje více jazyků a místních jazykových mutací, nastavte si je níže. Prosím, zvažte pomoc při zlepšování kvality",
+						"Přeložte NoirPanther",
 						"pokud můžete!"
 					]
 				}
@@ -1455,7 +1455,7 @@
 			"sections": {
 				"themeAndAppearance": {
 					"label": "Theme and appearance",
-					"description": "The basic look and feel options for Stump"
+					"description": "The basic look and feel options for NoirPanther"
 				},
 				"themeSelect": {
 					"label": "Motiv",
@@ -1501,7 +1501,7 @@
 				},
 				"layoutAndArrangement": {
 					"label": "Layout and arrangement",
-					"description": "Customize how Stump displays information and organizes content"
+					"description": "Customize how NoirPanther displays information and organizes content"
 				},
 				"primaryNavigation": {
 					"label": "Primary navigation",
@@ -1562,7 +1562,7 @@
 				},
 				"maxWidthPreference": {
 					"label": "Adjusted width",
-					"description": "Stump applies a max-width to the viewport. This setting allows you to adjust or remove this limit",
+					"description": "NoirPanther applies a max-width to the viewport. This setting allows you to adjust or remove this limit",
 					"tooltip": "This setting is not currently supported when the primary navigation is set to sidebar",
 					"options": {
 						"noLimit": "No limit"
@@ -1570,7 +1570,7 @@
 				},
 				"additionalPreferences": {
 					"label": "Additional preferences",
-					"description": "Customize the appearance and behavior of Stump with these additional settings"
+					"description": "Customize the appearance and behavior of NoirPanther with these additional settings"
 				},
 				"showThumbnailsInHeader": {
 					"label": "Show thumbnails in headers",
@@ -1613,7 +1613,7 @@
 		"app/apiKeys": {
 			"helmet": "API klíče",
 			"title": "API klíče",
-			"description": "Spravujte vygenerované API klíče Stump",
+			"description": "Spravujte vygenerované API klíče NoirPanther",
 			"shared": {
 				"fields": {
 					"name": "Název",
@@ -1670,7 +1670,7 @@
 		"app/reader": {
 			"helmet": "Nastavení čtečky",
 			"title": "Nastavení čtečky",
-			"description": "Výchozí možnosti pro čtečky Stump. Jsou vázány pouze na vaše aktuální zařízení",
+			"description": "Výchozí možnosti pro čtečky NoirPanther. Jsou vázány pouze na vaše aktuální zařízení",
 			"sections": {
 				"universal": {
 					"sections": {
@@ -1726,11 +1726,11 @@
 		"app/desktop": {
 			"helmet": "Nastavení plochy",
 			"title": "Nastavení plochy",
-			"description": "Nastavení vztahující se k aplikaci Stump",
+			"description": "Nastavení vztahující se k aplikaci NoirPanther",
 			"sections": {
 				"configuredServers": {
 					"label": "Nastavené servery",
-					"description": "Seznam serverů Stump, ke kterým se můžete připojit",
+					"description": "Seznam serverů NoirPanther, ke kterým se můžete připojit",
 					"getStarted": "Přidejte server pro začátek",
 					"unreachableServer": {
 						"tooltip": "Server je nedostupný"
@@ -1752,7 +1752,7 @@
 							},
 							"uri": {
 								"label": "URI",
-								"description": "URL serveru Stump",
+								"description": "URL serveru NoirPanther",
 								"placeholder": "https://stump.example.com"
 							}
 						}
@@ -1760,7 +1760,7 @@
 					"addServer": {
 						"trigger": "Přidat server",
 						"title": "Přidat nový server",
-						"description": "Přidat nový server Stump do aplikace",
+						"description": "Přidat nový server NoirPanther do aplikace",
 						"confirm": "Přidat server"
 					},
 					"editServer": {
@@ -1836,14 +1836,14 @@
 		"server/general": {
 			"helmet": "Obecné nastavení serveru",
 			"title": "Obecná nastavení",
-			"description": "Obecná nastavení týkající se instance serveru Stump",
+			"description": "Obecná nastavení týkající se instance serveru NoirPanther",
 			"sections": {
 				"updateAvailable": {
 					"message": "Váš server není aktualizován. Aktualizujte prosím na nejnovější verzi!"
 				},
 				"serverInfo": {
 					"title": "Informace o serveru",
-					"description": "Základní podrobnosti o instanci serveru Stump",
+					"description": "Základní podrobnosti o instanci serveru NoirPanther",
 					"build": {
 						"label": "Sestavení",
 						"description": "Podrobnosti o verzi a sestavení",
@@ -1854,7 +1854,7 @@
 						}
 					},
 					"nonStableChannel": {
-						"title": "You are running a non-stable build of Stump",
+						"title": "You are running a non-stable build of NoirPanther",
 						"description": [
 							"It looks like you are running the",
 							"build channel"
@@ -1867,7 +1867,7 @@
 				},
 				"helpfulLinks": {
 					"title": "Helpful links",
-					"description": "Links to resources that may be helpful for managing your Stump server instance",
+					"description": "Links to resources that may be helpful for managing your NoirPanther server instance",
 					"links": {
 						"documentation": "Documentation",
 						"changelog": "Changelog"
@@ -1932,7 +1932,7 @@
 				},
 				"liveLogs": {
 					"title": "Kanál živých logů",
-					"description": "Streamováno přímo z instance vašeho serveru Stump v reálném čase"
+					"description": "Streamováno přímo z instance vašeho serveru NoirPanther v reálném čase"
 				}
 			}
 		},
@@ -2015,7 +2015,7 @@
 				},
 				"history": {
 					"title": "Historie",
-					"description": "Záznam úloh, které byly spuštěny na instanci serveru Stump",
+					"description": "Záznam úloh, které byly spuštěny na instanci serveru NoirPanther",
 					"table": {
 						"columns": {
 							"name": "Název",
@@ -2245,12 +2245,12 @@
 		"server/email": {
 			"helmet": "Nastavení e-mailu",
 			"title": "E-mail",
-			"description": "Settings related to configuring an SMTP emailer for your Stump server instance",
+			"description": "Settings related to configuring an SMTP emailer for your NoirPanther server instance",
 			"sections": {
 				"emailers": {
 					"title": "SMTP e-mailery",
-					"description": "Klienti, které jste nakonfigurovali pro odesílání e-mailů z instance serveru Stump",
-					"singleInstanceDisclaimer": "Zatímco Stump podporuje více SMTP konfigurací v pozadí, pouze jedna může být nakonfigurována v uživatelském rozhraní. To bude v budoucnu vylepšeno",
+					"description": "Klienti, které jste nakonfigurovali pro odesílání e-mailů z instance serveru NoirPanther",
+					"singleInstanceDisclaimer": "Zatímco NoirPanther podporuje více SMTP konfigurací v pozadí, pouze jedna může být nakonfigurována v uživatelském rozhraní. To bude v budoucnu vylepšeno",
 					"list": {
 						"emptyHeading": "Nejsou nakonfigurovány žádné SMTP e-mailery",
 						"primaryEmailer": "Primární e-mailer",
@@ -2272,7 +2272,7 @@
 				},
 				"devices": {
 					"title": "E-mailová zařízení",
-					"description": "Aliasy zařízení, které jste nakonfigurovali pro příjem e-mailů z instance serveru Stump",
+					"description": "Aliasy zařízení, které jste nakonfigurovali pro příjem e-mailů z instance serveru NoirPanther",
 					"addDevice": "Přidat alias zařízení",
 					"addOrUpdateDevice": {
 						"title": {
@@ -2382,7 +2382,7 @@
 			"createEmailer": {
 				"helmet": "Vytvořit e-mailer",
 				"title": "Vytvořit e-mailer",
-				"description": "Vytvořit nový SMTP e-mailer pro instanci vašeho serveru Stump"
+				"description": "Vytvořit nový SMTP e-mailer pro instanci vašeho serveru NoirPanther"
 			},
 			"updateEmailer": {
 				"helmet": "Upravit e-mailer",
@@ -2946,7 +2946,7 @@
 			"unknownSeriesName": "series"
 		},
 		"emptyState": {
-			"noStumpServers": "No Stump servers added",
+			"noStumpServers": "No NoirPanther servers added",
 			"noOPDSServers": "No OPDS servers added",
 			"noServers": "No servers have been configured",
 			"cta": "Get started by adding a server to access your book collections",
@@ -3063,8 +3063,8 @@
 				"incognitoReading": "Incognito Reading"
 			},
 			"stump": {
-				"label": "Stump",
-				"description": "Stump features are optional and can be turned off if you do not need them",
+				"label": "NoirPanther",
+				"description": "NoirPanther features are optional and can be turned off if you do not need them",
 				"bookClubsEnabled": "Book Club Features"
 			},
 			"autoSyncLocalData": "Auto-Sync Local Data",
@@ -3073,7 +3073,7 @@
 				"label": "Management",
 				"dataUsage": {
 					"label": "Data Usage",
-					"nonStumpData": "Non-Stump data",
+					"nonStumpData": "Non-NoirPanther data",
 					"serversTotal": "Servers total",
 					"totalFiles": "Total files",
 					"totalSize": "Total size",
@@ -3364,7 +3364,7 @@
 		},
 		"delete": {
 			"heading": "Delete series",
-			"description": "Permanently remove this series and its books from Stump. The files on disk are left untouched.",
+			"description": "Permanently remove this series and its books from NoirPanther. The files on disk are left untouched.",
 			"button": "Delete series",
 			"confirm": {
 				"title": "Delete this series?",
@@ -3390,7 +3390,7 @@
 		},
 		"writeback": {
 			"heading": "Write metadata to file",
-			"description": "Embed the metadata stored in Stump into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
+			"description": "Embed the metadata stored in NoirPanther into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
 			"button": "Write metadata to file",
 			"toasts": {
 				"written": "Metadata written into the file",

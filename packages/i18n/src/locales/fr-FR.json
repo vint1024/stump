@@ -7,7 +7,7 @@
 	},
 	"authScene": {
 		"claimHeading": "Initialisez votre serveur",
-		"claimText": "Le serveur Stump n'est pas encore initialisé. Remplissez le formulaire pour créer votre compte. Une fois créé, vous aurez accès à toutes les fonctionnalités du serveur.",
+		"claimText": "Le serveur NoirPanther n'est pas encore initialisé. Remplissez le formulaire pour créer votre compte. Une fois créé, vous aurez accès à toutes les fonctionnalités du serveur.",
 		"form": {
 			"validation": {
 				"missingUsername": "Le nom d'utilisateur est requis",
@@ -391,7 +391,7 @@
 			"convertOptions": {
 				"section": {
 					"heading": "Conversion de fichier",
-					"description": "Stump est capable de convertir certains formats de fichiers en formats plus compatibles"
+					"description": "NoirPanther est capable de convertir certains formats de fichiers en formats plus compatibles"
 				},
 				"rarToZip": {
 					"label": "Convertir RAR en ZIP",
@@ -432,14 +432,14 @@
 					"docs": [
 						"Vous ne savez pas quoi choisir ? Cliquez",
 						"ici",
-						"Le paramètre qui détermi.ne la façon dont Stump organisera votre bibliothèque",
+						"Le paramètre qui détermi.ne la façon dont NoirPanther organisera votre bibliothèque",
 						"Vous ne pourrez pas modifier ce paramètre plus tard"
 					],
 					"disabled": "Vous ne pourrez pas modifier ce paramètre"
 				},
 				"options": {
 					"label": "Modèle de bibliothèque",
-					"description": "Le paramètre qui détermine la façon dont Stump organisera votre bibliothèque",
+					"description": "Le paramètre qui détermine la façon dont NoirPanther organisera votre bibliothèque",
 					"collectionPriority": {
 						"label": "Priorité de la collection",
 						"description": "Chaque dossier au niveau le plus haut de la racine de la bibliothèque correspond à une série unique"
@@ -480,12 +480,12 @@
 				{
 					"label": "Scan",
 					"heading": "Scan",
-					"description": "Paramètres relatifs à la façon dont Stump analyse cette bibliothèque"
+					"description": "Paramètres relatifs à la façon dont NoirPanther analyse cette bibliothèque"
 				},
 				{
 					"label": "Vignettes",
 					"heading": "Vignettes",
-					"description": "Les options concernant la façon dont Stump génère les vignettes pour cette bibliothèque"
+					"description": "Les options concernant la façon dont NoirPanther génère les vignettes pour cette bibliothèque"
 				},
 				{
 					"label": "Vérification",
@@ -599,7 +599,7 @@
 		},
 		"options/scanning": {
 			"title": "Scan",
-			"description": "Paramètres relatifs à la façon dont Stump scanne cette bibliothèque",
+			"description": "Paramètres relatifs à la façon dont NoirPanther scanne cette bibliothèque",
 			"sections": {
 				"configureScan": {
 					"heading": "Configurer le scan",
@@ -768,14 +768,14 @@
 				},
 				"metadataWriteback": {
 					"heading": "Write metadata to files",
-					"description": "Embed the metadata stored in Stump into every epub file of this library (OPF), so it travels with the files. Archives are rewritten atomically; this modifies your files on disk",
+					"description": "Embed the metadata stored in NoirPanther into every epub file of this library (OPF), so it travels with the files. Archives are rewritten atomically; this modifies your files on disk",
 					"keepBackup": "Keep a .bak copy of each original file",
 					"writeAll": "Write metadata to all files",
 					"cleanBackups": "Delete .bak backups",
 					"confirm": {
 						"title": "Write metadata into every epub?",
-						"withBackup": "Every epub in this library will be rewritten with the metadata stored in Stump. Originals are kept as .bak files next to the books.",
-						"withoutBackup": "Every epub in this library will be rewritten with the metadata stored in Stump. No backups will be kept.",
+						"withBackup": "Every epub in this library will be rewritten with the metadata stored in NoirPanther. Originals are kept as .bak files next to the books.",
+						"withoutBackup": "Every epub in this library will be rewritten with the metadata stored in NoirPanther. No backups will be kept.",
 						"confirm": "Start writeback"
 					},
 					"toasts": {
@@ -1314,7 +1314,7 @@
 					"description": "Changer les filtres pour cette session affichée",
 					"rawData": {
 						"heading": "Données du filtre brut",
-						"description": "Voici comment Stump traitera les filtres"
+						"description": "Voici comment NoirPanther traitera les filtres"
 					},
 					"buttons": {
 						"save": "Sauvegarder",
@@ -1417,7 +1417,7 @@
 					"avatarPicker": {
 						"label": "Avatar",
 						"heading": "Upload avatar",
-						"subtitle": "You can upload any image to use as your avatar for social features in Stump",
+						"subtitle": "You can upload any image to use as your avatar for social features in NoirPanther",
 						"dropzone": "Drop an image or click to select",
 						"changeImage": "Change Image",
 						"removeImage": "Remove Image",
@@ -1441,8 +1441,8 @@
 					},
 					"heading": "Langue",
 					"subtitle": [
-						"Stump prend en charge plusieurs langues, définissez vos préférences ci-dessous. Pensez à aider à améliorer la qualité des",
-						"traductions de Stump",
+						"NoirPanther prend en charge plusieurs langues, définissez vos préférences ci-dessous. Pensez à aider à améliorer la qualité des",
+						"traductions de NoirPanther",
 						"si vous le pouvez !"
 					]
 				}
@@ -1455,7 +1455,7 @@
 			"sections": {
 				"themeAndAppearance": {
 					"label": "Theme and appearance",
-					"description": "The basic look and feel options for Stump"
+					"description": "The basic look and feel options for NoirPanther"
 				},
 				"themeSelect": {
 					"label": "Thème",
@@ -1501,7 +1501,7 @@
 				},
 				"layoutAndArrangement": {
 					"label": "Layout and arrangement",
-					"description": "Customize how Stump displays information and organizes content"
+					"description": "Customize how NoirPanther displays information and organizes content"
 				},
 				"primaryNavigation": {
 					"label": "Primary navigation",
@@ -1562,7 +1562,7 @@
 				},
 				"maxWidthPreference": {
 					"label": "Adjusted width",
-					"description": "Stump applies a max-width to the viewport. This setting allows you to adjust or remove this limit",
+					"description": "NoirPanther applies a max-width to the viewport. This setting allows you to adjust or remove this limit",
 					"tooltip": "This setting is not currently supported when the primary navigation is set to sidebar",
 					"options": {
 						"noLimit": "No limit"
@@ -1570,7 +1570,7 @@
 				},
 				"additionalPreferences": {
 					"label": "Additional preferences",
-					"description": "Customize the appearance and behavior of Stump with these additional settings"
+					"description": "Customize the appearance and behavior of NoirPanther with these additional settings"
 				},
 				"showThumbnailsInHeader": {
 					"label": "Show thumbnails in headers",
@@ -1613,7 +1613,7 @@
 		"app/apiKeys": {
 			"helmet": "Clés API",
 			"title": "Clés API",
-			"description": "Gérer vos clés API Stump",
+			"description": "Gérer vos clés API NoirPanther",
 			"shared": {
 				"fields": {
 					"name": "Nom",
@@ -1726,11 +1726,11 @@
 		"app/desktop": {
 			"helmet": "Paramètres du bureau",
 			"title": "Paramètres du bureau",
-			"description": "Paramètres liés à l'application de bureau Stump",
+			"description": "Paramètres liés à l'application de bureau NoirPanther",
 			"sections": {
 				"configuredServers": {
 					"label": "Serveurs configurés",
-					"description": "La liste des serveurs Stump auxquels vous pouvez vous connecter",
+					"description": "La liste des serveurs NoirPanther auxquels vous pouvez vous connecter",
 					"getStarted": "Ajouter un serveur pour commencer",
 					"unreachableServer": {
 						"tooltip": "Serveur introuvable"
@@ -1752,7 +1752,7 @@
 							},
 							"uri": {
 								"label": "URI",
-								"description": "L'URL du serveur Stump",
+								"description": "L'URL du serveur NoirPanther",
 								"placeholder": "https://stump.exemple.com"
 							}
 						}
@@ -1760,7 +1760,7 @@
 					"addServer": {
 						"trigger": "Ajouter un serveur",
 						"title": "Ajouter un nouveau serveur",
-						"description": "Ajouter un nouveau serveur Stump à l’application de bureau",
+						"description": "Ajouter un nouveau serveur NoirPanther à l’application de bureau",
 						"confirm": "Ajouter un serveur"
 					},
 					"editServer": {
@@ -1826,7 +1826,7 @@
 					},
 					"discordPresence": {
 						"label": "Activité Discord",
-						"description": "Afficher votre activité Stump dans Discord",
+						"description": "Afficher votre activité NoirPanther dans Discord",
 						"reconnect": "Se reconnecter à Discord",
 						"updateError": "Failed to update!"
 					}
@@ -1836,14 +1836,14 @@
 		"server/general": {
 			"helmet": "Paramètres généraux du serveur",
 			"title": "Paramètres généraux",
-			"description": "Paramètres généraux liés à l'instance de votre serveur Stump",
+			"description": "Paramètres généraux liés à l'instance de votre serveur NoirPanther",
 			"sections": {
 				"updateAvailable": {
 					"message": "Votre serveur n'est pas à jour. Veuillez le mettre à jour vers la dernière version !"
 				},
 				"serverInfo": {
 					"title": "Informations du serveur",
-					"description": "Détails de base sur l'instance de votre serveur Stump",
+					"description": "Détails de base sur l'instance de votre serveur NoirPanther",
 					"build": {
 						"label": "Version",
 						"description": "Détails à propos de la version",
@@ -1854,7 +1854,7 @@
 						}
 					},
 					"nonStableChannel": {
-						"title": "You are running a non-stable build of Stump",
+						"title": "You are running a non-stable build of NoirPanther",
 						"description": [
 							"It looks like you are running the",
 							"build channel"
@@ -1867,7 +1867,7 @@
 				},
 				"helpfulLinks": {
 					"title": "Helpful links",
-					"description": "Links to resources that may be helpful for managing your Stump server instance",
+					"description": "Links to resources that may be helpful for managing your NoirPanther server instance",
 					"links": {
 						"documentation": "Documentation",
 						"changelog": "Changelog"
@@ -1909,7 +1909,7 @@
 		"server/logs": {
 			"helmet": "Journaux",
 			"title": "Journaux",
-			"description": "Les journaux générés par votre instance de serveur Stump",
+			"description": "Les journaux générés par votre instance de serveur NoirPanther",
 			"sections": {
 				"persistedLogs": {
 					"title": "Journaux persistants",
@@ -1932,14 +1932,14 @@
 				},
 				"liveLogs": {
 					"title": "Flux des journaux en direct",
-					"description": "Diffusion directe depuis votre instance de serveur Stump en temps réel"
+					"description": "Diffusion directe depuis votre instance de serveur NoirPanther en temps réel"
 				}
 			}
 		},
 		"server/jobs": {
 			"helmet": "Tâches",
 			"title": "Tâches",
-			"description": "Tâches en arrière-plan qui s'exécutent sur l'instance de votre serveur Stump",
+			"description": "Tâches en arrière-plan qui s'exécutent sur l'instance de votre serveur NoirPanther",
 			"sections": {
 				"scheduling": {
 					"title": "Planification",
@@ -2015,7 +2015,7 @@
 				},
 				"history": {
 					"title": "Historique",
-					"description": "Un enregistrement des tâches qui ont été exécutées sur l'instance de votre serveur Stump",
+					"description": "Un enregistrement des tâches qui ont été exécutées sur l'instance de votre serveur NoirPanther",
 					"table": {
 						"columns": {
 							"name": "Type",
@@ -2245,12 +2245,12 @@
 		"server/email": {
 			"helmet": "Paramètres de messagerie",
 			"title": "Messagerie",
-			"description": "Settings related to configuring an SMTP emailer for your Stump server instance",
+			"description": "Settings related to configuring an SMTP emailer for your NoirPanther server instance",
 			"sections": {
 				"emailers": {
 					"title": "Expéditeurs SMTP",
-					"description": "Les clients que vous avez configurés pour l’envoi d’e-mails depuis votre serveur Stump",
-					"singleInstanceDisclaimer": "Bien que Stump prenne en charge plusieurs configurations SMTP en arrière-plan, une seule peut être configurée via l’interface utilisateur. Cela sera amélioré à l’avenir",
+					"description": "Les clients que vous avez configurés pour l’envoi d’e-mails depuis votre serveur NoirPanther",
+					"singleInstanceDisclaimer": "Bien que NoirPanther prenne en charge plusieurs configurations SMTP en arrière-plan, une seule peut être configurée via l’interface utilisateur. Cela sera amélioré à l’avenir",
 					"list": {
 						"emptyHeading": "Aucun expéditeur configuré",
 						"primaryEmailer": "Expéditeur principal",
@@ -2272,7 +2272,7 @@
 				},
 				"devices": {
 					"title": "Appareils de messagerie",
-					"description": "Les alias d’appareils que vous avez configurés pour recevoir des e-mails depuis votre instance de serveur Stump",
+					"description": "Les alias d’appareils que vous avez configurés pour recevoir des e-mails depuis votre instance de serveur NoirPanther",
 					"addDevice": "Ajouter un alias",
 					"addOrUpdateDevice": {
 						"title": {
@@ -2382,7 +2382,7 @@
 			"createEmailer": {
 				"helmet": "Créer l'expéditeur",
 				"title": "Créer l'expéditeur",
-				"description": "Créer un nouvel expéditeur SMTP pour votre instance de serveur Stump"
+				"description": "Créer un nouvel expéditeur SMTP pour votre instance de serveur NoirPanther"
 			},
 			"updateEmailer": {
 				"helmet": "Créer un expéditeur",
@@ -2580,10 +2580,10 @@
 	"serverSOS": {
 		"heading": "Serveur non disponible",
 		"desktop": {
-			"message": "Une erreur de réseau s'est produite indiquant que votre serveur Stump est actuellement indisponible. Veuillez vous assurer qu'il est en cours d'exécution et accessible depuis cet appareil.\nSi l'URL de votre serveur a changé, vous pouvez la mettre à jour à l'aide du formulaire ci-dessous"
+			"message": "Une erreur de réseau s'est produite indiquant que votre serveur NoirPanther est actuellement indisponible. Veuillez vous assurer qu'il est en cours d'exécution et accessible depuis cet appareil.\nSi l'URL de votre serveur a changé, vous pouvez la mettre à jour à l'aide du formulaire ci-dessous"
 		},
 		"web": {
-			"message": "Une erreur de réseau s'est produite indiquant que votre serveur Stump est actuellement indisponible. Veuillez vous assurer qu'il est en cours d'exécution et accessible depuis cet appareil"
+			"message": "Une erreur de réseau s'est produite indiquant que votre serveur NoirPanther est actuellement indisponible. Veuillez vous assurer qu'il est en cours d'exécution et accessible depuis cet appareil"
 		},
 		"reconnected": "Reconnecté au serveur ! Redirection...",
 		"reconnectionFailed": "Quelque chose s'est mal passé!"
@@ -2946,7 +2946,7 @@
 			"unknownSeriesName": "series"
 		},
 		"emptyState": {
-			"noStumpServers": "No Stump servers added",
+			"noStumpServers": "No NoirPanther servers added",
 			"noOPDSServers": "No OPDS servers added",
 			"noServers": "No servers have been configured",
 			"cta": "Get started by adding a server to access your book collections",
@@ -3063,8 +3063,8 @@
 				"incognitoReading": "Incognito Reading"
 			},
 			"stump": {
-				"label": "Stump",
-				"description": "Stump features are optional and can be turned off if you do not need them",
+				"label": "NoirPanther",
+				"description": "NoirPanther features are optional and can be turned off if you do not need them",
 				"bookClubsEnabled": "Book Club Features"
 			},
 			"autoSyncLocalData": "Auto-Sync Local Data",
@@ -3073,7 +3073,7 @@
 				"label": "Management",
 				"dataUsage": {
 					"label": "Data Usage",
-					"nonStumpData": "Non-Stump data",
+					"nonStumpData": "Non-NoirPanther data",
 					"serversTotal": "Servers total",
 					"totalFiles": "Total files",
 					"totalSize": "Total size",
@@ -3364,7 +3364,7 @@
 		},
 		"delete": {
 			"heading": "Delete series",
-			"description": "Permanently remove this series and its books from Stump. The files on disk are left untouched.",
+			"description": "Permanently remove this series and its books from NoirPanther. The files on disk are left untouched.",
 			"button": "Delete series",
 			"confirm": {
 				"title": "Delete this series?",
@@ -3390,7 +3390,7 @@
 		},
 		"writeback": {
 			"heading": "Write metadata to file",
-			"description": "Embed the metadata stored in Stump into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
+			"description": "Embed the metadata stored in NoirPanther into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
 			"button": "Write metadata to file",
 			"toasts": {
 				"written": "Metadata written into the file",

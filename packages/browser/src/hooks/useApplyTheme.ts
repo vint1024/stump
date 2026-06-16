@@ -38,7 +38,7 @@ export function useApplyTheme({ appTheme, appFont = SupportedFont.Inter }: Param
 		// prefix the theme class with `theme-` to avoid conflicts
 		const htmlClasses = Array.from(html?.classList ?? [])
 
-		let resolvedTheme = appTheme?.toLowerCase() || 'system'
+		let resolvedTheme = appTheme?.toLowerCase() || 'vibranium'
 		if (resolvedTheme === 'system') {
 			resolvedTheme = prefersDark ? 'dark' : 'light'
 		}

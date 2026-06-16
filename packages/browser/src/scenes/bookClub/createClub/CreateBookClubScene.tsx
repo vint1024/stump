@@ -67,7 +67,7 @@ export default function CreateBookClubScene() {
 	return (
 		<div className="relative flex flex-1 flex-col">
 			<Helmet>
-				<title>Stump | Create a book club</title>
+				<title>NoirPanther | Create a book club</title>
 			</Helmet>
 
 			<SteppedFormContext.Provider

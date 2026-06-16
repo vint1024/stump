@@ -37,14 +37,14 @@ export function useTheme() {
 	 * Whether the current theme is a dark variant
 	 */
 	const isDarkVariant = useMemo(
-		() => darkThemes.includes(appTheme || 'light'),
+		() => darkThemes.includes(appTheme || 'vibranium'),
 		[appTheme, darkThemes],
 	)
 	/**
 	 * Whether the current theme supports gradients
 	 */
 	const isGradientSupported = useMemo(
-		() => THEMES_WITH_GRADIENTS.includes(appTheme || 'light'),
+		() => THEMES_WITH_GRADIENTS.includes(appTheme || 'vibranium'),
 		[appTheme],
 	)
 	/**
@@ -67,9 +67,21 @@ export function useTheme() {
 		isDarkVariant,
 		isGradientSupported,
 		shouldUseGradient,
-		theme: appTheme || 'light',
+		theme: appTheme || 'vibranium',
 	}
 }
 
-export const DARK_THEMES = ['dark', 'ocean', 'cosmic', 'pumpkin', 'autumn', 'midnight']
+export const DARK_THEMES = [
+	'dark',
+	'ocean',
+	'cosmic',
+	'pumpkin',
+	'autumn',
+	'midnight',
+	// NoirPanther dark themes (the -light variants are light)
+	'vibranium',
+	'gold',
+	'emerald',
+	'noir',
+]
 export const THEMES_WITH_GRADIENTS = ['cosmic']

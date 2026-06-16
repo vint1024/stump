@@ -7,7 +7,7 @@
 	},
 	"authScene": {
 		"claimHeading": "初始化您的服务器",
-		"claimText": "此 Stump 服务器尚未初始化。请使用下面的表单创建您的帐户。之后就能够完全访问服务器所有功能。",
+		"claimText": "此 NoirPanther 服务器尚未初始化。请使用下面的表单创建您的帐户。之后就能够完全访问服务器所有功能。",
 		"form": {
 			"validation": {
 				"missingUsername": "用户名为必填项",
@@ -391,7 +391,7 @@
 			"convertOptions": {
 				"section": {
 					"heading": "文件转换",
-					"description": "Stump 能够将某些文件格式转换为更兼容的格式"
+					"description": "NoirPanther 能够将某些文件格式转换为更兼容的格式"
 				},
 				"rarToZip": {
 					"label": "将 RAR 转换为 ZIP",
@@ -439,7 +439,7 @@
 				},
 				"options": {
 					"label": "书库模式",
-					"description": "决定 Stump 如何组织你的书库的设置",
+					"description": "决定 NoirPanther 如何组织你的书库的设置",
 					"collectionPriority": {
 						"label": "集合优先",
 						"description": "书库根目录最顶层的每个文件夹视为一个系列"
@@ -480,12 +480,12 @@
 				{
 					"label": "扫描",
 					"heading": "扫描",
-					"description": "Stump 如何扫描此资料库的相关设置"
+					"description": "NoirPanther 如何扫描此资料库的相关设置"
 				},
 				{
 					"label": "缩略图",
 					"heading": "缩略图",
-					"description": "Stump 是否以及如何为该书库生成缩略图的选项"
+					"description": "NoirPanther 是否以及如何为该书库生成缩略图的选项"
 				},
 				{
 					"label": "确认",
@@ -599,7 +599,7 @@
 		},
 		"options/scanning": {
 			"title": "扫描",
-			"description": "Stump 如何扫描此资料库的相关设置",
+			"description": "NoirPanther 如何扫描此资料库的相关设置",
 			"sections": {
 				"configureScan": {
 					"heading": "配置扫描",
@@ -768,14 +768,14 @@
 				},
 				"metadataWriteback": {
 					"heading": "Write metadata to files",
-					"description": "Embed the metadata stored in Stump into every epub file of this library (OPF), so it travels with the files. Archives are rewritten atomically; this modifies your files on disk",
+					"description": "Embed the metadata stored in NoirPanther into every epub file of this library (OPF), so it travels with the files. Archives are rewritten atomically; this modifies your files on disk",
 					"keepBackup": "Keep a .bak copy of each original file",
 					"writeAll": "Write metadata to all files",
 					"cleanBackups": "Delete .bak backups",
 					"confirm": {
 						"title": "Write metadata into every epub?",
-						"withBackup": "Every epub in this library will be rewritten with the metadata stored in Stump. Originals are kept as .bak files next to the books.",
-						"withoutBackup": "Every epub in this library will be rewritten with the metadata stored in Stump. No backups will be kept.",
+						"withBackup": "Every epub in this library will be rewritten with the metadata stored in NoirPanther. Originals are kept as .bak files next to the books.",
+						"withoutBackup": "Every epub in this library will be rewritten with the metadata stored in NoirPanther. No backups will be kept.",
 						"confirm": "Start writeback"
 					},
 					"toasts": {
@@ -1314,7 +1314,7 @@
 					"description": "更改此视图会话的过滤器",
 					"rawData": {
 						"heading": "原始过滤器数据",
-						"description": "Stump 将如何处理过滤器"
+						"description": "NoirPanther 将如何处理过滤器"
 					},
 					"buttons": {
 						"save": "保存",
@@ -1417,7 +1417,7 @@
 					"avatarPicker": {
 						"label": "头像",
 						"heading": "上传头像",
-						"subtitle": "您可以上传任何图片作为您在Stump 中的社交功能的头像",
+						"subtitle": "您可以上传任何图片作为您在NoirPanther 中的社交功能的头像",
 						"dropzone": "拖放图片到此处或点击以选择",
 						"changeImage": "更改图像",
 						"removeImage": "删除图片",
@@ -1441,8 +1441,8 @@
 					},
 					"heading": "语言及地区",
 					"subtitle": [
-						"Stump 支持多种语言和本地化，在下方设置您的偏好。请考虑帮助提升质量",
-						"Stump的翻译",
+						"NoirPanther 支持多种语言和本地化，在下方设置您的偏好。请考虑帮助提升质量",
+						"NoirPanther的翻译",
 						"如果你可以！"
 					]
 				}
@@ -1455,7 +1455,7 @@
 			"sections": {
 				"themeAndAppearance": {
 					"label": "主题和外观",
-					"description": "Stump 的基本外观和风格选项"
+					"description": "NoirPanther 的基本外观和风格选项"
 				},
 				"themeSelect": {
 					"label": "主题",
@@ -1501,7 +1501,7 @@
 				},
 				"layoutAndArrangement": {
 					"label": "布局和安排",
-					"description": "自定义Stump 如何显示信息和组织内容"
+					"description": "自定义NoirPanther 如何显示信息和组织内容"
 				},
 				"primaryNavigation": {
 					"label": "主要导航",
@@ -1562,7 +1562,7 @@
 				},
 				"maxWidthPreference": {
 					"label": "调整宽度",
-					"description": "Stump 对视图端口应用最大宽度。此设置允许您调整或删除此限制",
+					"description": "NoirPanther 对视图端口应用最大宽度。此设置允许您调整或删除此限制",
 					"tooltip": "当主导航设置为侧边栏时，当前不支持此设置",
 					"options": {
 						"noLimit": "No limit"
@@ -1570,7 +1570,7 @@
 				},
 				"additionalPreferences": {
 					"label": "其他偏好",
-					"description": "通过这些附加设置自定义Stump的外观和行为"
+					"description": "通过这些附加设置自定义NoirPanther的外观和行为"
 				},
 				"showThumbnailsInHeader": {
 					"label": "在标题中显示缩略图",
@@ -1613,7 +1613,7 @@
 		"app/apiKeys": {
 			"helmet": "API 密钥",
 			"title": "API 密钥",
-			"description": "管理你生成的 Stump API 密钥",
+			"description": "管理你生成的 NoirPanther API 密钥",
 			"shared": {
 				"fields": {
 					"name": "名称",
@@ -1670,7 +1670,7 @@
 		"app/reader": {
 			"helmet": "阅读设置",
 			"title": "阅读设置",
-			"description": "Stump 阅读器的默认选项。这些选项仅绑定到当前设备",
+			"description": "NoirPanther 阅读器的默认选项。这些选项仅绑定到当前设备",
 			"sections": {
 				"universal": {
 					"sections": {
@@ -1726,11 +1726,11 @@
 		"app/desktop": {
 			"helmet": "桌面设置",
 			"title": "桌面设置",
-			"description": "Stump 桌面应用程序相关设置",
+			"description": "NoirPanther 桌面应用程序相关设置",
 			"sections": {
 				"configuredServers": {
 					"label": "已配置的服务器",
-					"description": "你可以连接的 Stump 服务器列表",
+					"description": "你可以连接的 NoirPanther 服务器列表",
 					"getStarted": "添加一个服务器以开始使用",
 					"unreachableServer": {
 						"tooltip": "服务器不可达"
@@ -1752,7 +1752,7 @@
 							},
 							"uri": {
 								"label": "URI",
-								"description": "Stump 服务器的 URL",
+								"description": "NoirPanther 服务器的 URL",
 								"placeholder": "https://stump.example.com"
 							}
 						}
@@ -1760,7 +1760,7 @@
 					"addServer": {
 						"trigger": "添加服务器",
 						"title": "添加新服务器",
-						"description": "向桌面版应用添加新的 Stump 服务器",
+						"description": "向桌面版应用添加新的 NoirPanther 服务器",
 						"confirm": "添加服务器"
 					},
 					"editServer": {
@@ -1826,7 +1826,7 @@
 					},
 					"discordPresence": {
 						"label": "Discord 状态",
-						"description": "使用 Discord Rich Presence 在 Discord 中显示你的 Stump 活动",
+						"description": "使用 Discord Rich Presence 在 Discord 中显示你的 NoirPanther 活动",
 						"reconnect": "重新连接到 Discord",
 						"updateError": "Failed to update!"
 					}
@@ -1836,14 +1836,14 @@
 		"server/general": {
 			"helmet": "服务器设置",
 			"title": "服务器设置",
-			"description": "与您的 Stump 服务器实例相关的常规设置",
+			"description": "与您的 NoirPanther 服务器实例相关的常规设置",
 			"sections": {
 				"updateAvailable": {
 					"message": "您的服务器不是最新版本。请更新到最新版本！"
 				},
 				"serverInfo": {
 					"title": "服务器信息",
-					"description": "Stump 服务器实例的基本详细信息",
+					"description": "NoirPanther 服务器实例的基本详细信息",
 					"build": {
 						"label": "构建",
 						"description": "关于版本和构建的细节",
@@ -1854,7 +1854,7 @@
 						}
 					},
 					"nonStableChannel": {
-						"title": "您正在运行一个不稳定的Stump 构建",
+						"title": "您正在运行一个不稳定的NoirPanther 构建",
 						"description": [
 							"看起来您正在运行",
 							"构建频道"
@@ -1867,7 +1867,7 @@
 				},
 				"helpfulLinks": {
 					"title": "帮助链接",
-					"description": "可能有助于管理Stump 服务器实例的资源链接",
+					"description": "可能有助于管理NoirPanther 服务器实例的资源链接",
 					"links": {
 						"documentation": "文档",
 						"changelog": "更改日志"
@@ -1909,7 +1909,7 @@
 		"server/logs": {
 			"helmet": "日志",
 			"title": "日志",
-			"description": "Stump 服务器实例生成的日志",
+			"description": "NoirPanther 服务器实例生成的日志",
 			"sections": {
 				"persistedLogs": {
 					"title": "已存日志",
@@ -1932,14 +1932,14 @@
 				},
 				"liveLogs": {
 					"title": "实时日志",
-					"description": "直接实时从 Stump 服务器串流"
+					"description": "直接实时从 NoirPanther 服务器串流"
 				}
 			}
 		},
 		"server/jobs": {
 			"helmet": "任务",
 			"title": "任务",
-			"description": "Stump 服务器实例上运行的后台任务",
+			"description": "NoirPanther 服务器实例上运行的后台任务",
 			"sections": {
 				"scheduling": {
 					"title": "计划任务",
@@ -2015,7 +2015,7 @@
 				},
 				"history": {
 					"title": "历史记录",
-					"description": "Stump 服务器上已运行的任务记录",
+					"description": "NoirPanther 服务器上已运行的任务记录",
 					"table": {
 						"columns": {
 							"name": "类型",
@@ -2245,12 +2245,12 @@
 		"server/email": {
 			"helmet": "邮件设置",
 			"title": "邮件",
-			"description": "配置 Stump 服务器实例的 SMTP 邮件功能的设置",
+			"description": "配置 NoirPanther 服务器实例的 SMTP 邮件功能的设置",
 			"sections": {
 				"emailers": {
 					"title": "SMTP 邮件发送器",
-					"description": "你配置的用于从你的 Stump 服务器实例发送邮件的客户端",
-					"singleInstanceDisclaimer": "虽然 Stump 在后端支持多个 SMTP 配置，但 UI 上只能配置一个。将来会改进",
+					"description": "你配置的用于从你的 NoirPanther 服务器实例发送邮件的客户端",
+					"singleInstanceDisclaimer": "虽然 NoirPanther 在后端支持多个 SMTP 配置，但 UI 上只能配置一个。将来会改进",
 					"list": {
 						"emptyHeading": "未配置SMTP电子邮件服务器",
 						"primaryEmailer": "首选电子邮箱",
@@ -2272,7 +2272,7 @@
 				},
 				"devices": {
 					"title": "邮件设备",
-					"description": "你配置的用于从你的 Stump 服务器实例接收邮件的设备别名",
+					"description": "你配置的用于从你的 NoirPanther 服务器实例接收邮件的设备别名",
 					"addDevice": "添加设备别名",
 					"addOrUpdateDevice": {
 						"title": {
@@ -2382,7 +2382,7 @@
 			"createEmailer": {
 				"helmet": "创建邮件发送器",
 				"title": "创建邮件发送器",
-				"description": "为你的 Stump 服务器实例创建新的 SMTP 邮件发送器"
+				"description": "为你的 NoirPanther 服务器实例创建新的 SMTP 邮件发送器"
 			},
 			"updateEmailer": {
 				"helmet": "更新邮件发送器",
@@ -2580,10 +2580,10 @@
 	"serverSOS": {
 		"heading": "服务器不可用",
 		"desktop": {
-			"message": "出现网络错误，您的 Stump 服务器目前不可用。请确保它正在运行并且可以在此设备上访问。\n如果您的服务器 URL 已经更改，您可以使用下面的表单更新它"
+			"message": "出现网络错误，您的 NoirPanther 服务器目前不可用。请确保它正在运行并且可以在此设备上访问。\n如果您的服务器 URL 已经更改，您可以使用下面的表单更新它"
 		},
 		"web": {
-			"message": "网络错误，您的 Stump 服务器目前不可用。请确保它正在运行并且可以从此设备访问"
+			"message": "网络错误，您的 NoirPanther 服务器目前不可用。请确保它正在运行并且可以从此设备访问"
 		},
 		"reconnected": "重连到服务器！正在重定向......",
 		"reconnectionFailed": "出了些问题！"
@@ -2946,7 +2946,7 @@
 			"unknownSeriesName": "series"
 		},
 		"emptyState": {
-			"noStumpServers": "未添加 Stump 服务器",
+			"noStumpServers": "未添加 NoirPanther 服务器",
 			"noOPDSServers": "未添加 OPDS 服务器",
 			"noServers": "未配置服务器",
 			"cta": "通过添加服务器来开始访问您的书籍收藏",
@@ -3063,8 +3063,8 @@
 				"incognitoReading": "隐身阅读"
 			},
 			"stump": {
-				"label": "Stump 功能",
-				"description": "Stump 功能是可选的，如果您不需要可以关闭",
+				"label": "NoirPanther 功能",
+				"description": "NoirPanther 功能是可选的，如果您不需要可以关闭",
 				"bookClubsEnabled": "读书俱乐部功能"
 			},
 			"autoSyncLocalData": "自动同步本地数据",
@@ -3073,7 +3073,7 @@
 				"label": "管理",
 				"dataUsage": {
 					"label": "数据使用",
-					"nonStumpData": "非 Stump 数据",
+					"nonStumpData": "非 NoirPanther 数据",
 					"serversTotal": "服务器总计",
 					"totalFiles": "文件总数",
 					"totalSize": "总大小",
@@ -3364,7 +3364,7 @@
 		},
 		"delete": {
 			"heading": "Delete series",
-			"description": "Permanently remove this series and its books from Stump. The files on disk are left untouched.",
+			"description": "Permanently remove this series and its books from NoirPanther. The files on disk are left untouched.",
 			"button": "Delete series",
 			"confirm": {
 				"title": "Delete this series?",
@@ -3390,7 +3390,7 @@
 		},
 		"writeback": {
 			"heading": "Write metadata to file",
-			"description": "Embed the metadata stored in Stump into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
+			"description": "Embed the metadata stored in NoirPanther into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
 			"button": "Write metadata to file",
 			"toasts": {
 				"written": "Metadata written into the file",

@@ -335,7 +335,7 @@ function BookSearchScene() {
 		>
 			<div className="pb-4 md:pb-0 flex flex-1 flex-col">
 				<Helmet>
-					<title>Stump | Books</title>
+					<title>NoirPanther | Books</title>
 				</Helmet>
 
 				<section ref={containerRef} id="grid-top-indicator" className="h-0" />

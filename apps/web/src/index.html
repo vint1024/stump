@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8" />
-		<title>Stump</title>
+		<title>NoirPanther</title>
 		<script>
 			try {
 				const zustandState = JSON.parse(
@@ -21,6 +21,29 @@
 			} catch {}
 		</script>
 		<style>
+			/* Default (no saved theme) = NoirPanther "vibranium"; per-theme bg avoids
+			   a flash before React applies the theme class. */
+			html {
+				background-color: #0b0a10;
+			}
+			html.vibranium {
+				background-color: #0b0a10;
+			}
+			html.gold {
+				background-color: #0a0a0c;
+			}
+			html.emerald {
+				background-color: #090c0b;
+			}
+			html.noir {
+				background-color: #0c0c0d;
+			}
+			html.vibranium-light {
+				background-color: #e9e7f0;
+			}
+			html.gold-light {
+				background-color: #efeadf;
+			}
 			html.autumn {
 				background-color: #2c1a12;
 			}
@@ -83,8 +106,8 @@
 		/>
 
 		<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-		<meta name="theme-color" content="#161719" media="(prefers-color-scheme: dark)" />
-		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#0b0a10" media="(prefers-color-scheme: dark)" />
+		<meta name="theme-color" content="#e9e7f0" media="(prefers-color-scheme: light)" />
 
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="mobile-web-app-capable" content="yes" />
@@ -92,7 +115,7 @@
 	<body>
 		<div id="root">
 			<div class="splash-container">
-				<img src="/assets/stump-splash.gif" alt="loading" class="splash" />
+				<img src="/assets/np-splash.png" alt="loading" class="splash" />
 			</div>
 		</div>
 		<script type="module" src="./index.tsx"></script>
