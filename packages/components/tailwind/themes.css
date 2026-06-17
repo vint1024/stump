@@ -1,81 +1,85 @@
 @theme {
+	/* MARK: NoirPanther default palette — "vibranium". This is the base (:root)
+	   fallback used before React applies a theme class and anywhere no theme class
+	   is present (e.g. the logged-out login screen), so the brand accent is purple
+	   everywhere by default. The original Stump copper default lives on as the
+	   ".dark" theme below, selectable from settings. */
 	/* MARK: backgrounds */
-	--color-background: #161719;
+	--color-background: #0B0A10;
 	--color-background-inverse: #ffffff;
-	--color-background-overlay: #1d1b1b;
-	--color-background-overlay-hover: #222020;
-	--color-background-surface: #1b1c1d;
-	--color-background-surface-hover: #242628;
-	--color-background-surface-secondary: #1f2123;
+	--color-background-overlay: #232030;
+	--color-background-overlay-hover: #1E1B29;
+	--color-background-surface: #15131D;
+	--color-background-surface-hover: #1E1B29;
+	--color-background-surface-secondary: #232030;
 
 	/* MARK: edges */
-	--color-edge: #1f2123;
-	--color-edge-brand: #cf9977;
-	--color-edge-danger: #b02a29;
-	--color-edge-info: #3f89ca;
+	--color-edge: #2A2735;
+	--color-edge-brand: #8B5CF6;
+	--color-edge-danger: #E5484D;
+	--color-edge-info: #4C9AED;
 	--color-edge-strong: #ffffff;
-	--color-edge-subtle: #292c30;
-	--color-edge-success: #2e7d32;
-	--color-edge-warning: #d8a219;
+	--color-edge-subtle: #211E2B;
+	--color-edge-success: #34B27B;
+	--color-edge-warning: #E0A82E;
 
 	/* MARK: fills */
-	--color-fill-brand: #c48259;
-	--color-fill-brand-hover: #cf9977;
-	--color-fill-brand-secondary: #c4825926;
-	--color-fill-danger: #e53935;
-	--color-fill-danger-hover: #ea5c59;
-	--color-fill-danger-secondary: #e5393526;
-	--color-fill-disabled: #71757d;
-	--color-fill-info: #3f89ca;
-	--color-fill-info-hover: #5f9dd3;
-	--color-fill-info-secondary: #3f89ca26;
-	--color-fill-success: #43a047;
-	--color-fill-success-hover: #54b859;
-	--color-fill-success-secondary: #43a04726;
-	--color-fill-warning: #f59e0b;
-	--color-fill-warning-hover: #f7ae32;
-	--color-fill-warning-secondary: #f59e0b26;
-	--color-fill-on-black: #242628;
-	--color-fill-on-black-muted: #242628;
+	--color-fill-brand: #8B5CF6;
+	--color-fill-brand-hover: #A78BFA;
+	--color-fill-brand-secondary: rgba(139,92,246,0.16);
+	--color-fill-danger: #E5484D;
+	--color-fill-danger-hover: #EC6B6F;
+	--color-fill-danger-secondary: #E5484D26;
+	--color-fill-disabled: #9A95AC;
+	--color-fill-info: #4C9AED;
+	--color-fill-info-hover: #4C9AED;
+	--color-fill-info-secondary: #4C9AED26;
+	--color-fill-success: #34B27B;
+	--color-fill-success-hover: #34B27B;
+	--color-fill-success-secondary: rgba(52,178,123,0.15);
+	--color-fill-warning: #E0A82E;
+	--color-fill-warning-hover: #E0A82E;
+	--color-fill-warning-secondary: #E0A82E26;
+	--color-fill-on-black: #1E1B29;
+	--color-fill-on-black-muted: #15131D;
 
 	/* MARK: foregrounds */
-	--color-foreground: #f5f3ef;
-	--color-foreground-brand: #c48259;
-	--color-foreground-disabled: #898d94;
-	--color-foreground-muted: #898d94;
-	--color-foreground-subtle: #e9eaeb;
-	--color-foreground-on-inverse: #161719;
-	--color-foreground-on-black: #e9eaeb;
-	--color-foreground-on-black-muted: #b0b3b7;
+	--color-foreground: #EFEDF5;
+	--color-foreground-brand: #8B5CF6;
+	--color-foreground-disabled: #9A95AC;
+	--color-foreground-muted: #9A95AC;
+	--color-foreground-subtle: #C4C0D0;
+	--color-foreground-on-inverse: #0B0A10;
+	--color-foreground-on-black: #C4C0D0;
+	--color-foreground-on-black-muted: #9A95AC;
 
 	/* MARK: sidebars */
-	--color-sidebar: #151517;
+	--color-sidebar: #0B0A10;
 	--color-sidebar-inverse: #ffffff;
-	--color-sidebar-overlay: #151517;
-	--color-sidebar-overlay-hover: #17171a;
-	--color-sidebar-surface: #19191b;
-	--color-sidebar-surface-hover: #1e1e20;
-	--color-sidebar-surface-secondary: #1b1b1e;
+	--color-sidebar-overlay: #0B0A10;
+	--color-sidebar-overlay-hover: #1E1B29;
+	--color-sidebar-surface: #15131D;
+	--color-sidebar-surface-hover: #1E1B29;
+	--color-sidebar-surface-secondary: #232030;
 
 	/* MARK: scrollbars */
-	--color-scrollbar: #161719;
+	--color-scrollbar: #0B0A10;
 	--color-scrollbar-thumb: hsla(0, 0%, 100%, 0.4);
 	--color-scrollbar-thumb-hover: hsla(0, 0%, 100%, 0.3);
 
 	/* MARK: thumbnails */
 	--color-thumbnail-border: rgba(233, 234, 235, 0.1);
-	--color-thumbnail-placeholder: #1f2123;
-	--color-thumbnail-stack-series: #3d3a3a;
-	--color-thumbnail-stack-library-start: #2e2b2b;
-	--color-thumbnail-stack-library-end: #3d3a3a;
+	--color-thumbnail-placeholder: #1E1B29;
+	--color-thumbnail-stack-series: #2A2735;
+	--color-thumbnail-stack-library-start: #15131D;
+	--color-thumbnail-stack-library-end: #2A2735;
 
 	/* MARK: gradients — used by the "Enable gradients" toggle for themes that opt
-	   in (THEMES_WITH_GRADIENTS). Default to the solid bg so the utility classes
-	   exist; each gradient-enabled theme overrides these four below. */
-	--color-background-gradient-from: #161719;
-	--color-background-gradient-to: #161719;
-	--color-sidebar-gradient-from: #151517;
-	--color-sidebar-gradient-to: #151517;
+	   in (THEMES_WITH_GRADIENTS). The default (vibranium) defines them too. */
+	--color-background-gradient-from: #1F1735;
+	--color-background-gradient-to: #0B0A10;
+	--color-sidebar-gradient-from: #271C42;
+	--color-sidebar-gradient-to: #0B0A10;
 }
 
 @layer base {

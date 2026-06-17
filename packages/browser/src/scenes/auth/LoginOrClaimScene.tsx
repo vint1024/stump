@@ -5,7 +5,7 @@ import { useLocaleContext } from '@stump/i18n'
 import { isAxiosError } from '@stump/sdk'
 import { motion, Variants } from 'framer-motion'
 import { ArrowRight, ShieldAlert } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FieldValues, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { useSearchParams } from 'react-router-dom'
@@ -53,6 +53,40 @@ export default function LoginOrClaimScene() {
 		refetchClaimed: !showServers,
 	})
 	const oidcConfig = useOidcConfig()
+
+	// The wordmark holds a steady neon glow; fire a short "buzz" at random
+	// intervals (a few seconds apart, not too often) so it reads like a real,
+	// slightly faulty neon sign rather than a fixed CSS loop. Skipped entirely
+	// under prefers-reduced-motion.
+	const wordmarkRef = useRef<HTMLHeadingElement>(null)
+	useEffect(() => {
+		const el = wordmarkRef.current
+		if (!el) return
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+
+		let active = true
+		let nextTimer: ReturnType<typeof setTimeout>
+		let clearTimer: ReturnType<typeof setTimeout>
+
+		const buzz = () => {
+			if (!active) return
+			el.classList.add('neon-burst')
+			// drop the class once the 0.7s animation ends so it can replay
+			clearTimer = setTimeout(() => el.classList.remove('neon-burst'), 750)
+			// random gap before the next buzz: 5–14s
+			nextTimer = setTimeout(buzz, 5000 + Math.random() * 9000)
+		}
+
+		// first buzz after a short random delay so it doesn't fire on load
+		nextTimer = setTimeout(buzz, 2500 + Math.random() * 3500)
+
+		return () => {
+			active = false
+			clearTimeout(nextTimer)
+			clearTimeout(clearTimer)
+			el.classList.remove('neon-burst')
+		}
+	}, [isClaimed])
 
 	const schema = z.object({
 		password: z.string().min(1, { message: t('authScene.form.validation.missingPassword') }),
@@ -103,12 +137,13 @@ export default function LoginOrClaimScene() {
 				<div className="gap-4 px-2 flex shrink-0 items-center justify-center">
 					<img src="/assets/favicon.png" width="80" height="80" />
 					<Heading
+						ref={wordmarkRef}
 						variant="gradient"
 						size="3xl"
-						// Neon sign in the theme accent (vibranium on the login screen): the
-						// flicker animation drives the glow; the static drop-shadow here is the
-						// reduced-motion fallback (steady glow when animation is off).
-						className="neon-flicker font-bold [filter:drop-shadow(0_0_6px_var(--color-fill-brand))_drop-shadow(0_0_18px_var(--color-fill-brand))]"
+						// Neon sign in the theme accent (vibranium by default): the static
+						// drop-shadow is the steady glow; the random `.neon-burst` (added by
+						// the effect above) plays a short buzz over it now and then.
+						className="font-bold [filter:drop-shadow(0_0_6px_var(--color-fill-brand))_drop-shadow(0_0_18px_var(--color-fill-brand))]"
 					>
 						NoirPanther
 					</Heading>
