@@ -38,7 +38,9 @@ export default defineConfig({
 				// out of the main bundle would be the real fix
 				maximumFileSizeToCacheInBytes: 6 * 1024 * 1024, // 6MB
 			},
-			outDir: '../dist/assets/',
+			// Emit SW + registerSW.js + manifest at the dist ROOT (default vite outDir)
+				// so /sw.js gets root scope and /registerSW.js is served as JS. The server
+				// serves root-level files before the SPA fallback — see routers/spa.rs.
 			base: '/',
 			// TODO(pwa): Add more manifest definitions for better overall experience
 			manifest: {
@@ -65,7 +67,7 @@ export default defineConfig({
 					},
 				],
 			},
-			manifestFilename: 'assets/manifest.webmanifest',
+			manifestFilename: 'manifest.webmanifest',
 		}),
 		reactFallbackThrottlePlugin(), // Leave empty for 0, or provide your own value if you like
 	],

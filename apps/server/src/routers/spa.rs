@@ -3,8 +3,8 @@ use std::path::Path;
 use axum::{
 	body::Body,
 	extract::State,
-	http::{HeaderMap, Request},
-	response::IntoResponse,
+	http::{HeaderMap, Request, StatusCode},
+	response::{IntoResponse, Response},
 	routing::get,
 	Router,
 };
@@ -26,7 +26,39 @@ pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
 		.route(FAVICON, get(favicon))
 		.nest_service(ASSETS, ServeDir::new(dist_path.join("assets")))
 		.nest_service(DIST, ServeDir::new(dist_path))
-		.fallback_service(ServeFile::new(dist_path.join("index.html")))
+		.fallback(spa_fallback)
+}
+
+/// Serve a root-level static file from the client dist (registerSW.js, sw.js,
+/// workbox-*.js, manifest.webmanifest, ...) when one exists, otherwise return
+/// the SPA shell (index.html) with a 200 so client-side routing works on a hard
+/// load.
+///
+/// Previously the fallback served index.html for *every* unmatched path, so a
+/// request for a real root file like `/registerSW.js` returned HTML and the
+/// browser choked on it ("Uncaught SyntaxError: Unexpected token '<'"). Trying
+/// the file first fixes that while keeping the SPA fallback's 200 status (a bare
+/// `ServeDir::not_found_service` responds 404, which would regress deep links).
+async fn spa_fallback(
+	State(ctx): State<AppState>,
+	req: Request<Body>,
+) -> APIResult<Response> {
+	let dist_path = Path::new(&ctx.config.client_dir);
+
+	let file_res = ServeDir::new(dist_path)
+		.try_call(req)
+		.await
+		.map_err(|e| APIError::InternalServerError(e.to_string()))?;
+
+	if file_res.status() != StatusCode::NOT_FOUND {
+		return Ok(file_res.into_response());
+	}
+
+	let index_res = ServeFile::new(dist_path.join("index.html"))
+		.try_call(Request::new(Body::empty()))
+		.await
+		.map_err(|e| APIError::InternalServerError(e.to_string()))?;
+	Ok(index_res.into_response())
 }
 
 pub(crate) fn relative_favicon_path() -> String {
