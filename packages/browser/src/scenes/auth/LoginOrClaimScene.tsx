@@ -5,7 +5,7 @@ import { useLocaleContext } from '@stump/i18n'
 import { isAxiosError } from '@stump/sdk'
 import { motion, Variants } from 'framer-motion'
 import { ArrowRight, ShieldAlert } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { FieldValues, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { useSearchParams } from 'react-router-dom'
@@ -54,13 +54,17 @@ export default function LoginOrClaimScene() {
 	})
 	const oidcConfig = useOidcConfig()
 
-	// The wordmark holds a steady neon glow; fire a short "buzz" at random
-	// intervals (a few seconds apart, not too often) so it reads like a real,
-	// slightly faulty neon sign rather than a fixed CSS loop. Skipped entirely
+	// The wordmark holds a steady neon glow; a short "buzz" fires at random
+	// intervals and each buzz lasts a random 1–3s, so it reads like a real,
+	// slightly faulty neon sign rather than a fixed CSS loop. The gap is capped
+	// so the sign never goes much more than ~15s without flickering. A callback
+	// ref starts the loop the moment the wordmark mounts (it only renders once
+	// the server is claimed) and tears it down on unmount. Skipped entirely
 	// under prefers-reduced-motion.
-	const wordmarkRef = useRef<HTMLHeadingElement>(null)
-	useEffect(() => {
-		const el = wordmarkRef.current
+	const stopBuzzRef = useRef<(() => void) | null>(null)
+	const wordmarkRef = useCallback((el: HTMLHeadingElement | null) => {
+		stopBuzzRef.current?.()
+		stopBuzzRef.current = null
 		if (!el) return
 		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
 
@@ -70,23 +74,26 @@ export default function LoginOrClaimScene() {
 
 		const buzz = () => {
 			if (!active) return
+			const durationMs = 1000 + Math.random() * 2000 // 1–3s flicker
+			el.style.setProperty('--neon-burst-duration', `${(durationMs / 1000).toFixed(2)}s`)
 			el.classList.add('neon-burst')
-			// drop the class once the 0.7s animation ends so it can replay
-			clearTimer = setTimeout(() => el.classList.remove('neon-burst'), 750)
-			// random gap before the next buzz: 5–14s
-			nextTimer = setTimeout(buzz, 5000 + Math.random() * 9000)
+			clearTimer = setTimeout(() => el.classList.remove('neon-burst'), durationMs + 80)
+			// gap after the buzz ends; duration + gap stays under ~15s so the
+			// sign never goes longer than that without flickering
+			const gapMs = 1500 + Math.random() * 9000 // 1.5–10.5s
+			nextTimer = setTimeout(buzz, durationMs + gapMs)
 		}
 
-		// first buzz after a short random delay so it doesn't fire on load
-		nextTimer = setTimeout(buzz, 2500 + Math.random() * 3500)
+		// first buzz shortly after mount so it's visibly alive right away
+		nextTimer = setTimeout(buzz, 700 + Math.random() * 1500)
 
-		return () => {
+		stopBuzzRef.current = () => {
 			active = false
 			clearTimeout(nextTimer)
 			clearTimeout(clearTimer)
 			el.classList.remove('neon-burst')
 		}
-	}, [isClaimed])
+	}, [])
 
 	const schema = z.object({
 		password: z.string().min(1, { message: t('authScene.form.validation.missingPassword') }),
