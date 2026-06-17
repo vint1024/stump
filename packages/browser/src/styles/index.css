@@ -26,6 +26,38 @@ form {
 	text-overflow: ellipsis;
 }
 
+/* Neon-sign flicker for the NoirPanther wordmark on the login screen. Mostly a
+ * steady glow in the theme accent, with a couple of quick irregular "buzzes"
+ * like a real neon tube. The static drop-shadow on the element itself is the
+ * reduced-motion fallback (the animation only runs when motion is allowed). */
+@keyframes neon-flicker {
+	0%,
+	8%,
+	10%,
+	39%,
+	41%,
+	72%,
+	74%,
+	100% {
+		opacity: 1;
+		filter: drop-shadow(0 0 6px var(--color-fill-brand))
+			drop-shadow(0 0 20px var(--color-fill-brand));
+	}
+	9%,
+	40%,
+	73% {
+		opacity: 0.55;
+		filter: drop-shadow(0 0 2px var(--color-fill-brand));
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.neon-flicker {
+		animation: neon-flicker 5s infinite;
+		will-change: opacity, filter;
+	}
+}
+
 #nprogress {
 	@apply pointer-events-none z-50;
 }

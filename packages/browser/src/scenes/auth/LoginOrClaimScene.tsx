@@ -105,8 +105,10 @@ export default function LoginOrClaimScene() {
 					<Heading
 						variant="gradient"
 						size="3xl"
-						// Neon glow in the theme accent (vibranium on the login screen).
-						className="font-bold [filter:drop-shadow(0_0_6px_var(--color-fill-brand))_drop-shadow(0_0_18px_var(--color-fill-brand))]"
+						// Neon sign in the theme accent (vibranium on the login screen): the
+						// flicker animation drives the glow; the static drop-shadow here is the
+						// reduced-motion fallback (steady glow when animation is off).
+						className="neon-flicker font-bold [filter:drop-shadow(0_0_6px_var(--color-fill-brand))_drop-shadow(0_0_18px_var(--color-fill-brand))]"
 					>
 						NoirPanther
 					</Heading>
