@@ -59,6 +59,9 @@ export default function LoginOrClaimScene() {
 	// again, like a faulty tube. A callback ref runs the cycle the moment the
 	// wordmark mounts (it only renders once the server is claimed) and stops it
 	// on unmount. Skipped entirely under prefers-reduced-motion (stays lit).
+	// The ambient wash on the "wall" behind the sign — its light, so it fades out
+	// with the tube and back in when the sign relights.
+	const wallGlowRef = useRef<HTMLDivElement>(null)
 	const stopSignRef = useRef<(() => void) | null>(null)
 	const wordmarkRef = useCallback((el: HTMLHeadingElement | null) => {
 		stopSignRef.current?.()
@@ -72,11 +75,13 @@ export default function LoginOrClaimScene() {
 		const lightUp = () => {
 			if (!active) return
 			el.classList.remove('neon-off')
+			if (wallGlowRef.current) wallGlowRef.current.style.opacity = '1'
 			timer = setTimeout(turnOff, 4000 + Math.random() * 11000) // lit 4–15s
 		}
 		const turnOff = () => {
 			if (!active) return
 			el.classList.add('neon-off')
+			if (wallGlowRef.current) wallGlowRef.current.style.opacity = '0'
 			timer = setTimeout(lightUp, 1000 + Math.random() * 2000) // off 1–3s
 		}
 
@@ -86,6 +91,7 @@ export default function LoginOrClaimScene() {
 			active = false
 			clearTimeout(timer)
 			el.classList.remove('neon-off')
+			if (wallGlowRef.current) wallGlowRef.current.style.opacity = '1'
 		}
 	}, [])
 
@@ -192,7 +198,21 @@ export default function LoginOrClaimScene() {
 				animate={showServers ? 'appearOut' : 'appearIn'}
 				variants={variants}
 			>
-				<div className="gap-8 p-4 flex h-full w-full flex-col items-center justify-center bg-background">
+				<div className="gap-8 p-4 relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-background">
+					{/* Ambient neon wash — the lit wordmark spilling onto the "wall"
+					    behind it, centred a touch above the middle where the sign sits.
+					    Its opacity is toggled with the sign (see wordmarkRef) so the wall
+					    goes dark when the tube switches off. */}
+					<div
+						ref={wallGlowRef}
+						aria-hidden
+						className="inset-0 pointer-events-none absolute"
+						style={{
+							background:
+								'radial-gradient(46% 42% at 50% 39%, rgba(139,92,246,0.20), rgba(139,92,246,0.06) 48%, transparent 72%)',
+							transition: 'opacity 240ms ease',
+						}}
+					/>
 					{renderHeader()}
 					{renderError()}
 
