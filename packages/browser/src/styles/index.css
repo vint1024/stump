@@ -26,46 +26,22 @@ form {
 	text-overflow: ellipsis;
 }
 
-/* Neon-sign buzz for the NoirPanther wordmark on the login screen. The wordmark
- * holds a steady glow in the theme accent (the static drop-shadow on the element
- * itself); a busy, irregular "buzz" plays once whenever the `.neon-burst` class
- * is added — LoginOrClaimScene re-adds it on random intervals (capped so the
- * sign flickers at least every ~15s) for a random 1–3s each time, so it looks
- * like a real, slightly faulty neon tube rather than a fixed loop. Driven by JS
- * so the gaps and durations are genuinely random; skipped entirely under
- * prefers-reduced-motion. The duration is supplied per-buzz via the
- * `--neon-burst-duration` custom property. */
-@keyframes neon-burst {
-	0%,
-	11%,
-	23%,
-	41%,
-	60%,
-	75%,
-	100% {
-		opacity: 1;
-		filter: drop-shadow(0 0 6px var(--color-fill-brand))
-			drop-shadow(0 0 20px var(--color-fill-brand));
-	}
-	6%,
-	34%,
-	68% {
-		opacity: 0.32;
-		filter: drop-shadow(0 0 1px var(--color-fill-brand));
-	}
-	17%,
-	52%,
-	88% {
-		opacity: 0.55;
-		filter: drop-shadow(0 0 3px var(--color-fill-brand));
-	}
+/* Neon-sign on/off for the NoirPanther wordmark on the login screen. The
+ * wordmark is normally lit (the steady glow from its own drop-shadow filter).
+ * LoginOrClaimScene keeps it lit for a random spell (up to ~15s), then toggles
+ * `.neon-off` — the tube briefly goes out: no glow, dimmed — for a random 1–3s,
+ * then lights up again, like a faulty neon sign. The quick fade makes the
+ * on/off feel like a real tube rather than a hard cut; under
+ * prefers-reduced-motion the JS leaves it permanently lit. */
+.neon-sign {
+	transition:
+		opacity 180ms ease,
+		filter 180ms ease;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-	.neon-burst {
-		animation: neon-burst var(--neon-burst-duration, 1.6s) ease-in-out;
-		will-change: opacity, filter;
-	}
+.neon-off {
+	opacity: 0.16;
+	filter: none !important;
 }
 
 #nprogress {

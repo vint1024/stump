@@ -54,44 +54,38 @@ export default function LoginOrClaimScene() {
 	})
 	const oidcConfig = useOidcConfig()
 
-	// The wordmark holds a steady neon glow; a short "buzz" fires at random
-	// intervals and each buzz lasts a random 1–3s, so it reads like a real,
-	// slightly faulty neon sign rather than a fixed CSS loop. The gap is capped
-	// so the sign never goes much more than ~15s without flickering. A callback
-	// ref starts the loop the moment the wordmark mounts (it only renders once
-	// the server is claimed) and tears it down on unmount. Skipped entirely
-	// under prefers-reduced-motion.
-	const stopBuzzRef = useRef<(() => void) | null>(null)
+	// The wordmark is a neon sign: lit (its steady glow) for a random spell of
+	// up to ~15s, then fully off — no glow, dimmed — for a random 1–3s, then lit
+	// again, like a faulty tube. A callback ref runs the cycle the moment the
+	// wordmark mounts (it only renders once the server is claimed) and stops it
+	// on unmount. Skipped entirely under prefers-reduced-motion (stays lit).
+	const stopSignRef = useRef<(() => void) | null>(null)
 	const wordmarkRef = useCallback((el: HTMLHeadingElement | null) => {
-		stopBuzzRef.current?.()
-		stopBuzzRef.current = null
+		stopSignRef.current?.()
+		stopSignRef.current = null
 		if (!el) return
 		if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
 
 		let active = true
-		let nextTimer: ReturnType<typeof setTimeout>
-		let clearTimer: ReturnType<typeof setTimeout>
+		let timer: ReturnType<typeof setTimeout>
 
-		const buzz = () => {
+		const lightUp = () => {
 			if (!active) return
-			const durationMs = 1000 + Math.random() * 2000 // 1–3s flicker
-			el.style.setProperty('--neon-burst-duration', `${(durationMs / 1000).toFixed(2)}s`)
-			el.classList.add('neon-burst')
-			clearTimer = setTimeout(() => el.classList.remove('neon-burst'), durationMs + 80)
-			// gap after the buzz ends; duration + gap stays under ~15s so the
-			// sign never goes longer than that without flickering
-			const gapMs = 1500 + Math.random() * 9000 // 1.5–10.5s
-			nextTimer = setTimeout(buzz, durationMs + gapMs)
+			el.classList.remove('neon-off')
+			timer = setTimeout(turnOff, 4000 + Math.random() * 11000) // lit 4–15s
+		}
+		const turnOff = () => {
+			if (!active) return
+			el.classList.add('neon-off')
+			timer = setTimeout(lightUp, 1000 + Math.random() * 2000) // off 1–3s
 		}
 
-		// first buzz shortly after mount so it's visibly alive right away
-		nextTimer = setTimeout(buzz, 700 + Math.random() * 1500)
+		lightUp() // start lit
 
-		stopBuzzRef.current = () => {
+		stopSignRef.current = () => {
 			active = false
-			clearTimeout(nextTimer)
-			clearTimeout(clearTimer)
-			el.classList.remove('neon-burst')
+			clearTimeout(timer)
+			el.classList.remove('neon-off')
 		}
 	}, [])
 
@@ -148,9 +142,9 @@ export default function LoginOrClaimScene() {
 						variant="gradient"
 						size="3xl"
 						// Neon sign in the theme accent (vibranium by default): the static
-						// drop-shadow is the steady glow; the random `.neon-burst` (added by
-						// the effect above) plays a short buzz over it now and then.
-						className="font-bold [filter:drop-shadow(0_0_6px_var(--color-fill-brand))_drop-shadow(0_0_18px_var(--color-fill-brand))]"
+						// drop-shadow is the steady glow; the effect above toggles `.neon-off`
+						// to switch the tube off for a beat now and then.
+						className="neon-sign font-bold [filter:drop-shadow(0_0_6px_var(--color-fill-brand))_drop-shadow(0_0_18px_var(--color-fill-brand))]"
 					>
 						NoirPanther
 					</Heading>
