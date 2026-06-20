@@ -26,6 +26,8 @@ export default function ThemeSelect() {
 					{ label: t(`${localeKey}.options.noir`), value: 'noir' },
 					{ label: t(`${localeKey}.options.vibranium-light`), value: 'vibranium-light' },
 					{ label: t(`${localeKey}.options.gold-light`), value: 'gold-light' },
+					// The original Stump look that follows the OS light/dark setting.
+					{ label: t(`${localeKey}.options.vanilla`), value: 'vanilla' },
 					{ label: t(`${localeKey}.options.light`), value: 'light' },
 					{ label: t(`${localeKey}.options.dark`), value: 'dark' },
 					{ label: t(`${localeKey}.options.bronze`), value: 'bronze' },

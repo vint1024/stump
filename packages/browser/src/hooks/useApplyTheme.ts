@@ -39,7 +39,12 @@ export function useApplyTheme({ appTheme, appFont = SupportedFont.Inter }: Param
 		const htmlClasses = Array.from(html?.classList ?? [])
 
 		let resolvedTheme = appTheme?.toLowerCase() || 'vibranium'
+		// NoirPanther: "system" is our brand default (Vibranium), applied always —
+		// not the OS light/dark. The original OS-following behaviour is the
+		// selectable "Vanilla Stump" theme instead.
 		if (resolvedTheme === 'system') {
+			resolvedTheme = 'vibranium'
+		} else if (resolvedTheme === 'vanilla') {
 			resolvedTheme = prefersDark ? 'dark' : 'light'
 		}
 		// Only change the theme if we actually need to (i.e. the theme on the html is diff)
@@ -48,8 +53,7 @@ export function useApplyTheme({ appTheme, appFont = SupportedFont.Inter }: Param
 			html?.classList.add(resolvedTheme)
 		}
 
-		const isDarkTheme =
-			DARK_THEMES.includes(resolvedTheme) || (resolvedTheme === 'system' && prefersDark)
+		const isDarkTheme = DARK_THEMES.includes(resolvedTheme)
 
 		// https://github.com/darkreader/darkreader/discussions/15128
 		if (isDarkTheme) {
