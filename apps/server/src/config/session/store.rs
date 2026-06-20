@@ -3,7 +3,7 @@ use std::{collections::HashMap, str::FromStr, sync::Arc};
 use async_trait::async_trait;
 use chrono::{DateTime, Duration, FixedOffset, Utc};
 use models::entity::session;
-use sea_orm::{prelude::*, DatabaseConnection, Set};
+use sea_orm::{prelude::*, sea_query::Expr, DatabaseConnection, Set};
 use stump_core::config::StumpConfig;
 use time::OffsetDateTime;
 use tokio::time::MissedTickBehavior;
@@ -65,6 +65,41 @@ impl StumpSessionStore {
 			}
 			tracing::trace!("Waiting for next session cleanup interval...");
 		}
+	}
+
+	/// Slide a live session's server-side expiry forward to `now + session_ttl`.
+	///
+	/// The auth middleware only reads sessions, so tower-sessions never marks them
+	/// dirty and `SessionStore::save` (INSERT-only here) is never called after login
+	/// — which froze `expiry_time` at `login + ttl` and logged active users out on a
+	/// fixed schedule. This bumps the row directly. The update is throttled in SQL so
+	/// a given session is touched at most once per `SLIDE_THROTTLE_SECS` (the filter
+	/// matches only rows whose expiry is more than that far from a fresh full window),
+	/// and it never resurrects an already-expired row (`expiry_time > now`).
+	pub async fn touch_expiry(&self, session_id: &str) -> Result<(), SessionError> {
+		// Touch a session at most once per hour, not on every request.
+		const SLIDE_THROTTLE_SECS: i64 = 3600;
+
+		let now = Utc::now();
+		let ttl = self.config.session_ttl;
+		let new_expiry: DateTime<FixedOffset> = (now + Duration::seconds(ttl)).into();
+		let throttle_before: DateTime<FixedOffset> =
+			(now + Duration::seconds(ttl - SLIDE_THROTTLE_SECS)).into();
+		let now_offset: DateTime<FixedOffset> = now.into();
+
+		session::Entity::update_many()
+			.col_expr(session::Column::ExpiryTime, Expr::value(new_expiry))
+			.filter(
+				session::Column::SessionId
+					.eq(session_id)
+					.and(session::Column::ExpiryTime.lt(throttle_before))
+					.and(session::Column::ExpiryTime.gt(now_offset)),
+			)
+			.exec(self.conn.as_ref())
+			.await
+			.map_err(SessionError::DbError)?;
+
+		Ok(())
 	}
 }
 

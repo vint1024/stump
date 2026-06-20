@@ -1,6 +1,5 @@
 use std::sync::Arc;
 use stump_core::Ctx;
-use time::Duration;
 
 use tower_sessions::{cookie::SameSite, Expiry, SessionManagerLayer};
 
@@ -27,11 +26,16 @@ pub fn get_session_layer(ctx: Arc<Ctx>) -> SessionManagerLayer<StumpSessionStore
 	}
 
 	// TODO: This configuration won't work for Tauri Windows app, it requires SameSite::None and Secure=true... Linux and macOS work fine.
+	// The cookie is a session cookie (no Max-Age): tower-sessions only re-emits the
+	// Set-Cookie when the session is modified, which (with our read-only auth
+	// middleware) happens just once, at login — so an `OnInactivity` Max-Age would
+	// freeze in the browser at login+ttl and log the user out on a fixed schedule
+	// regardless of activity. Instead the server-side `expiry_time` is the source of
+	// truth: `StumpSessionStore::load` gates on it and the auth middleware slides it
+	// forward on activity (`touch_expiry`), giving a real sliding-inactivity window.
 	SessionManagerLayer::new(store)
 		.with_name(SESSION_NAME)
-		.with_expiry(Expiry::OnInactivity(Duration::seconds(
-			ctx.config.session_ttl,
-		)))
+		.with_expiry(Expiry::OnSessionEnd)
 		.with_path(SESSION_PATH.to_string())
 		.with_same_site(SameSite::Lax)
 		.with_secure(false)

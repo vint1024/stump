@@ -36,7 +36,7 @@ use tower_sessions::Session;
 use crate::{
 	config::{
 		jwt::extract_user_from_jwt,
-		session::{delete_cookie_header, SESSION_USER_KEY},
+		session::{delete_cookie_header, StumpSessionStore, SESSION_USER_KEY},
 		state::AppState,
 	},
 	errors::{api_error_message, APIError, APIResult},
@@ -104,6 +104,18 @@ pub async fn auth_middleware(
 		})?;
 
 	if let Some(user) = session_user {
+		// Slide this session's server-side expiry on activity so an active web client
+		// isn't logged out at the fixed login+TTL. The update is throttled in SQL and
+		// must never block (or fail) the request, hence best-effort fire-and-forget.
+		if let Some(session_id) = session.id() {
+			let store = StumpSessionStore::new(ctx.conn.clone(), ctx.config.clone());
+			let session_id = session_id.to_string();
+			tokio::spawn(async move {
+				if let Err(error) = store.touch_expiry(&session_id).await {
+					tracing::warn!(?error, "Failed to slide session expiry");
+				}
+			});
+		}
 		req.extensions_mut().insert(AuthContext {
 			user: inject_avatar_url(user, service),
 			api_key: None,

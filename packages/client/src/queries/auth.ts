@@ -22,6 +22,17 @@ export function useAuthQuery({ additionalKeys, ...options }: Params = {}) {
 			return data
 		},
 		throwOnError: false,
+		// A single transient 401 / network blip shouldn't bounce the user to /auth —
+		// re-validate a couple of times first (the session may be mid-refresh or the
+		// store momentarily unavailable). AppLayout only redirects once this query has
+		// genuinely failed. Scoped to the auth/viewer query; other queries keep the
+		// client default (retry: false).
+		retry: (failureCount, err) => {
+			if (failureCount >= 2) return false
+			const status = isAxiosError(err) ? err.response?.status : undefined
+			return (isAxiosError(err) && err.code === 'ERR_NETWORK') || status === 401
+		},
+		retryDelay: (failureCount) => Math.min(1000 * 2 ** failureCount, 4000),
 		...options,
 	})
 
