@@ -166,7 +166,11 @@
 					"description": "Описание"
 				}
 			},
-			"submit": "Создать Книжный Клуб"
+			"submit": "Создать Книжный Клуб",
+			"buttons": {
+				"confirm": "Создать клуб",
+				"nextStep": "Далее"
+			}
 		}
 	},
 	"bookClubSettingsScene": {
@@ -522,7 +526,9 @@
 				"default": "По умолчанию"
 			},
 			"buttons": {
-				"confirm": "Создать библиотеку"
+				"confirm": "Создать библиотеку",
+				"nextStep": "Далее",
+				"continueToReview": "Перейти к проверке"
 			}
 		}
 	},
@@ -1169,7 +1175,8 @@
 				}
 			},
 			"buttons": {
-				"confirm": "Создать список"
+				"confirm": "Создать список",
+				"nextStep": "Далее"
 			}
 		}
 	},

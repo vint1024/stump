@@ -166,7 +166,11 @@
 					"description": "Description"
 				}
 			},
-			"submit": "Create Book Club"
+			"submit": "Create Book Club",
+			"buttons": {
+				"confirm": "Create club",
+				"nextStep": "Next step"
+			}
 		}
 	},
 	"bookClubSettingsScene": {
@@ -522,7 +526,9 @@
 				"default": "Default"
 			},
 			"buttons": {
-				"confirm": "Create Library"
+				"confirm": "Create Library",
+				"nextStep": "Next step",
+				"continueToReview": "Continue to review"
 			}
 		}
 	},
@@ -1169,7 +1175,8 @@
 				}
 			},
 			"buttons": {
-				"confirm": "Create list"
+				"confirm": "Create list",
+				"nextStep": "Next step"
 			}
 		}
 	},

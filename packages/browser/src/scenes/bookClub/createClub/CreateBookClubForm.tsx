@@ -79,7 +79,7 @@ export default function CreateBookClubForm({ onSubmit }: Props) {
 				variant="primary"
 				onClick={() => handleChangeStep(nextStep)}
 			>
-				Next step
+				{t('createBookClubScene.form.buttons.nextStep')}
 			</Button>
 		</div>
 	)
@@ -126,7 +126,7 @@ export default function CreateBookClubForm({ onSubmit }: Props) {
 					})}
 				>
 					<Button type="submit" className="md:w-auto w-full" variant="primary">
-						Create club
+						{t('createBookClubScene.form.buttons.confirm')}
 					</Button>
 				</div>
 			</ContentContainer>
