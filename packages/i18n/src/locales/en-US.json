@@ -601,7 +601,10 @@
 		},
 		"options/reading": {
 			"title": "Reading",
-			"description": "The default reader settings to use for books in this library. Any book can override these settings"
+			"description": "The default reader settings to use for books in this library. Any book can override these settings",
+			"form": {
+				"submit": "Save changes"
+			}
 		},
 		"options/scanning": {
 			"title": "Scanning",
@@ -1251,7 +1254,10 @@
 		},
 		"basics": {
 			"title": "Basic Information",
-			"description": "The details of this smart list, including its name and description"
+			"description": "The details of this smart list, including its name and description",
+			"form": {
+				"submit": "Update list"
+			}
 		},
 		"access": {
 			"title": "Access",
@@ -1272,7 +1278,10 @@
 		},
 		"filters": {
 			"title": "Filter Builder",
-			"description": "Manage the filters which construct this smart list"
+			"description": "Manage the filters which construct this smart list",
+			"form": {
+				"submit": "Update filters"
+			}
 		},
 		"danger-zone/delete": {
 			"title": "Deletion Actions",
@@ -2267,6 +2276,7 @@
 					"singleInstanceDisclaimer": "While NoirPanther supports multiple SMTP configurations in the backend, only one can be configured on the UI. This will be improved in the future",
 					"list": {
 						"emptyHeading": "No SMTP emailers configured",
+						"createButton": "Create an emailer",
 						"primaryEmailer": "Primary emailer",
 						"sendHistory": {
 							"heading": "Send history",

@@ -63,7 +63,7 @@ export default function BasicSettingsScene() {
 
 			<div>
 				<Button type="submit" disabled={!hasChanges} variant="primary">
-					Update list
+					{t('smartListSettingsScene.basics.form.submit')}
 				</Button>
 			</div>
 		</Form>
