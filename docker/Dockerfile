@@ -125,6 +125,19 @@ ENV STUMP_CONFIG_DIR=/config \
     PDFIUM_PATH=/opt/pdfium/lib/libpdfium.so \
     API_VERSION=v1
 
+# Memory tuning. The server used to pin RSS at its library-scan high-water mark
+# (multiple GB) until restarted. Two layers:
+#   - MALLOC_CONF configures jemalloc (the Rust global allocator, see
+#     apps/server): a background thread proactively purges, and short dirty/muzzy
+#     decay windows return freed pages to the OS soon after a scan finishes.
+#   - MALLOC_ARENA_MAX / MALLOC_TRIM_THRESHOLD_ bound glibc's allocator, which
+#     still serves the C dependencies (sqlite, pdfium, image codecs): fewer
+#     arenas means less per-thread retention, and a low trim threshold lets the
+#     heap shrink back to the OS.
+ENV MALLOC_CONF="background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:0" \
+    MALLOC_ARENA_MAX=2 \
+    MALLOC_TRIM_THRESHOLD_=131072
+
 WORKDIR /app
 
 ENTRYPOINT ["/entrypoint.sh"]

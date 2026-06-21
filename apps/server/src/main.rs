@@ -11,6 +11,20 @@ mod middleware;
 mod routers;
 mod utils;
 
+// On the (glibc) Linux server build, route Rust allocations through jemalloc so
+// its decay settings (see MALLOC_CONF in docker/Dockerfile) return memory to the
+// OS after scan peaks. Gated to gnu-linux to match the Cargo.toml dependency; on
+// macOS dev builds this is absent and the system allocator is used.
+#[cfg(all(target_os = "linux", target_env = "gnu"))]
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
+// Cap the Tokio blocking pool well below its 512 default. Cover/thumbnail decodes
+// run on spawn_blocking; bounding the pool guards against a runaway number of
+// concurrent in-flight image buffers (the scanner's own concurrency is also
+// capped, see DEFAULT_MAX_SCANNER_CONCURRENCY).
+const MAX_BLOCKING_THREADS: usize = 128;
+
 #[cfg(debug_assertions)]
 fn debug_setup() {
 	std::env::set_var(
@@ -21,8 +35,16 @@ fn debug_setup() {
 	std::env::set_var("STUMP_COLORFUL_LOGS", "true");
 }
 
-#[tokio::main(flavor = "multi_thread")]
-async fn main() -> Result<(), EntryError> {
+fn main() -> Result<(), EntryError> {
+	tokio::runtime::Builder::new_multi_thread()
+		.enable_all()
+		.max_blocking_threads(MAX_BLOCKING_THREADS)
+		.build()
+		.expect("failed to build the Tokio runtime")
+		.block_on(run())
+}
+
+async fn run() -> Result<(), EntryError> {
 	#[cfg(debug_assertions)]
 	debug_setup();
 

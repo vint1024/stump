@@ -68,7 +68,12 @@ pub mod defaults {
 	pub const DEFAULT_ACCESS_TOKEN_TTL: i64 = 3600 * 24; // 1 days
 	pub const DEFAULT_REFRESH_TOKEN_TTL: i64 = 3600 * 24 * 30; // 30 days
 	pub const DEFAULT_SESSION_EXPIRY_CLEANUP_INTERVAL: u64 = 60 * 60 * 24; // 24 hours
-	pub const DEFAULT_MAX_SCANNER_CONCURRENCY: usize = 200;
+																		// 50 instead of upstream's 200: the scanner processes books in chunks of this
+																		// size, and each book build reads the file and decodes its cover image, so a
+																		// chunk of 200 holds ~200 decoded images at once — a multi-GB peak on large
+																		// libraries that pinned RSS until restart. 50 keeps scans fast while bounding
+																		// the peak ~4x. Still overridable via MAX_SCANNER_CONCURRENCY.
+	pub const DEFAULT_MAX_SCANNER_CONCURRENCY: usize = 50;
 	pub const DEFAULT_MAX_THUMBNAIL_CONCURRENCY: usize = 10;
 	pub const DEFAULT_MAX_IMAGE_UPLOAD_SIZE: usize = 20 * 1024 * 1024; // 20 MB
 	pub const DEFAULT_ENABLE_UPLOAD: bool = false;

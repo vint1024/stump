@@ -1,8 +1,13 @@
 use async_graphql::{InputObject, InputType, OneofObject};
 use filter_gen::IntoFilter;
-use models::shared::enums::{FileStatus, LibraryType, ReadingStatus};
+use models::{
+	db::UNICODE_LOWER_FN,
+	shared::enums::{FileStatus, LibraryType, ReadingStatus},
+};
 use sea_orm::{
-	prelude::DateTimeWithTimeZone, sea_query::ConditionExpression, Condition, Value,
+	prelude::DateTimeWithTimeZone,
+	sea_query::{Alias, ConditionExpression, Expr, Func, FunctionCall, LikeExpr},
+	ColumnTrait, Condition, Value,
 };
 use serde::{Deserialize, Serialize};
 
@@ -45,12 +50,39 @@ where
 	EndsWith(T),
 }
 
+/// Wrap a column in the custom Unicode-lowercasing SQL function so a LIKE
+/// against it folds case across the full Unicode range. SQLite's own
+/// `lower()`/LIKE only fold ASCII, so without this a search for "рикман" would
+/// never match a row stored as "Рикман". `ulower` is registered by
+/// `models::db::connect_sqlite`; see [`models::db`].
+fn ulower<C>(column: C) -> FunctionCall
+where
+	C: ColumnTrait,
+{
+	Func::cust(Alias::new(UNICODE_LOWER_FN)).arg(Expr::col(column.as_column_ref()))
+}
+
+/// Lowercase (Unicode-aware) a literal and escape its LIKE metacharacters so it
+/// is matched verbatim. Pair with `ESCAPE '\'` on the LIKE so the escapes are
+/// honored.
+fn lower_escaped<T>(value: T) -> String
+where
+	T: Into<String>,
+{
+	value
+		.into()
+		.to_lowercase()
+		.replace('\\', "\\\\")
+		.replace('%', "\\%")
+		.replace('_', "\\_")
+}
+
 pub(crate) fn apply_string_filter<C, T>(
 	column: C,
 	filter: StringLikeFilter<T>,
 ) -> Condition
 where
-	C: sea_orm::ColumnTrait,
+	C: ColumnTrait,
 	T: InputType + Into<Value> + Into<String>,
 {
 	match filter {
@@ -60,26 +92,99 @@ where
 		StringLikeFilter::NoneOf(values) => {
 			Condition::all().add(column.is_not_in(values))
 		},
-		StringLikeFilter::Like(value) => Condition::all().add(column.like(value)),
-		StringLikeFilter::Contains(value) => Condition::all().add(column.contains(value)),
-		StringLikeFilter::Excludes(value) => Condition::all().add(column.not_like(value)),
-		StringLikeFilter::StartsWith(value) => {
-			Condition::all().add(column.starts_with(value))
-		},
-		StringLikeFilter::EndsWith(value) => {
-			Condition::all().add(column.ends_with(value))
-		},
+		// The LIKE-family below all fold case across the full Unicode range via
+		// ulower(). The SQLite-native column.like()/.contains() only fold ASCII,
+		// which left Cyrillic/accented searches (e.g. "рикман", "шитенбург")
+		// effectively case-sensitive. Both sides are lowercased: the column by
+		// ulower() in SQL, the value by to_lowercase() in Rust.
+		StringLikeFilter::Like(value) => Condition::all().add(
+			Expr::expr(ulower(column)).like(Into::<String>::into(value).to_lowercase()),
+		),
+		StringLikeFilter::Contains(value) => Condition::all().add(
+			Expr::expr(ulower(column))
+				.like(LikeExpr::new(format!("%{}%", lower_escaped(value))).escape('\\')),
+		),
+		StringLikeFilter::Excludes(value) => Condition::all().add(
+			Expr::expr(ulower(column))
+				.not_like(Into::<String>::into(value).to_lowercase()),
+		),
+		StringLikeFilter::StartsWith(value) => Condition::all().add(
+			Expr::expr(ulower(column))
+				.like(LikeExpr::new(format!("{}%", lower_escaped(value))).escape('\\')),
+		),
+		StringLikeFilter::EndsWith(value) => Condition::all().add(
+			Expr::expr(ulower(column))
+				.like(LikeExpr::new(format!("%{}", lower_escaped(value))).escape('\\')),
+		),
 		StringLikeFilter::LikeAnyOf(values) => {
 			values.into_iter().fold(Condition::any(), |acc, value| {
-				acc.add(column.contains(value))
+				acc.add(Expr::expr(ulower(column)).like(
+					LikeExpr::new(format!("%{}%", lower_escaped(value))).escape('\\'),
+				))
 			})
 		},
 		StringLikeFilter::LikeNoneOf(values) => values
 			.into_iter()
 			.fold(Condition::any(), |acc, value| {
-				acc.add(column.contains(value))
+				acc.add(Expr::expr(ulower(column)).like(
+					LikeExpr::new(format!("%{}%", lower_escaped(value))).escape('\\'),
+				))
 			})
 			.not(),
+	}
+}
+
+#[cfg(test)]
+mod string_filter_tests {
+	use super::*;
+	use models::entity::media;
+	use sea_orm::{
+		sea_query::SqliteQueryBuilder, EntityTrait, QueryFilter, QuerySelect, QueryTrait,
+	};
+
+	fn render(filter: StringLikeFilter<String>) -> String {
+		media::Entity::find()
+			.filter(apply_string_filter(media::Column::Name, filter))
+			.select_only()
+			.into_query()
+			.to_string(SqliteQueryBuilder)
+	}
+
+	#[test]
+	fn contains_folds_case_via_ulower() {
+		let sql = render(StringLikeFilter::Contains("Рикман".to_string()));
+		// Column side is ulower()'d and the value is lowercased + LIKE-wrapped.
+		assert!(
+			sql.contains(r#"ulower("media"."name") LIKE '%рикман%' ESCAPE '\'"#),
+			"{sql}"
+		);
+	}
+
+	#[test]
+	fn contains_escapes_like_metacharacters() {
+		let sql = render(StringLikeFilter::Contains("100%_x".to_string()));
+		assert!(sql.contains(r#"LIKE '%100\%\_x%' ESCAPE '\'"#), "{sql}");
+	}
+
+	#[test]
+	fn starts_and_ends_with_anchor_pattern() {
+		let starts = render(StringLikeFilter::StartsWith("Алан".to_string()));
+		assert!(
+			starts.contains(r#"ulower("media"."name") LIKE 'алан%' ESCAPE '\'"#),
+			"{starts}"
+		);
+		let ends = render(StringLikeFilter::EndsWith("Лилия".to_string()));
+		assert!(
+			ends.contains(r#"ulower("media"."name") LIKE '%лилия' ESCAPE '\'"#),
+			"{ends}"
+		);
+	}
+
+	#[test]
+	fn eq_is_left_exact() {
+		let sql = render(StringLikeFilter::Eq("Exact".to_string()));
+		assert!(sql.contains(r#""media"."name" = 'Exact'"#), "{sql}");
+		assert!(!sql.contains("ulower"), "{sql}");
 	}
 }
 
@@ -184,9 +289,11 @@ mod tests {
 			.into_query()
 			.to_string(SqliteQueryBuilder);
 
+		// ulower()-wrapped + ESCAPE so the match folds case across the full
+		// Unicode range (see apply_string_filter).
 		assert_eq!(
 			sql,
-			r#"SELECT  FROM "media" WHERE "media"."name" LIKE '%test%' OR "media"."name" LIKE '%example%'"#
+			r#"SELECT  FROM "media" WHERE ulower("media"."name") LIKE '%test%' ESCAPE '\' OR ulower("media"."name") LIKE '%example%' ESCAPE '\'"#
 		);
 	}
 
@@ -203,7 +310,7 @@ mod tests {
 
 		assert_eq!(
 			sql,
-			r#"SELECT  FROM "media" WHERE NOT ("media"."name" LIKE '%test%' OR "media"."name" LIKE '%example%')"#
+			r#"SELECT  FROM "media" WHERE NOT (ulower("media"."name") LIKE '%test%' ESCAPE '\' OR ulower("media"."name") LIKE '%example%' ESCAPE '\')"#
 		);
 	}
 }

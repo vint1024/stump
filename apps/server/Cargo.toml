@@ -83,3 +83,16 @@ openssl = { version = "0.10.66", features = ["vendored"] }
 
 [target.x86_64-unknown-linux-musl.dependencies]
 openssl = { version = "0.10.66", features = ["vendored"] }
+
+# jemalloc as the global allocator, but only on the (glibc) Linux server build —
+# the actual Docker target (aarch64/x86_64-unknown-linux-gnu). Its decay settings
+# (configured at runtime via the MALLOC_CONF env in docker/Dockerfile) return
+# freed pages to the OS shortly after scan peaks, instead of the system allocator
+# pinning RSS at the scan high-water mark until the process restarts. Gated to
+# gnu-linux so macOS dev builds keep the default system allocator (jemalloc's
+# background threads aren't supported there). `unprefixed_…` makes jemalloc honor
+# the standard MALLOC_CONF env var name.
+[target.'cfg(all(target_os = "linux", target_env = "gnu"))'.dependencies]
+tikv-jemallocator = { version = "0.7", features = [
+  "unprefixed_malloc_on_supported_platforms",
+] }
