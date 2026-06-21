@@ -93,7 +93,7 @@ export default function CreateSmartListForm({ onSubmit, isLoading }: Props) {
 								variant="primary"
 								onClick={() => handleChangeStep(2)}
 							>
-								Next step
+								{t('createSmartListScene.form.buttons.nextStep')}
 							</Button>
 						</div>
 					</>
@@ -109,7 +109,7 @@ export default function CreateSmartListForm({ onSubmit, isLoading }: Props) {
 								variant="primary"
 								onClick={() => handleChangeStep(3)}
 							>
-								Next step
+								{t('createSmartListScene.form.buttons.nextStep')}
 							</Button>
 						</div>
 					</>
@@ -140,7 +140,7 @@ export default function CreateSmartListForm({ onSubmit, isLoading }: Props) {
 						variant="primary"
 						isLoading={isLoading}
 					>
-						Create list
+						{t('createSmartListScene.form.buttons.confirm')}
 					</Button>
 				</div>
 			</ContentContainer>

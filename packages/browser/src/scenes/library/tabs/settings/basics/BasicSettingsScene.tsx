@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Button, Form } from '@stump/components'
 import { graphql, UserPermission } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useCallback, useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
@@ -31,6 +32,7 @@ const query = graphql(`
 `)
 
 export default function BasicSettingsScene() {
+	const { t } = useLocaleContext()
 	const { library, patch } = useLibraryManagement()
 	const { sdk } = useSDK()
 	const {
@@ -110,7 +112,7 @@ export default function BasicSettingsScene() {
 
 			<div>
 				<Button type="submit" disabled={!hasChanges}>
-					Update library
+					{t('librarySettingsScene.basics.form.submit')}
 				</Button>
 			</div>
 		</Form>
