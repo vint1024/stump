@@ -22,7 +22,7 @@ static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 // Cap the Tokio blocking pool well below its 512 default. Cover/thumbnail decodes
 // run on spawn_blocking; bounding the pool guards against a runaway number of
 // concurrent in-flight image buffers (the scanner's own concurrency is also
-// capped, see DEFAULT_MAX_SCANNER_CONCURRENCY).
+// capped, see parallelism_multiplier / StumpConfig::cpu_concurrency_limit()).
 const MAX_BLOCKING_THREADS: usize = 128;
 
 #[cfg(debug_assertions)]

@@ -464,10 +464,42 @@ export type ConfidenceFactor = {
   weight: Scalars['Float']['output'];
 };
 
+/** A content access rule as exposed over the API */
+export type ContentAccessRule = {
+  __typename?: 'ContentAccessRule';
+  dimension: ContentRuleDimension;
+  id: Scalars['Int']['output'];
+  mode: ContentRuleMode;
+  restrictOnUnset: Scalars['Boolean']['output'];
+  values: Array<Scalars['String']['output']>;
+};
+
+export type ContentAccessRuleInput = {
+  dimension: ContentRuleDimension;
+  mode: ContentRuleMode;
+  restrictOnUnset?: Scalars['Boolean']['input'];
+  values: Array<Scalars['String']['input']>;
+};
+
+/** The dimension a content access rule applies to */
+export enum ContentRuleDimension {
+  Genre = 'GENRE',
+  Publisher = 'PUBLISHER',
+  Tag = 'TAG'
+}
+
+/** Whether a content access rule allows only the listed values or excludes them */
+export enum ContentRuleMode {
+  /** Hide items matching at least one listed value */
+  Exclude = 'EXCLUDE',
+  /** Show only items matching at least one listed value */
+  Only = 'ONLY'
+}
+
 /** An event that is emitted by the core and consumed by a client */
 export type CoreEvent = CreatedManySeries | CreatedMedia | CreatedOrUpdatedManyMedia | DiscoveredMissingLibrary | JobOutput | JobStarted | JobUpdate;
 
-export type CoreJobOutput = AnalyzeMediaOutput | LibraryScanOutput | MetadataFetchJobOutput | PlaceholderGenerationOutput | SeriesScanOutput | ThumbnailGenerationOutput;
+export type CoreJobOutput = AnalyzeMediaOutput | LibraryScanOutput | MetadataFetchJobOutput | MetadataWritebackOutput | PlaceholderGenerationOutput | SeriesScanOutput | ThumbnailGenerationOutput;
 
 export type CreateAnnotationInput = {
   annotationText?: InputMaybe<Scalars['String']['input']>;
@@ -517,6 +549,11 @@ export type CreateOrUpdateLibraryInput = {
   config?: InputMaybe<LibraryConfigInput>;
   description?: InputMaybe<Scalars['String']['input']>;
   emoji?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Additional root folders for the library, beyond the primary path. A
+   * library spans every folder in `[path] + extra_paths`
+   */
+  extraPaths?: InputMaybe<Array<Scalars['String']['input']>>;
   name: Scalars['String']['input'];
   path: Scalars['String']['input'];
   scanAfterPersist?: Scalars['Boolean']['input'];
@@ -535,6 +572,11 @@ export type CreateScheduledJobInput = {
 
 export type CreateUserInput = {
   ageRestriction?: InputMaybe<AgeRestrictionInput>;
+  /**
+   * Content access rules to apply to the new user. Mirrors what
+   * `setUserContentAccessRules` does, but atomically at creation time
+   */
+  contentRules?: Array<ContentAccessRuleInput>;
   maxSessionsAllowed?: InputMaybe<Scalars['Int']['input']>;
   password: Scalars['String']['input'];
   permissions: Array<UserPermission>;
@@ -567,10 +609,28 @@ export type CreatedOrUpdatedManyMedia = {
   seriesId: Scalars['String']['output'];
 };
 
+export type CursorPaginatedBookClubBookResponse = {
+  __typename?: 'CursorPaginatedBookClubBookResponse';
+  cursorInfo: CursorPaginationInfo;
+  nodes: Array<BookClubBook>;
+};
+
 export type CursorPaginatedBookClubDiscussionMessageResponse = {
   __typename?: 'CursorPaginatedBookClubDiscussionMessageResponse';
   cursorInfo: CursorPaginationInfo;
   nodes: Array<BookClubDiscussionMessage>;
+};
+
+export type CursorPaginatedBookClubDiscussionResponse = {
+  __typename?: 'CursorPaginatedBookClubDiscussionResponse';
+  cursorInfo: CursorPaginationInfo;
+  nodes: Array<BookClubDiscussion>;
+};
+
+export type CursorPaginatedBookClubMemberResponse = {
+  __typename?: 'CursorPaginatedBookClubMemberResponse';
+  cursorInfo: CursorPaginationInfo;
+  nodes: Array<BookClubMember>;
 };
 
 /** A simple cursor-based pagination input object */
@@ -1114,6 +1174,8 @@ export type Library = {
   description?: Maybe<Scalars['String']['output']>;
   emoji?: Maybe<Scalars['String']['output']>;
   excludedUsers: Array<User>;
+  /** Additional root folders this library spans, beyond its primary path */
+  extraPaths: Array<Scalars['String']['output']>;
   genres: Array<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   isFavorite: Scalars['Boolean']['output'];
@@ -1736,6 +1798,15 @@ export enum MergeStrategy {
   PreferExternalAndMergeLists = 'PREFER_EXTERNAL_AND_MERGE_LISTS'
 }
 
+/** A folder that was merged into a series and can be restored via unmerge */
+export type MergedSeriesSource = {
+  __typename?: 'MergedSeriesSource';
+  /** The name the source series had before the merge */
+  name: Scalars['String']['output'];
+  /** The folder on disk that was absorbed */
+  path: Scalars['String']['output'];
+};
+
 export type MetadataFetchJobOutput = {
   __typename?: 'MetadataFetchJobOutput';
   /** Number of entities that were auto-applied */
@@ -1898,6 +1969,16 @@ export type MetadataRetryConfigInput = {
   statuses: Array<MetadataFetchStatus>;
 };
 
+export type MetadataWritebackOutput = {
+  __typename?: 'MetadataWritebackOutput';
+  /** Books that failed to write (see logs) */
+  failed: Scalars['Int']['output'];
+  /** Books skipped (not epub, no metadata, or nothing to write) */
+  skipped: Scalars['Int']['output'];
+  /** Books whose files were updated */
+  written: Scalars['Int']['output'];
+};
+
 export type MissingEntity = {
   __typename?: 'MissingEntity';
   id: Scalars['String']['output'];
@@ -1937,6 +2018,11 @@ export type Mutation = {
    * This operation will also remove any associated thumbnails of the deleted media and series.
    */
   cleanLibrary: CleanLibraryResponse;
+  /**
+   * Delete every `*.epub.bak` backup file (created by metadata writeback)
+   * inside the library's folders. Returns the number of removed files
+   */
+  cleanMetadataBackups: Scalars['Int']['output'];
   /** trashes current readthrough, if there is one */
   clearMediaProgress: Scalars['Boolean']['output'];
   /** Clear the scan history for a specific library */
@@ -2030,6 +2116,13 @@ export type Mutation = {
    */
   deleteReadingList: ReadingList;
   deleteScheduledJob: Scalars['Boolean']['output'];
+  /**
+   * Permanently delete a single series and all of its books from the
+   * database. Files on disk are NOT touched. This is the per-series
+   * counterpart to "Clean Library" — handy for removing a series whose
+   * folder is gone (status "Missing") without wiping the whole library.
+   */
+  deleteSeries: Scalars['Boolean']['output'];
   deleteSmartList: SmartList;
   deleteSmartListView: SmartListView;
   /**
@@ -2064,10 +2157,23 @@ export type Mutation = {
   /** marks all books in the series as finished */
   finishSeriesProgress: Scalars['Int']['output'];
   generateLibraryThumbnails: Scalars['Boolean']['output'];
+  /**
+   * Enqueue a job which (re)generates the thumbnail for a single series from
+   * its first book. The library-level job covers series too, but only as part
+   * of a full sweep — this gives the series page its own regenerate action
+   */
+  generateSeriesThumbnail: Scalars['Boolean']['output'];
   /** Deletes the membership of the caller to the target book club */
   leaveBookClub: BookClubMember;
   /** Lock or unlock a discussion (Moderator+) */
   lockDiscussion: Scalars['Boolean']['output'];
+  /**
+   * Merge one or more series into a target series: their books move to the
+   * target and the source series are removed. A persistent merge map keeps
+   * the scanner from re-creating the source folders as series, and allows
+   * the merge to be undone later. All series must be in the same library
+   */
+  mergeSeries: Series;
   patchEmailDevice: RegisteredEmailDevice;
   /** Pin or unpin a message (Moderator+) */
   pinMessage: Scalars['Boolean']['output'];
@@ -2119,6 +2225,12 @@ export type Mutation = {
    * and unlinks removed ones. Returns the updated series.
    */
   setSeriesTags: Series;
+  /**
+   * Replace the full set of content access rules for a user. Rules combine
+   * with AND; each rule allows only (or excludes) items matching at least
+   * one of its values in the given dimension (tag/publisher/genre)
+   */
+  setUserContentAccessRules: Array<ContentAccessRule>;
   /** Suggest a book for the book club */
   suggestBook: BookClubBookSuggestion;
   /** Send a test email to verify the SMTP configuration is working */
@@ -2131,6 +2243,11 @@ export type Mutation = {
   toggleReaction: Scalars['Boolean']['output'];
   /** Toggle like on a suggestion */
   toggleSuggestionLike: Scalars['Boolean']['output'];
+  /**
+   * Undo every merge into the given series: each absorbed folder becomes its
+   * own series again (with its original name) and its books move back
+   */
+  unmergeSeries: Series;
   /** Update an annotation's note text */
   updateAnnotation: MediaAnnotation;
   updateApiKey: Apikey;
@@ -2227,6 +2344,18 @@ export type Mutation = {
    * This is used to inform the UI of the last library which was visited by the user
    */
   visitLibrary: Library;
+  /**
+   * Enqueue a background job which writes the stored metadata of every epub
+   * in the library back into the files. With `backup`, each original is kept
+   * as `<file>.bak` next to it
+   */
+  writeLibraryMetadataToFiles: Scalars['Boolean']['output'];
+  /**
+   * Write the book's stored metadata back into its epub file. The archive is
+   * rebuilt atomically; with `backup` set, the original is kept as `<file>.bak`.
+   * Returns true when the file was updated (false = nothing to write)
+   */
+  writeMediaMetadataToFile: Scalars['Boolean']['output'];
 };
 
 
@@ -2290,6 +2419,11 @@ export type MutationCancelJobArgs = {
 
 
 export type MutationCleanLibraryArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCleanMetadataBackupsArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -2518,6 +2652,11 @@ export type MutationDeleteScheduledJobArgs = {
 };
 
 
+export type MutationDeleteSeriesArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationDeleteSmartListArgs = {
   id: Scalars['ID']['input'];
 };
@@ -2601,6 +2740,12 @@ export type MutationGenerateLibraryThumbnailsArgs = {
 };
 
 
+export type MutationGenerateSeriesThumbnailArgs = {
+  forceRegenerate?: Scalars['Boolean']['input'];
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationLeaveBookClubArgs = {
   bookClubId: Scalars['ID']['input'];
 };
@@ -2609,6 +2754,12 @@ export type MutationLeaveBookClubArgs = {
 export type MutationLockDiscussionArgs = {
   discussionId: Scalars['ID']['input'];
   locked: Scalars['Boolean']['input'];
+};
+
+
+export type MutationMergeSeriesArgs = {
+  sourceIds: Array<Scalars['ID']['input']>;
+  targetId: Scalars['ID']['input'];
 };
 
 
@@ -2741,6 +2892,12 @@ export type MutationSetSeriesTagsArgs = {
 };
 
 
+export type MutationSetUserContentAccessRulesArgs = {
+  rules: Array<ContentAccessRuleInput>;
+  userId: Scalars['ID']['input'];
+};
+
+
 export type MutationSuggestBookArgs = {
   bookClubId: Scalars['ID']['input'];
   input: SuggestBookInput;
@@ -2762,6 +2919,11 @@ export type MutationToggleReactionArgs = {
 
 export type MutationToggleSuggestionLikeArgs = {
   suggestionId: Scalars['ID']['input'];
+};
+
+
+export type MutationUnmergeSeriesArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -2986,6 +3148,18 @@ export type MutationUploadUserAvatarArgs = {
 
 
 export type MutationVisitLibraryArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationWriteLibraryMetadataToFilesArgs = {
+  backup?: Scalars['Boolean']['input'];
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationWriteMediaMetadataToFileArgs = {
+  backup?: Scalars['Boolean']['input'];
   id: Scalars['ID']['input'];
 };
 
@@ -3276,6 +3450,22 @@ export type Query = {
   bookClubDiscussionMessages: CursorPaginatedBookClubDiscussionMessageResponse;
   /** Get all discussions for a book club, ordered by pinned first, then by date created */
   bookClubDiscussions: Array<BookClubDiscussion>;
+  /**
+   * Discussions for a club, cursor-paginated (by id) — for clubs with many
+   * discussions. Ordered by id ascending; the `isPinned` flag is on each node.
+   */
+  bookClubDiscussionsPaginated: CursorPaginatedBookClubDiscussionResponse;
+  /**
+   * A club's members, cursor-paginated (by id) — for clubs too large to load
+   * the full `members` array. Ordered by id ascending.
+   */
+  bookClubMembers: CursorPaginatedBookClubMemberResponse;
+  /**
+   * A club's archived (completed) books, cursor-paginated by id (a stable
+   * order — ids are random UUIDs, so this is not chronological, but it pages
+   * correctly without dupes/skips) — for clubs with many past reads.
+   */
+  bookClubPreviousBooks: CursorPaginatedBookClubBookResponse;
   /** Get a single suggestion by ID */
   bookClubSuggestion: BookClubBookSuggestion;
   /** Get all suggestions for a book club */
@@ -3441,6 +3631,24 @@ export type QueryBookClubDiscussionMessagesArgs = {
 
 export type QueryBookClubDiscussionsArgs = {
   bookClubId: Scalars['ID']['input'];
+};
+
+
+export type QueryBookClubDiscussionsPaginatedArgs = {
+  bookClubId: Scalars['ID']['input'];
+  pagination?: CursorPagination;
+};
+
+
+export type QueryBookClubMembersArgs = {
+  bookClubId: Scalars['ID']['input'];
+  pagination?: CursorPagination;
+};
+
+
+export type QueryBookClubPreviousBooksArgs = {
+  bookClubId: Scalars['ID']['input'];
+  pagination?: CursorPagination;
 };
 
 
@@ -3964,6 +4172,8 @@ export type Series = {
   media: Array<Media>;
   mediaAlphabet: Scalars['JSONObject']['output'];
   mediaCount: Scalars['Int']['output'];
+  /** Folders that were merged into this series (empty when it is not a merge target) */
+  mergedSources: Array<MergedSeriesSource>;
   metadata?: Maybe<SeriesMetadata>;
   name: Scalars['String']['output'];
   path: Scalars['String']['output'];
@@ -4637,6 +4847,8 @@ export type User = {
   ageRestriction?: Maybe<AgeRestriction>;
   avatarPath?: Maybe<Scalars['String']['output']>;
   avatarUrl?: Maybe<Scalars['String']['output']>;
+  /** The user's content access rules (tag/publisher/genre allow- or deny-lists) */
+  contentAccessRules: Array<ContentAccessRule>;
   continueReading: PaginatedMediaResponse;
   createdAt: Scalars['DateTime']['output'];
   deletedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -4741,6 +4953,8 @@ export enum UserPermission {
   MetadataProviderManage = 'METADATA_PROVIDER_MANAGE',
   /** Grant access to read metadata provider configurations */
   MetadataProviderRead = 'METADATA_PROVIDER_READ',
+  /** Read books offline with per-device encryption (fork-only /offline endpoint). Distinct from DownloadFile. */
+  OfflineRead = 'OFFLINE_READ',
   /** Grant access to read jobs */
   ReadJobs = 'READ_JOBS',
   /** Grant access to read notifiers */
@@ -5546,13 +5760,14 @@ export type BookClubBookItemFragment = { __typename?: 'BookClubBook', id: string
 
 export type BookClubBooksSceneQueryVariables = Exact<{
   id: Scalars['ID']['input'];
+  pagination: CursorPagination;
 }>;
 
 
-export type BookClubBooksSceneQuery = { __typename?: 'Query', bookClubById: { __typename?: 'BookClub', id: string, previousBooks: Array<(
+export type BookClubBooksSceneQuery = { __typename?: 'Query', bookClubPreviousBooks: { __typename?: 'CursorPaginatedBookClubBookResponse', nodes: Array<(
       { __typename?: 'BookClubBook', id: string }
       & { ' $fragmentRefs'?: { 'BookClubBookItemFragment': BookClubBookItemFragment } }
-    )> } };
+    )>, cursorInfo: { __typename?: 'CursorPaginationInfo', nextCursor?: string | null, limit: number } } };
 
 export type MediaAtPathQueryVariables = Exact<{
   path: Scalars['String']['input'];
@@ -5812,7 +6027,7 @@ export type SeriesEditorSetLockedFieldsMutation = { __typename?: 'Mutation', set
 export type UseCoreEventSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UseCoreEventSubscription = { __typename?: 'Subscription', readEvents: { __typename: 'CreatedManySeries', count: number, libraryId: string } | { __typename: 'CreatedMedia', id: string, seriesId: string } | { __typename: 'CreatedOrUpdatedManyMedia', count: number, seriesId: string } | { __typename: 'DiscoveredMissingLibrary', id: string } | { __typename: 'JobOutput', id: string, output: { __typename: 'AnalyzeMediaOutput' } | { __typename: 'LibraryScanOutput', createdMedia: number, createdSeries: number, updatedMedia: number, updatedSeries: number } | { __typename: 'MetadataFetchJobOutput' } | { __typename: 'PlaceholderGenerationOutput' } | { __typename: 'SeriesScanOutput', createdMedia: number, updatedMedia: number } | { __typename: 'ThumbnailGenerationOutput' } } | { __typename: 'JobStarted', id: string } | { __typename: 'JobUpdate', id: string, status?: JobStatus | null, message?: string | null, completedTasks?: number | null, remainingTasks?: number | null, completedSubtasks?: number | null, totalSubtasks?: number | null, subtitle?: string | null } };
+export type UseCoreEventSubscription = { __typename?: 'Subscription', readEvents: { __typename: 'CreatedManySeries', count: number, libraryId: string } | { __typename: 'CreatedMedia', id: string, seriesId: string } | { __typename: 'CreatedOrUpdatedManyMedia', count: number, seriesId: string } | { __typename: 'DiscoveredMissingLibrary', id: string } | { __typename: 'JobOutput', id: string, output: { __typename: 'AnalyzeMediaOutput' } | { __typename: 'LibraryScanOutput', createdMedia: number, createdSeries: number, updatedMedia: number, updatedSeries: number } | { __typename: 'MetadataFetchJobOutput' } | { __typename: 'MetadataWritebackOutput' } | { __typename: 'PlaceholderGenerationOutput' } | { __typename: 'SeriesScanOutput', createdMedia: number, updatedMedia: number } | { __typename: 'ThumbnailGenerationOutput' } } | { __typename: 'JobStarted', id: string } | { __typename: 'JobUpdate', id: string, status?: JobStatus | null, message?: string | null, completedTasks?: number | null, remainingTasks?: number | null, completedSubtasks?: number | null, totalSubtasks?: number | null, subtitle?: string | null } };
 
 export type UsePreferencesMutationVariables = Exact<{
   input: UpdateUserPreferencesInput;
@@ -5982,10 +6197,11 @@ export type BookClubBasicSettingsSceneQuery = { __typename?: 'Query', bookClubs:
 
 export type BookClubMembersTableQueryVariables = Exact<{
   id: Scalars['ID']['input'];
+  pagination: CursorPagination;
 }>;
 
 
-export type BookClubMembersTableQuery = { __typename?: 'Query', bookClubById: { __typename?: 'BookClub', id: string, members: Array<{ __typename?: 'BookClubMember', id: string, avatarUrl?: string | null, isCreator: boolean, displayName?: string | null, role: BookClubMemberRole, userId: string }> } };
+export type BookClubMembersTableQuery = { __typename?: 'Query', bookClubMembers: { __typename?: 'CursorPaginatedBookClubMemberResponse', nodes: Array<{ __typename?: 'BookClubMember', id: string, avatarUrl?: string | null, isCreator: boolean, displayName?: string | null, role: BookClubMemberRole, userId: string }>, cursorInfo: { __typename?: 'CursorPaginationInfo', nextCursor?: string | null, limit: number } } };
 
 export type RemoveBookClubMemberMutationVariables = Exact<{
   bookClubId: Scalars['ID']['input'];
@@ -6085,7 +6301,7 @@ export type LibraryLayoutQueryVariables = Exact<{
 
 
 export type LibraryLayoutQuery = { __typename?: 'Query', libraryById?: (
-    { __typename?: 'Library', id: string, name: string, description?: string | null, path: string, stats: { __typename?: 'LibraryStats', seriesCount: number, bookCount: number, completedBooks: number, inProgressBooks: number, totalBytes: number, totalReadingTimeSeconds: number }, tags: Array<{ __typename?: 'Tag', id: number, name: string }>, thumbnail: { __typename?: 'ImageRef', url: string, metadata?: { __typename?: 'ImageMetadata', averageColor?: string | null, thumbhash?: string | null, colors: Array<{ __typename?: 'ImageColor', color: string, percentage: any }> } | null }, config: { __typename?: 'LibraryConfig', defaultLibraryViewMode: LibraryViewMode, hideSeriesView: boolean } }
+    { __typename?: 'Library', id: string, name: string, description?: string | null, path: string, extraPaths: Array<string>, stats: { __typename?: 'LibraryStats', seriesCount: number, bookCount: number, completedBooks: number, inProgressBooks: number, totalBytes: number, totalReadingTimeSeconds: number }, tags: Array<{ __typename?: 'Tag', id: number, name: string }>, thumbnail: { __typename?: 'ImageRef', url: string, metadata?: { __typename?: 'ImageMetadata', averageColor?: string | null, thumbhash?: string | null, colors: Array<{ __typename?: 'ImageColor', color: string, percentage: any }> } | null }, config: { __typename?: 'LibraryConfig', defaultLibraryViewMode: LibraryViewMode, hideSeriesView: boolean } }
     & { ' $fragmentRefs'?: { 'LibrarySettingsConfigFragment': LibrarySettingsConfigFragment } }
   ) | null };
 
@@ -6175,6 +6391,21 @@ export type CleanLibraryMutationVariables = Exact<{
 
 export type CleanLibraryMutation = { __typename?: 'Mutation', cleanLibrary: { __typename?: 'CleanLibraryResponse', deletedMediaCount: number, deletedSeriesCount: number, isEmpty: boolean } };
 
+export type LibraryMetadataWritebackMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  backup: Scalars['Boolean']['input'];
+}>;
+
+
+export type LibraryMetadataWritebackMutation = { __typename?: 'Mutation', writeLibraryMetadataToFiles: boolean };
+
+export type LibraryMetadataWritebackCleanBackupsMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type LibraryMetadataWritebackCleanBackupsMutation = { __typename?: 'Mutation', cleanMetadataBackups: number };
+
 export type LibraryMissingEntitiesQueryVariables = Exact<{
   libraryId: Scalars['ID']['input'];
   pagination: Pagination;
@@ -6222,7 +6453,7 @@ export type ScanRecordInspectorJobsQueryVariables = Exact<{
 }>;
 
 
-export type ScanRecordInspectorJobsQuery = { __typename?: 'Query', jobById?: { __typename?: 'Job', id: string, outputData?: { __typename: 'AnalyzeMediaOutput' } | { __typename: 'LibraryScanOutput', totalFiles: number, totalDirectories: number, ignoredFiles: number, skippedFiles: number, ignoredDirectories: number, createdMedia: number, updatedMedia: number, createdSeries: number, updatedSeries: number } | { __typename: 'MetadataFetchJobOutput' } | { __typename: 'PlaceholderGenerationOutput' } | { __typename: 'SeriesScanOutput' } | { __typename: 'ThumbnailGenerationOutput' } | null, logs?: Array<{ __typename?: 'Log', id: number }> } | null };
+export type ScanRecordInspectorJobsQuery = { __typename?: 'Query', jobById?: { __typename?: 'Job', id: string, outputData?: { __typename: 'AnalyzeMediaOutput' } | { __typename: 'LibraryScanOutput', totalFiles: number, totalDirectories: number, ignoredFiles: number, skippedFiles: number, ignoredDirectories: number, createdMedia: number, updatedMedia: number, createdSeries: number, updatedSeries: number } | { __typename: 'MetadataFetchJobOutput' } | { __typename: 'MetadataWritebackOutput' } | { __typename: 'PlaceholderGenerationOutput' } | { __typename: 'SeriesScanOutput' } | { __typename: 'ThumbnailGenerationOutput' } | null, logs?: Array<{ __typename?: 'Log', id: number }> } | null };
 
 export type DeleteLibraryThumbnailsMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -6305,6 +6536,37 @@ export type SeriesBooksSceneQuery = { __typename?: 'Query', media: { __typename?
       { __typename?: 'Media', id: string }
       & { ' $fragmentRefs'?: { 'BookCardFragment': BookCardFragment;'BookMetadataFragment': BookMetadataFragment } }
     )>, pageInfo: { __typename: 'CursorPaginationInfo' } | { __typename: 'OffsetPaginationInfo', currentPage: number, totalPages: number, pageSize: number, pageOffset: number, zeroBased: boolean } } };
+
+export type MergeSeriesSectionQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type MergeSeriesSectionQuery = { __typename?: 'Query', seriesById?: { __typename?: 'Series', id: string, library: { __typename?: 'Library', id: string }, mergedSources: Array<{ __typename?: 'MergedSeriesSource', name: string, path: string }> } | null };
+
+export type MergeSeriesSectionCandidatesQueryVariables = Exact<{
+  libraryId: Scalars['String']['input'];
+  search: Scalars['String']['input'];
+  limit: Scalars['Int']['input'];
+}>;
+
+
+export type MergeSeriesSectionCandidatesQuery = { __typename?: 'Query', series: { __typename?: 'PaginatedSeriesResponse', nodes: Array<{ __typename?: 'Series', id: string, path: string, name: string }> } };
+
+export type MergeSeriesSectionMergeMutationVariables = Exact<{
+  targetId: Scalars['ID']['input'];
+  sourceIds: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
+}>;
+
+
+export type MergeSeriesSectionMergeMutation = { __typename?: 'Mutation', mergeSeries: { __typename?: 'Series', id: string } };
+
+export type MergeSeriesSectionUnmergeMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type MergeSeriesSectionUnmergeMutation = { __typename?: 'Mutation', unmergeSeries: { __typename?: 'Series', id: string } };
 
 export type SeriesBookGridQueryVariables = Exact<{
   id: Scalars['String']['input'];
@@ -6610,13 +6872,15 @@ type JobDataInspector_LibraryScanOutput_Fragment = { __typename: 'LibraryScanOut
 
 type JobDataInspector_MetadataFetchJobOutput_Fragment = { __typename: 'MetadataFetchJobOutput' } & { ' $fragmentName'?: 'JobDataInspector_MetadataFetchJobOutput_Fragment' };
 
+type JobDataInspector_MetadataWritebackOutput_Fragment = { __typename: 'MetadataWritebackOutput' } & { ' $fragmentName'?: 'JobDataInspector_MetadataWritebackOutput_Fragment' };
+
 type JobDataInspector_PlaceholderGenerationOutput_Fragment = { __typename: 'PlaceholderGenerationOutput' } & { ' $fragmentName'?: 'JobDataInspector_PlaceholderGenerationOutput_Fragment' };
 
 type JobDataInspector_SeriesScanOutput_Fragment = { __typename: 'SeriesScanOutput', totalFiles: number, ignoredFiles: number, skippedFiles: number, createdMedia: number, updatedMedia: number } & { ' $fragmentName'?: 'JobDataInspector_SeriesScanOutput_Fragment' };
 
 type JobDataInspector_ThumbnailGenerationOutput_Fragment = { __typename: 'ThumbnailGenerationOutput', visitedFiles: number, skippedFiles: number, generatedThumbnails: number, removedThumbnails: number } & { ' $fragmentName'?: 'JobDataInspector_ThumbnailGenerationOutput_Fragment' };
 
-export type JobDataInspectorFragment = JobDataInspector_AnalyzeMediaOutput_Fragment | JobDataInspector_LibraryScanOutput_Fragment | JobDataInspector_MetadataFetchJobOutput_Fragment | JobDataInspector_PlaceholderGenerationOutput_Fragment | JobDataInspector_SeriesScanOutput_Fragment | JobDataInspector_ThumbnailGenerationOutput_Fragment;
+export type JobDataInspectorFragment = JobDataInspector_AnalyzeMediaOutput_Fragment | JobDataInspector_LibraryScanOutput_Fragment | JobDataInspector_MetadataFetchJobOutput_Fragment | JobDataInspector_MetadataWritebackOutput_Fragment | JobDataInspector_PlaceholderGenerationOutput_Fragment | JobDataInspector_SeriesScanOutput_Fragment | JobDataInspector_ThumbnailGenerationOutput_Fragment;
 
 export type ScheduledJobsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -6647,6 +6911,9 @@ export type JobTableQuery = { __typename?: 'Query', jobs: { __typename?: 'Pagina
       ) | (
         { __typename?: 'MetadataFetchJobOutput' }
         & { ' $fragmentRefs'?: { 'JobDataInspector_MetadataFetchJobOutput_Fragment': JobDataInspector_MetadataFetchJobOutput_Fragment } }
+      ) | (
+        { __typename?: 'MetadataWritebackOutput' }
+        & { ' $fragmentRefs'?: { 'JobDataInspector_MetadataWritebackOutput_Fragment': JobDataInspector_MetadataWritebackOutput_Fragment } }
       ) | (
         { __typename?: 'PlaceholderGenerationOutput' }
         & { ' $fragmentRefs'?: { 'JobDataInspector_PlaceholderGenerationOutput_Fragment': JobDataInspector_PlaceholderGenerationOutput_Fragment } }
@@ -6745,6 +7012,26 @@ export type UserStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type UserStatsQuery = { __typename?: 'Query', userCount: number, activeReadingSessionCount: number, finishedReadingSessionCount: number, topReaders: Array<{ __typename?: 'User', id: string, username: string, finishedReadingSessionsCount: number }> };
+
+export type ContentAccessRulesEditorOptionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ContentAccessRulesEditorOptionsQuery = { __typename?: 'Query', tags: Array<{ __typename?: 'Tag', name: string }>, mediaMetadataOverview: { __typename?: 'MediaMetadataOverview', genres: Array<string>, publishers: Array<string> } };
+
+export type ContentAccessRulesSectionQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type ContentAccessRulesSectionQuery = { __typename?: 'Query', userById: { __typename?: 'User', id: string, contentAccessRules: Array<{ __typename?: 'ContentAccessRule', id: number, dimension: ContentRuleDimension, mode: ContentRuleMode, values: Array<string>, restrictOnUnset: boolean }> } };
+
+export type ContentAccessRulesSectionSaveMutationVariables = Exact<{
+  userId: Scalars['ID']['input'];
+  rules: Array<ContentAccessRuleInput> | ContentAccessRuleInput;
+}>;
+
+
+export type ContentAccessRulesSectionSaveMutation = { __typename?: 'Mutation', setUserContentAccessRules: Array<{ __typename?: 'ContentAccessRule', id: number }> };
 
 export type CreateOrUpdateUserFormUpdateUserMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -10177,12 +10464,15 @@ export const DeleteBookClubConfirmationDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<DeleteBookClubConfirmationMutation, DeleteBookClubConfirmationMutationVariables>;
 export const BookClubBooksSceneDocument = new TypedDocumentString(`
-    query BookClubBooksScene($id: ID!) {
-  bookClubById(id: $id) {
-    id
-    previousBooks {
+    query BookClubBooksScene($id: ID!, $pagination: CursorPagination!) {
+  bookClubPreviousBooks(bookClubId: $id, pagination: $pagination) {
+    nodes {
       id
       ...BookClubBookItem
+    }
+    cursorInfo {
+      nextCursor
+      limit
     }
   }
 }
@@ -11417,16 +11707,19 @@ export const BookClubBasicSettingsSceneDocument = new TypedDocumentString(`
 }
     `) as unknown as TypedDocumentString<BookClubBasicSettingsSceneQuery, BookClubBasicSettingsSceneQueryVariables>;
 export const BookClubMembersTableDocument = new TypedDocumentString(`
-    query BookClubMembersTable($id: ID!) {
-  bookClubById(id: $id) {
-    id
-    members {
+    query BookClubMembersTable($id: ID!, $pagination: CursorPagination!) {
+  bookClubMembers(bookClubId: $id, pagination: $pagination) {
+    nodes {
       id
       avatarUrl
       isCreator
       displayName
       role
       userId
+    }
+    cursorInfo {
+      nextCursor
+      limit
     }
   }
 }
@@ -11731,6 +12024,7 @@ export const LibraryLayoutDocument = new TypedDocumentString(`
     name
     description
     path
+    extraPaths
     stats {
       seriesCount
       bookCount
@@ -12017,6 +12311,16 @@ export const CleanLibraryDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<CleanLibraryMutation, CleanLibraryMutationVariables>;
+export const LibraryMetadataWritebackDocument = new TypedDocumentString(`
+    mutation LibraryMetadataWriteback($id: ID!, $backup: Boolean!) {
+  writeLibraryMetadataToFiles(id: $id, backup: $backup)
+}
+    `) as unknown as TypedDocumentString<LibraryMetadataWritebackMutation, LibraryMetadataWritebackMutationVariables>;
+export const LibraryMetadataWritebackCleanBackupsDocument = new TypedDocumentString(`
+    mutation LibraryMetadataWritebackCleanBackups($id: ID!) {
+  cleanMetadataBackups(id: $id)
+}
+    `) as unknown as TypedDocumentString<LibraryMetadataWritebackCleanBackupsMutation, LibraryMetadataWritebackCleanBackupsMutationVariables>;
 export const LibraryMissingEntitiesDocument = new TypedDocumentString(`
     query LibraryMissingEntities($libraryId: ID!, $pagination: Pagination!) {
   libraryMissingEntities(libraryId: $libraryId, pagination: $pagination) {
@@ -12294,6 +12598,48 @@ fragment BookMetadata on Media {
     number
   }
 }`) as unknown as TypedDocumentString<SeriesBooksSceneQuery, SeriesBooksSceneQueryVariables>;
+export const MergeSeriesSectionDocument = new TypedDocumentString(`
+    query MergeSeriesSection($id: ID!) {
+  seriesById(id: $id) {
+    id
+    library {
+      id
+    }
+    mergedSources {
+      name
+      path
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<MergeSeriesSectionQuery, MergeSeriesSectionQueryVariables>;
+export const MergeSeriesSectionCandidatesDocument = new TypedDocumentString(`
+    query MergeSeriesSectionCandidates($libraryId: String!, $search: String!, $limit: Int!) {
+  series(
+    filter: {libraryId: {eq: $libraryId}, name: {contains: $search}}
+    pagination: {offset: {page: 1, pageSize: $limit}}
+  ) {
+    nodes {
+      id
+      name: resolvedName
+      path
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<MergeSeriesSectionCandidatesQuery, MergeSeriesSectionCandidatesQueryVariables>;
+export const MergeSeriesSectionMergeDocument = new TypedDocumentString(`
+    mutation MergeSeriesSectionMerge($targetId: ID!, $sourceIds: [ID!]!) {
+  mergeSeries(targetId: $targetId, sourceIds: $sourceIds) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<MergeSeriesSectionMergeMutation, MergeSeriesSectionMergeMutationVariables>;
+export const MergeSeriesSectionUnmergeDocument = new TypedDocumentString(`
+    mutation MergeSeriesSectionUnmerge($id: ID!) {
+  unmergeSeries(id: $id) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<MergeSeriesSectionUnmergeMutation, MergeSeriesSectionUnmergeMutationVariables>;
 export const SeriesBookGridDocument = new TypedDocumentString(`
     query SeriesBookGrid($id: String!, $pagination: Pagination) {
   media(filter: {seriesId: {eq: $id}}, pagination: $pagination) {
@@ -12957,6 +13303,38 @@ export const UserStatsDocument = new TypedDocumentString(`
   finishedReadingSessionCount
 }
     `) as unknown as TypedDocumentString<UserStatsQuery, UserStatsQueryVariables>;
+export const ContentAccessRulesEditorOptionsDocument = new TypedDocumentString(`
+    query ContentAccessRulesEditorOptions {
+  tags {
+    name
+  }
+  mediaMetadataOverview {
+    genres
+    publishers
+  }
+}
+    `) as unknown as TypedDocumentString<ContentAccessRulesEditorOptionsQuery, ContentAccessRulesEditorOptionsQueryVariables>;
+export const ContentAccessRulesSectionDocument = new TypedDocumentString(`
+    query ContentAccessRulesSection($id: ID!) {
+  userById(id: $id) {
+    id
+    contentAccessRules {
+      id
+      dimension
+      mode
+      values
+      restrictOnUnset
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<ContentAccessRulesSectionQuery, ContentAccessRulesSectionQueryVariables>;
+export const ContentAccessRulesSectionSaveDocument = new TypedDocumentString(`
+    mutation ContentAccessRulesSectionSave($userId: ID!, $rules: [ContentAccessRuleInput!]!) {
+  setUserContentAccessRules(userId: $userId, rules: $rules) {
+    id
+  }
+}
+    `) as unknown as TypedDocumentString<ContentAccessRulesSectionSaveMutation, ContentAccessRulesSectionSaveMutationVariables>;
 export const CreateOrUpdateUserFormUpdateUserDocument = new TypedDocumentString(`
     mutation CreateOrUpdateUserFormUpdateUser($id: ID!, $input: UpdateUserInput!) {
   updateUser(id: $id, input: $input) {

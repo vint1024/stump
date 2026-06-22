@@ -2502,6 +2502,17 @@ type Query {
 	bookClubs(all: Boolean = null): [BookClub!]!
 	bookClubById(id: ID!): BookClub!
 	bookClubBySlug(slug: String!): BookClub
+	"""
+	A club's members, cursor-paginated (by id) — for clubs too large to load
+	the full `members` array. Ordered by id ascending.
+	"""
+	bookClubMembers(bookClubId: ID!, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubMemberResponse!
+	"""
+	A club's archived (completed) books, cursor-paginated by id (a stable
+	order — ids are random UUIDs, so this is not chronological, but it pages
+	correctly without dupes/skips) — for clubs with many past reads.
+	"""
+	bookClubPreviousBooks(bookClubId: ID!, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubBookResponse!
 	"Get a club book by ID"
 	bookClubBook(id: ID!): BookClubBook!
 	"Get a discussion by ID"
@@ -2510,16 +2521,15 @@ type Query {
 	bookClubDiscussionByBook(bookClubBookId: ID!): [BookClubDiscussion!]!
 	"Get all discussions for a book club, ordered by pinned first, then by date created"
 	bookClubDiscussions(bookClubId: ID!): [BookClubDiscussion!]!
+	"""
+	Discussions for a club, cursor-paginated (by id) — for clubs with many
+	discussions. Ordered by id ascending; the `isPinned` flag is on each node.
+	"""
+	bookClubDiscussionsPaginated(bookClubId: ID!, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubDiscussionResponse!
 	"Get a single message by ID"
 	bookClubDiscussionMessage(id: ID!): BookClubDiscussionMessage!
 	"Get messages in a discussion"
 	bookClubDiscussionMessages(discussionId: ID!, parentId: ID, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubDiscussionMessageResponse!
-	"A club's members, cursor-paginated (for clubs too large to load the full members array)"
-	bookClubMembers(bookClubId: ID!, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubMemberResponse!
-	"A club's archived (completed) books, cursor-paginated"
-	bookClubPreviousBooks(bookClubId: ID!, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubBookResponse!
-	"A club's discussions, cursor-paginated"
-	bookClubDiscussionsPaginated(bookClubId: ID!, pagination: CursorPagination! = {after: null, limit: 20}): CursorPaginatedBookClubDiscussionResponse!
 	previousBookClubDiscussions(bookClubId: ID!): [BookClubDiscussion!]!
 	"Get all pending invitations for the current user"
 	myBookClubInvitations: [BookClubInvitation!]!
