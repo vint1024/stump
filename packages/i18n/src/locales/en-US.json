@@ -1465,7 +1465,14 @@
 						"cosmic": "Cosmic",
 						"pumpkin": "Pumpkin",
 						"midnight": "Midnight",
-						"matrix": "Matrix"
+						"matrix": "Matrix",
+						"vibranium": "Vibranium",
+						"gold": "Golden Eye",
+						"emerald": "Emerald Gaze",
+						"noir": "Cinematic Noir",
+						"vibranium-light": "Vibranium · Light",
+						"gold-light": "Golden Eye · Light",
+						"vanilla": "Vanilla Stump"
 					}
 				},
 				"gradientToggle": {

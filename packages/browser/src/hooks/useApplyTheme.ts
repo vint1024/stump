@@ -164,4 +164,11 @@ const THEME_CLASSES = [
 	'cosmic',
 	'pumpkin',
 	'midnight',
+	// NoirPanther brand themes
+	'vibranium',
+	'gold',
+	'emerald',
+	'noir',
+	'vibranium-light',
+	'gold-light',
 ]

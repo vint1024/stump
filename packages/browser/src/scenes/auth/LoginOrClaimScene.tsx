@@ -159,7 +159,7 @@ export default function LoginOrClaimScene() {
 						// Neon sign in the theme accent (vibranium by default): the static
 						// drop-shadow is the steady glow; the effect above toggles `.neon-off`
 						// to switch the tube off for a beat now and then.
-						className="neon-sign font-bold [filter:drop-shadow(0_0_6px_var(--color-fill-brand))_drop-shadow(0_0_18px_var(--color-fill-brand))]"
+						className="neon-sign font-bold [filter:drop-shadow(0_0_6px_var(--primary))_drop-shadow(0_0_18px_var(--primary))]"
 					>
 						NoirPanther
 					</Heading>

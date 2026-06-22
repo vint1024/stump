@@ -127,7 +127,7 @@ export default function ContentAccessRulesEditor({ rules, onChange }: Props) {
 						onChange={(values) => patchRule(index, { values: values ?? [] })}
 					/>
 					{rule.mode === ContentRuleMode.Only && (
-						<label className="gap-1.5 text-sm flex cursor-pointer items-center text-foreground-muted">
+						<label className="gap-1.5 text-sm flex cursor-pointer items-center text-muted-foreground">
 							<input
 								type="checkbox"
 								checked={rule.restrictOnUnset}
@@ -142,7 +142,7 @@ export default function ContentAccessRulesEditor({ rules, onChange }: Props) {
 						title={t(`${LOCALE_BASE}.removeRule`)}
 						onClick={() => onChange(rules.filter((_, i) => i !== index))}
 					>
-						<X className="h-4 w-4 text-foreground-muted" />
+						<X className="h-4 w-4 text-muted-foreground" />
 					</Button>
 				</div>
 			))}

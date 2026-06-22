@@ -922,7 +922,7 @@ export default function EpubJsReader({ id, isIncognito }: EpubJsReaderProps) {
 				{bookError && (
 					<div className="gap-1.5 p-4 flex h-full flex-1 flex-col items-center justify-center text-center">
 						<span className="text-base font-medium text-foreground">{bookError}</span>
-						<span className="text-sm text-foreground-muted">
+						<span className="text-sm text-muted-foreground">
 							{t('components.readers.epub.EpubJsReader.loadErrorDescription')}
 						</span>
 					</div>

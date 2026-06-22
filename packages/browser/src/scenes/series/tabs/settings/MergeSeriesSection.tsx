@@ -190,7 +190,7 @@ export default function MergeSeriesSection({ seriesId }: Props) {
 						{mergedSources.map(({ name, path }) => (
 							<li key={path}>
 								<Text size="sm" className="inline">
-									{name} <span className="text-foreground-muted">({path})</span>
+									{name} <span className="text-muted-foreground">({path})</span>
 								</Text>
 							</li>
 						))}

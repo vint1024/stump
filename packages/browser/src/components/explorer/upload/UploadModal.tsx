@@ -337,7 +337,7 @@ export default function UploadModal() {
 								>
 									<span>
 										{t(getKey('addedFiles'))}{' '}
-										<span className="text-sm text-foreground-muted">({files.length})</span>
+										<span className="text-sm text-muted-foreground">({files.length})</span>
 									</span>
 								</Accordion.Trigger>
 

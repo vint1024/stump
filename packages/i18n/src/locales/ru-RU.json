@@ -1444,7 +1444,14 @@
 						"cosmic": "Космическая",
 						"pumpkin": "Тыквенная",
 						"midnight": "Midnight",
-						"matrix": "Матрица"
+						"matrix": "Матрица",
+						"vibranium": "Вибраниум",
+						"gold": "Золотой глаз",
+						"emerald": "Изумрудный взгляд",
+						"noir": "Киношный нуар",
+						"vibranium-light": "Вибраниум · светлая",
+						"gold-light": "Золотой глаз · светлая",
+						"vanilla": "Vanilla Stump"
 					}
 				},
 				"gradientToggle": {
