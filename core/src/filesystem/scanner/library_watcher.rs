@@ -526,9 +526,21 @@ mod tests {
 			.send(LibraryWatcherCommand::ChangedFiles(vec![new_file.clone()]))
 			.is_ok());
 
-		// Wait for the background thread to trigger the flush
-		tokio::time::sleep(Duration::from_millis(100)).await;
-		let (id, path) = mock_objs.jobs_receiver.try_recv().expect("Expected a job");
+		// Wait for the background thread to trigger the flush, then for the job to
+		// be submitted. A fixed sleep is too brittle: on macOS each notify
+		// FSEvents `.watch()` call blocks the listener task for ~400ms, so the two
+		// AddWatcher commands ahead of our ChangedFiles can push the flush well past
+		// any short deadline (on Linux/inotify watch() is ~instant). Poll instead.
+		let deadline = std::time::Instant::now() + Duration::from_secs(5);
+		let (id, path) = loop {
+			match mock_objs.jobs_receiver.try_recv() {
+				Ok(job) => break job,
+				Err(_) if std::time::Instant::now() < deadline => {
+					tokio::time::sleep(Duration::from_millis(10)).await;
+				},
+				Err(e) => panic!("Expected a job: {e:?}"),
+			}
+		};
 		assert_eq!(id, "42");
 		assert_eq!(path, tmp_dir.to_string_lossy().to_string());
 	}

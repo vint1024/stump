@@ -9,7 +9,7 @@ import { Alert, Platform } from 'react-native'
 
 import { useActiveServer } from '~/components/activeServer'
 import { db, downloadedFiles } from '~/db'
-import { useDownload } from '~/lib/hooks'
+import { useDownload, useTranslate } from '~/lib/hooks'
 import { useFavoriteBook } from '~/lib/hooks/useFavoriteBook'
 
 import AndroidBookMenu from './AndroidBookMenu'
@@ -37,26 +37,20 @@ const fragment = graphql(`
 `)
 
 const completedMutation = graphql(`
-	mutation BookMenuComplete($id: ID!, $isComplete: Boolean!, $page: Int) {
-		markMediaAsComplete(id: $id, isComplete: $isComplete, page: $page) {
-			completedAt
-		}
+	mutation BookMenuComplete($id: ID!) {
+		finishMediaProgress(id: $id)
 	}
 `)
 
 const deleteMutation = graphql(`
 	mutation BookMenuDeleteSession($id: ID!) {
-		deleteMediaProgress(id: $id) {
-			__typename
-		}
+		clearMediaProgress(id: $id)
 	}
 `)
 
 const deleteHistoryMutation = graphql(`
 	mutation BookMenuDeleteHistory($id: ID!) {
-		deleteMediaReadHistory(id: $id) {
-			__typename
-		}
+		deleteMediaReadingHistory(id: $id)
 	}
 `)
 
@@ -68,6 +62,7 @@ export default function BookMenu({ data }: Props) {
 	const {
 		activeServer: { id: serverID },
 	} = useActiveServer()
+	const { t } = useTranslate()
 	const client = useQueryClient()
 	const book = useFragment(fragment, data)
 
@@ -143,38 +138,72 @@ export default function BookMenu({ data }: Props) {
 		},
 	})
 
-	const confirmMarkAsRead = useCallback(() => {
-		Alert.alert('Mark as Read', `Are you sure you want to mark '${book.resolvedName}' as read?`, [
-			{ text: 'Cancel', style: 'cancel' },
-			{ text: 'Mark as Read', onPress: () => completeBook({ id: book.id, isComplete: true }) },
-		])
-	}, [completeBook, book.id, book.resolvedName])
-
-	const confirmClearProgress = useCallback(() => {
+	const confirmMarkAsRead = () => {
 		Alert.alert(
-			'Clear Progress',
-			`Are you sure you want to clear your current reading of '${book.resolvedName}'?`,
+			t('bookActions.markAsRead.label'),
+			t('bookActions.markAsRead.confirmation', {
+				bookTitle: book.resolvedName,
+			}),
 			[
-				{ text: 'Cancel', style: 'cancel' },
+				{ text: t('common.cancel'), style: 'cancel' },
 				{
-					text: 'Clear',
+					text: t('bookActions.markAsRead.label'),
+					onPress: () => completeBook({ id: book.id }),
+				},
+			],
+		)
+	}
+
+	const confirmClearProgress = () => {
+		Alert.alert(
+			t('bookActions.clearProgress.label'),
+			t('bookActions.clearProgress.confirmation', {
+				bookTitle: book.resolvedName,
+			}),
+			[
+				{ text: t('common.cancel'), style: 'cancel' },
+				{
+					text: t('common.clear'),
 					style: 'destructive',
 					onPress: () => deleteCurrentSession({ id: book.id }),
 				},
 			],
 		)
-	}, [deleteCurrentSession, book.id, book.resolvedName])
+	}
 
-	const confirmDeleteReadHistory = useCallback(() => {
+	const confirmDeleteReadHistory = () => {
 		Alert.alert(
-			'Delete Read History',
-			`Are you sure you want to delete your read history for '${book.resolvedName}'?`,
+			t('bookActions.deleteReadHistory.label'),
+			t('bookActions.deleteReadHistory.confirmation', {
+				bookTitle: book.resolvedName,
+			}),
 			[
-				{ text: 'Cancel', style: 'cancel' },
-				{ text: 'Delete', style: 'destructive', onPress: () => deleteReadHistory({ id: book.id }) },
+				{ text: t('common.cancel'), style: 'cancel' },
+				{
+					text: t('bookActions.deleteReadHistory.label'),
+					style: 'destructive',
+					onPress: () => deleteReadHistory({ id: book.id }),
+				},
 			],
 		)
-	}, [deleteReadHistory, book.id, book.resolvedName])
+	}
+
+	const confirmDeleteDownload = () => {
+		Alert.alert(
+			t('bookActions.deleteDownload.label'),
+			t('bookActions.deleteDownload.confirmation', {
+				bookTitle: book.resolvedName,
+			}),
+			[
+				{ text: t('common.cancel'), style: 'cancel' },
+				{
+					text: t('common.delete'),
+					style: 'destructive',
+					onPress: () => deleteBook(),
+				},
+			],
+		)
+	}
 
 	const isReading = !!book.readProgress
 	const isPreviouslyCompleted = !!book.readHistory?.length
@@ -211,13 +240,13 @@ export default function BookMenu({ data }: Props) {
 						<Stack.Toolbar.Menu inline>
 							{(isUntouched || isReading) && (
 								<Stack.Toolbar.MenuAction icon="book.closed" onPress={confirmMarkAsRead}>
-									Mark as Read
+									{t('bookActions.markAsRead.label')}
 								</Stack.Toolbar.MenuAction>
 							)}
 
 							{isReading && (
 								<Stack.Toolbar.MenuAction icon="minus.circle" onPress={confirmClearProgress}>
-									Clear Progress
+									{t('bookActions.clearProgress.label')}
 								</Stack.Toolbar.MenuAction>
 							)}
 
@@ -226,7 +255,7 @@ export default function BookMenu({ data }: Props) {
 									icon="rectangle.stack.badge.minus"
 									onPress={confirmDeleteReadHistory}
 								>
-									Delete Read History
+									{t('bookActions.deleteReadHistory.label')}
 								</Stack.Toolbar.MenuAction>
 							)}
 						</Stack.Toolbar.Menu>
@@ -236,7 +265,7 @@ export default function BookMenu({ data }: Props) {
 							onPress={() => router.push(`/server/${book.id}/libraries/${book.library.id}`)}
 							subtitle={book.library.name}
 						>
-							Go to Library
+							{t('bookActions.goToLibrary')}
 						</Stack.Toolbar.MenuAction>
 
 						<Stack.Toolbar.MenuAction
@@ -244,13 +273,17 @@ export default function BookMenu({ data }: Props) {
 							onPress={() => router.push(`/server/${book.id}/series/${book.series.id}`)}
 							subtitle={book.series.resolvedName}
 						>
-							Go to Series
+							{t('bookActions.goToSeries')}
 						</Stack.Toolbar.MenuAction>
 
 						{isDownloaded && (
 							<Stack.Toolbar.Menu inline>
-								<Stack.Toolbar.MenuAction icon="trash" onPress={() => deleteBook()} destructive>
-									Delete Download
+								<Stack.Toolbar.MenuAction
+									icon="trash"
+									onPress={() => confirmDeleteDownload()}
+									destructive
+								>
+									{t('bookActions.deleteDownload.label')}
 								</Stack.Toolbar.MenuAction>
 							</Stack.Toolbar.Menu>
 						)}

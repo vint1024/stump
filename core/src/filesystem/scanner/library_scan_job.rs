@@ -1,23 +1,23 @@
 use std::{
-	collections::VecDeque,
+	collections::{HashMap, VecDeque},
 	path::{Path, PathBuf},
+	sync::{Arc, Mutex},
 };
 
 use async_graphql::SimpleObject;
 use models::{
 	entity::{
 		library, library_config, library_path, library_scan_record, media,
-		metadata_provider_config, series, series_merge,
+		metadata_provider_config, scanned_directory, series, series_merge,
 	},
 	shared::enums::FileStatus,
 };
-use sea_orm::{prelude::*, sea_query::Query, Set, TransactionTrait};
+use sea_orm::{
+	prelude::*,
+	sea_query::{OnConflict, Query},
+	QuerySelect, Set, TransactionTrait,
+};
 use serde::{Deserialize, Serialize};
-
-// TODO: hone the progress messages, they are a little noisy and unhelpful (e.g. 'Starting task')
-// TODO: Refactor rayon usage to use tokio instead. I am trying to learn more about IO-bound operations in an
-// async context, and I believe tokio might be more appropriate for this use case (highly concurrent IO-bound tasks).
-// Also perhaps experiment with https://docs.rs/tokio-uring/latest/tokio_uring/index.html
 
 use crate::{
 	database::SQLITE_BIND_LIMIT,
@@ -79,6 +79,14 @@ pub struct LibraryScanJob {
 	pub config: Option<library_config::Model>,
 	/// The scan options to use, if any
 	pub options: ScanOptions,
+	/// Stored directory mtimes, loaded at scan start to be used for
+	/// short-circuiting directories that have not been modified since the last scan
+	dir_mtimes: Arc<HashMap<String, u64>>,
+	/// A map of paths to mtimes that were observed to be changed during the scan, batch
+	/// updated at the end during finalization in order to avoid excessive database writes during the scan
+	pending_dir_mtimes: Arc<Mutex<Vec<(String, u64)>>>,
+	/// A map of series paths to their ids, loaded during init and used to avoid db trips
+	series_id_by_path: Arc<Mutex<HashMap<String, String>>>,
 }
 
 impl LibraryScanJob {
@@ -88,6 +96,9 @@ impl LibraryScanJob {
 			path,
 			config: None,
 			options: options.unwrap_or_default(),
+			dir_mtimes: Arc::new(HashMap::new()),
+			pending_dir_mtimes: Arc::new(Mutex::new(vec![])),
+			series_id_by_path: Arc::new(Mutex::new(HashMap::new())),
 		}
 	}
 }
@@ -162,11 +173,54 @@ impl JobLifecycle for LibraryScanJob {
 
 		self.config = Some(config);
 
-		ctx.report_progress(JobProgress::msg("Performing task discovery"));
+		let stored_dir_mtimes = scanned_directory::Entity::find()
+			.filter(scanned_directory::Column::Path.starts_with(self.path.as_str()))
+			.all(ctx.conn())
+			.await
+			.unwrap_or_default()
+			.into_iter()
+			.map(|r| (r.path, r.last_mtime as u64))
+			.collect::<HashMap<String, u64>>();
+		tracing::debug!(
+			count = stored_dir_mtimes.len(),
+			"Loaded stored directory mtimes"
+		);
+		self.dir_mtimes = Arc::new(stored_dir_mtimes);
 
-		// A library may span multiple folders: the primary path on the library
-		// itself plus any extra roots configured in library_paths. Walk each
-		// root and merge the results
+		let loaded_series_ids = series::Entity::find()
+			.select_only()
+			.columns(series::SeriesIdentSelect::columns())
+			.filter(series::Column::LibraryId.eq(self.id.clone()))
+			.into_model::<series::SeriesIdentSelect>()
+			.all(ctx.conn())
+			.await
+			.unwrap_or_default()
+			.into_iter()
+			.map(|s| (s.path, s.id))
+			.collect::<HashMap<String, String>>();
+		tracing::debug!(count = loaded_series_ids.len(), "preloaded series ids");
+		if let Ok(mut map) = self.series_id_by_path.lock() {
+			*map = loaded_series_ids;
+		}
+
+		ctx.report_progress(JobProgress::msg("Performing task discovery"));
+		// Series-merge (our feature): folders merged into another series resolve to
+		// their merge target's id, so augment the preloaded path->id map with the
+		// merge sources (source_path -> target_series_id). A visited merged folder
+		// then resolves to the target instead of erroring "series not found".
+		let merge_map =
+			series_merge::Entity::fetch_map_for_library(ctx.conn(), &self.id).await?;
+		if !merge_map.is_empty() {
+			if let Ok(mut map) = self.series_id_by_path.lock() {
+				for (source_path, target_id) in &merge_map {
+					map.insert(source_path.clone(), target_id.clone());
+				}
+			}
+		}
+
+		// A library may span multiple folders (our feature): the primary path plus
+		// any extra roots configured in library_paths. Walk each root and merge the
+		// results.
 		let extra_paths =
 			library_path::Entity::fetch_for_library(ctx.conn(), &self.id).await?;
 		let all_roots = std::iter::once(self.path.clone())
@@ -195,6 +249,10 @@ impl JobLifecycle for LibraryScanJob {
 					ignore_rules: ignore_rules.clone(),
 					max_depth: is_collection_based.then_some(1),
 					options: self.options,
+					// walk_library only visits top-level dirs to discover series, so
+					// there is nothing to short-circuit by mtime here.
+					dir_mtimes: HashMap::new(),
+					series_id: None,
 				},
 			)
 			.await?;
@@ -216,11 +274,7 @@ impl JobLifecycle for LibraryScanJob {
 		// Only consider the library missing when EVERY root is gone
 		let library_is_missing = missing_root_count == all_roots.len();
 
-		// Folders that were merged into another series must not be re-created
-		// as their own series — instead they are visited so their books are
-		// scanned into the merge target (resolved during the walk task)
-		let merge_map =
-			series_merge::Entity::fetch_map_for_library(ctx.conn(), &self.id).await?;
+		// Merged folders are visited (scanned into the target), not created anew.
 		if !merge_map.is_empty() {
 			let (merged, to_create): (Vec<_>, Vec<_>) =
 				series_to_create.into_iter().partition(|path| {
@@ -229,7 +283,6 @@ impl JobLifecycle for LibraryScanJob {
 			series_to_create = to_create;
 			series_to_visit.extend(merged);
 		}
-
 		tracing::debug!(
 			series_to_create = series_to_create.len(),
 			series_to_visit = series_to_visit.len(),
@@ -382,6 +435,62 @@ impl JobLifecycle for LibraryScanJob {
 			}
 		}
 
+		let library_path = self.path.clone();
+
+		let pending_models = self
+			.pending_dir_mtimes
+			.lock()
+			.map(|mut v| {
+				v.drain(..) // i.e. yoink em all and clear the pending list in one go
+					.map(|(path, mtime)| scanned_directory::ActiveModel {
+						path: Set(path),
+						last_mtime: Set(mtime as i64),
+					})
+					.collect::<Vec<_>>()
+			})
+			.unwrap_or_default();
+
+		for chunk in pending_models.chunks(SQLITE_BIND_LIMIT / 2) {
+			if let Err(err) = scanned_directory::Entity::insert_many(chunk.to_vec())
+				.on_conflict(
+					OnConflict::column(scanned_directory::Column::Path)
+						.update_column(scanned_directory::Column::LastMtime)
+						.to_owned(),
+				)
+				.exec(ctx.conn())
+				.await
+			{
+				tracing::error!(error = ?err, "Failed to flush pending scanned_directory mtimes");
+			}
+		}
+
+		let stale_paths = scanned_directory::Entity::find()
+			.filter(scanned_directory::Column::Path.starts_with(library_path.as_str()))
+			.all(ctx.conn())
+			.await
+			.unwrap_or_default()
+			.into_iter()
+			// Path::exists() is blocking but the list of stale paths shouldn't regularly
+			// be large and so think it's largely fine
+			.filter(|r| !std::path::Path::new(&r.path).exists())
+			.map(|r| r.path)
+			.collect::<Vec<_>>();
+
+		// if there are paths which no longer exist on disk, no need to keep
+		// them around and just bloat
+		if !stale_paths.is_empty() {
+			let count = stale_paths.len();
+			if let Err(err) = scanned_directory::Entity::delete_many()
+				.filter(scanned_directory::Column::Path.is_in(stale_paths))
+				.exec(ctx.conn())
+				.await
+			{
+				tracing::error!(error = ?err, "Failed to clean up stale scanned_directory rows");
+			} else {
+				tracing::debug!(count, "Cleaned up stale scanned_directory rows");
+			}
+		}
+
 		Ok(())
 	}
 
@@ -394,12 +503,10 @@ impl JobLifecycle for LibraryScanJob {
 		let mut logs = vec![];
 		let mut subtasks = vec![];
 
-		let max_concurrency = ctx.config().max_scanner_concurrency;
-
 		match task {
 			LibraryScanTask::Init(input) => {
 				tracing::debug!("Executing the init task for library scan");
-				ctx.report_progress(JobProgress::msg("Handling library scan init"));
+				ctx.report_progress(JobProgress::msg("Initializing"));
 				let InitTaskInput {
 					series_to_create,
 					missing_series,
@@ -512,7 +619,7 @@ impl JobLifecycle for LibraryScanJob {
 					let (built_series, failure_logs) = safely_build_series(
 						&self.id,
 						series_to_create,
-						ctx.config(),
+						Arc::clone(&ctx.apalis_state.config),
 						|position| {
 							ctx.report_progress(JobProgress::subtask_position(
 								position as i32,
@@ -539,6 +646,11 @@ impl JobLifecycle for LibraryScanJob {
 						match safely_insert_series(chunk.to_vec(), ctx.conn()).await {
 							Ok(created_series) => {
 								output.created_series += created_series.len() as u64;
+								if let Ok(mut map) = self.series_id_by_path.lock() {
+									for s in &created_series {
+										map.insert(s.path.clone(), s.id.clone());
+									}
+								}
 								ctx.emit_event(CoreEvent::CreatedManySeries(
 									event::CreatedManySeries {
 										count: created_series.len() as u64,
@@ -565,15 +677,17 @@ impl JobLifecycle for LibraryScanJob {
 				} else {
 					tracing::trace!("No series to create");
 				}
-
-				ctx.report_progress(JobProgress::msg("Init task complete!"));
 			},
 			LibraryScanTask::WalkSeries(path_buf) => {
 				tracing::debug!("Executing the walk series task for library scan");
-				ctx.report_progress(JobProgress::msg(&format!(
-					"Scanning series at {}",
-					path_buf.display()
-				)));
+				let filename = path_buf
+					.file_name()
+					.map(|n| n.to_string_lossy())
+					.unwrap_or_else(|| path_buf.to_string_lossy());
+				ctx.report_progress(JobProgress::msg_with_subtitle(
+					"Scanning series",
+					filename.as_ref(),
+				));
 
 				// If the library is collection-priority, any child directories are 'ignored' and their
 				// files are part of / folded into the top-most folder (series).
@@ -619,6 +733,10 @@ impl JobLifecycle for LibraryScanJob {
 						},
 					};
 
+				let series_id = self.series_id_by_path.lock().ok().and_then(|map| {
+					map.get(&path_buf.to_string_lossy().to_string()).cloned()
+				});
+
 				let walk_result = walk_series(
 					path_buf.as_path(),
 					WalkerCtx {
@@ -626,6 +744,8 @@ impl JobLifecycle for LibraryScanJob {
 						ignore_rules,
 						max_depth,
 						options: self.options,
+						dir_mtimes: (*self.dir_mtimes).clone(),
+						series_id: series_id.clone(),
 					},
 				)
 				.await;
@@ -639,6 +759,7 @@ impl JobLifecycle for LibraryScanJob {
 					seen_files,
 					ignored_files,
 					skipped_files,
+					observed_dir_mtimes,
 				} = match walk_result {
 					Ok(walked_series) => walked_series,
 					Err(core_error) => {
@@ -656,6 +777,16 @@ impl JobLifecycle for LibraryScanJob {
 						});
 					},
 				};
+
+				let stored = self.dir_mtimes.as_ref();
+				if let Ok(mut pending) = self.pending_dir_mtimes.lock() {
+					for (path, mtime) in observed_dir_mtimes {
+						if stored.get(&path).copied() != Some(mtime) {
+							pending.push((path, mtime));
+						}
+					}
+				}
+
 				output.total_files += seen_files + ignored_files;
 				output.ignored_files += ignored_files;
 				output.skipped_files += skipped_files;
@@ -687,35 +818,14 @@ impl JobLifecycle for LibraryScanJob {
 
 				let series_path_str = path_buf.to_str().unwrap_or_default().to_string();
 
-				let series = match series::Entity::find()
-					.filter(series::Column::Path.eq(series_path_str.clone()))
-					.into_model::<series::SeriesIdentSelect>()
-					.one(ctx.conn())
-					.await?
-				{
-					Some(series) => series,
-					None => {
-						// The folder may have been merged into another series —
-						// route its books to the merge target instead
-						let merge_target = series_merge::Entity::find()
-							.filter(
-								series_merge::Column::SourcePath
-									.eq(series_path_str.clone()),
-							)
-							.one(ctx.conn())
-							.await?
-							.ok_or(JobError::TaskFailed(
-								"Series not found".to_string(),
-							))?;
-						series::Entity::find()
-							.filter(series::Column::Id.eq(merge_target.target_series_id))
-							.into_model::<series::SeriesIdentSelect>()
-							.one(ctx.conn())
-							.await?
-							.ok_or(JobError::TaskFailed(
-								"Merge target series not found".to_string(),
-							))?
-					},
+				let Some(series_id) = series_id else {
+					tracing::error!(
+						path = ?series_path_str,
+						"series not found in preloaded state"
+					);
+					return Err(JobError::TaskFailed(
+                        "An unexpected error occurred while attempting to scan the series. Check logs for details.".to_string(),
+                    ));
 				};
 
 				subtasks = chain_optional_iter(
@@ -733,7 +843,7 @@ impl JobLifecycle for LibraryScanJob {
 				)
 				.into_iter()
 				.map(|task| LibraryScanTask::SeriesTask {
-					id: series.id.clone(),
+					id: series_id.clone(),
 					path: series_path_str.clone(),
 					task,
 				})
@@ -741,18 +851,24 @@ impl JobLifecycle for LibraryScanJob {
 			},
 			LibraryScanTask::SeriesTask {
 				id: series_id,
-				path: _series_path,
+				path: series_path,
 				task: series_task,
 			} => match series_task {
 				SeriesScanTask::RestoreMedia(ids) => {
-					ctx.report_progress(JobProgress::msg("Restoring media entities"));
+					let series_name = Path::new(&series_path)
+						.file_name()
+						.map(|n| n.to_string_lossy().into_owned())
+						.unwrap_or_else(|| series_path.clone());
+					ctx.report_progress(JobProgress::msg_with_subtitle(
+						"Restoring media",
+						&series_name,
+					));
 					let MediaOperationOutput {
 						updated_media,
 						logs: new_logs,
 						..
 					} = handle_restored_media(ctx, &series_id, ids).await;
 
-					ctx.report_progress(JobProgress::msg("Restored media entities"));
 					ctx.emit_event(CoreEvent::CreatedOrUpdatedManyMedia(
 						CreatedOrUpdatedManyMedia {
 							count: updated_media,
@@ -765,14 +881,20 @@ impl JobLifecycle for LibraryScanJob {
 					logs.extend(new_logs);
 				},
 				SeriesScanTask::MarkMissingMedia(paths) => {
-					ctx.report_progress(JobProgress::msg("Handling missing media"));
+					let series_name = Path::new(&series_path)
+						.file_name()
+						.map(|n| n.to_string_lossy().into_owned())
+						.unwrap_or_else(|| series_path.clone());
+					ctx.report_progress(JobProgress::msg_with_subtitle(
+						"Handling missing media",
+						&series_name,
+					));
 					let MediaOperationOutput {
 						updated_media,
 						logs: new_logs,
 						..
 					} = handle_missing_media(ctx, &series_id, paths).await;
 
-					ctx.report_progress(JobProgress::msg("Handled missing media"));
 					ctx.emit_event(CoreEvent::CreatedOrUpdatedManyMedia(
 						CreatedOrUpdatedManyMedia {
 							count: updated_media,
@@ -785,8 +907,13 @@ impl JobLifecycle for LibraryScanJob {
 					logs.extend(new_logs);
 				},
 				SeriesScanTask::CreateMedia(paths) => {
-					ctx.report_progress(JobProgress::msg(
-						format!("Creating {} media entities", paths.len()).as_str(),
+					let series_name = Path::new(&series_path)
+						.file_name()
+						.map(|n| n.to_string_lossy().into_owned())
+						.unwrap_or_else(|| series_path.clone());
+					ctx.report_progress(JobProgress::msg_with_subtitle(
+						"Creating media",
+						&series_name,
 					));
 					let MediaOperationOutput {
 						created_media,
@@ -800,14 +927,12 @@ impl JobLifecycle for LibraryScanJob {
 									"Library configuration is missing".to_string(),
 								),
 							)?,
-							max_concurrency,
 						},
 						ctx,
 						paths,
 					)
 					.await?;
 
-					ctx.report_progress(JobProgress::msg("Created new media"));
 					ctx.emit_event(CoreEvent::CreatedOrUpdatedManyMedia(
 						CreatedOrUpdatedManyMedia {
 							count: created_media,
@@ -819,9 +944,13 @@ impl JobLifecycle for LibraryScanJob {
 					logs.extend(new_logs);
 				},
 				SeriesScanTask::VisitMedia(params) => {
-					ctx.report_progress(JobProgress::msg(
-						format!("Visiting {} media entities on disk", params.len())
-							.as_str(),
+					let series_name = Path::new(&series_path)
+						.file_name()
+						.map(|n| n.to_string_lossy().into_owned())
+						.unwrap_or_else(|| series_path.clone());
+					ctx.report_progress(JobProgress::msg_with_subtitle(
+						"Visiting media",
+						&series_name,
 					));
 					let MediaOperationOutput {
 						updated_media,
@@ -835,14 +964,12 @@ impl JobLifecycle for LibraryScanJob {
 									"Library configuration is missing".to_string(),
 								),
 							)?,
-							max_concurrency,
 						},
 						ctx,
 						params,
 					)
 					.await?;
 
-					ctx.report_progress(JobProgress::msg("Visited all media"));
 					ctx.emit_event(CoreEvent::CreatedOrUpdatedManyMedia(
 						event::CreatedOrUpdatedManyMedia {
 							count: updated_media,

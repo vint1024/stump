@@ -9,7 +9,6 @@ import {
 	Text,
 } from '@stump/components'
 import { graphql } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { AlertTriangle } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
@@ -23,7 +22,6 @@ const mutation = graphql(`
 `)
 
 export default function DeleteLibraryThumbnails() {
-	const { t } = useLocaleContext()
 	const {
 		library: { id },
 	} = useLibraryManagement()
@@ -37,56 +35,43 @@ export default function DeleteLibraryThumbnails() {
 	const handleDeleteThumbnails = useCallback(async () => {
 		try {
 			await deleteThumbnails({ id })
-			toast.success(
-				t('scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.deleteSuccess'),
-			)
+			toast.success('Library thumbnails deleted')
 		} catch (error) {
 			console.error(error)
-			const fallbackMessage = t(
-				'scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.deleteError',
-			)
+			const fallbackMessage = 'An error occurred while deleting the library thumbnails'
 			if (error instanceof Error) {
 				toast.error(error.message || fallbackMessage)
 			} else {
 				toast.error(fallbackMessage)
 			}
 		}
-	}, [id, deleteThumbnails, t])
+	}, [id, deleteThumbnails])
 
 	return (
 		<>
 			<div>
-				<Heading size="sm">
-					{t('scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.heading')}
-				</Heading>
+				<Heading size="sm">Delete thumbnails</Heading>
 				<Text size="sm" variant="muted">
-					{t('scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.description')}
+					Remove all generated thumbnails for this library
 				</Text>
 			</div>
 
 			<div className="flex">
 				<Button
-					variant="danger"
+					variant="destructive"
 					onClick={() => setShowConfirmation(true)}
 					className="shrink-0"
 					disabled={isPending || !!data}
-					size="md"
 				>
-					{t('scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.button')}
+					Delete thumbnails
 				</Button>
 			</div>
 
 			<ConfirmationModal
-				title={t(
-					'scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.modalTitle',
-				)}
-				description={t(
-					'scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.modalDescription',
-				)}
-				confirmText={t(
-					'scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.button',
-				)}
-				confirmVariant="danger"
+				title="Delete library thumbnails"
+				description="Are you sure you want to delete all thumbnails for this library?"
+				confirmText="Delete thumbnails"
+				confirmVariant="destructive"
 				isOpen={showConfirmation && !data}
 				onClose={() => setShowConfirmation(false)}
 				onConfirm={handleDeleteThumbnails}
@@ -95,15 +80,10 @@ export default function DeleteLibraryThumbnails() {
 			>
 				<Alert variant="warning">
 					<AlertTriangle />
-					<AlertTitle>
-						{t(
-							'scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.alertTitle',
-						)}
-					</AlertTitle>
+					<AlertTitle>This cannot be undone</AlertTitle>
 					<AlertDescription>
-						{t(
-							'scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.alertDescription',
-						)}
+						Deleting the library thumbnails will remove all generated images and you will have to
+						manually regenerate them
 					</AlertDescription>
 				</Alert>
 			</ConfirmationModal>

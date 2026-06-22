@@ -6,7 +6,6 @@ import {
 	SeriesThumbnailSelectorUpdateMutation,
 	useFragment,
 } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -62,7 +61,6 @@ type Props = {
 // in the header thumb on hover that lets you change if you have permissions
 
 export default function SeriesThumbnailSelector({ fragment }: Props) {
-	const { t } = useLocaleContext()
 	const series = useFragment(SeriesThumbnailSelectorFragment, fragment)
 
 	const { sdk } = useSDK()
@@ -116,10 +114,10 @@ export default function SeriesThumbnailSelector({ fragment }: Props) {
 				setIsOpen(false)
 			} catch (error) {
 				console.error(error)
-				toast.error(t('scenes.series.tabs.settings.SeriesThumbnailSelector.uploadError'))
+				toast.error('Failed to upload image')
 			}
 		},
-		[series.id, uploadThumbnail, t],
+		[series.id, uploadThumbnail],
 	)
 
 	const handleConfirm = useCallback(async () => {
@@ -130,9 +128,9 @@ export default function SeriesThumbnailSelector({ fragment }: Props) {
 			setIsOpen(false)
 		} catch (error) {
 			console.error(error)
-			toast.error(t('scenes.series.tabs.settings.SeriesThumbnailSelector.updateError'))
+			toast.error('Failed to update thumbnail')
 		}
-	}, [patchThumbnail, page, selectedBook, series.id, t])
+	}, [patchThumbnail, page, selectedBook, series.id])
 
 	const renderContent = () => {
 		if (selectedBook) {
@@ -178,13 +176,11 @@ export default function SeriesThumbnailSelector({ fragment }: Props) {
 				</Dialog.Trigger>
 				<Dialog.Content size="xl">
 					<Dialog.Header>
-						<Dialog.Title>
-							{t('scenes.series.tabs.settings.SeriesThumbnailSelector.dialogTitle')}
-						</Dialog.Title>
+						<Dialog.Title>Select a thumbnail</Dialog.Title>
 						<Dialog.Description>
 							{selectedBook
-								? t('scenes.series.tabs.settings.SeriesThumbnailSelector.choosePage')
-								: t('scenes.series.tabs.settings.SeriesThumbnailSelector.selectBook')}
+								? 'Choose a page from this book to use as the new thumbnail'
+								: 'Select a book from the series'}
 
 							{selectedBook && (
 								<span
@@ -194,7 +190,7 @@ export default function SeriesThumbnailSelector({ fragment }: Props) {
 										setPage(undefined)
 									}}
 								>
-									{t('scenes.series.tabs.settings.SeriesThumbnailSelector.goBack')}
+									Go back
 								</span>
 							)}
 						</Dialog.Description>
@@ -204,16 +200,15 @@ export default function SeriesThumbnailSelector({ fragment }: Props) {
 					<Suspense>{renderContent()}</Suspense>
 
 					<Dialog.Footer>
-						<Button variant="default" onClick={handleCancel}>
-							{t('scenes.series.tabs.settings.SeriesThumbnailSelector.cancel')}
+						<Button variant="outline" onClick={handleCancel}>
+							Cancel
 						</Button>
 						<Button
-							variant="primary"
 							onClick={handleConfirm}
 							disabled={!selectedBook || !page}
 							isLoading={isPatchingThumbnail || isUploadingThumbnail}
 						>
-							{t('scenes.series.tabs.settings.SeriesThumbnailSelector.confirm')}
+							Confirm selection
 						</Button>
 					</Dialog.Footer>
 				</Dialog.Content>

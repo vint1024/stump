@@ -7,7 +7,7 @@
 	},
 	"authScene": {
 		"claimHeading": "初始化您的服务器",
-		"claimText": "此 NoirPanther 服务器尚未初始化。请使用下面的表单创建您的帐户。之后就能够完全访问服务器所有功能。",
+		"claimText": "此 Stump 服务器尚未初始化。请使用下面的表单创建您的帐户。之后就能够完全访问服务器所有功能。",
 		"form": {
 			"validation": {
 				"missingUsername": "用户名为必填项",
@@ -351,10 +351,6 @@
 				"quality": {
 					"label": "质量",
 					"description": "生成的缩略图图像的质量，范围 1 到 100"
-				},
-				"enabledSwitch": {
-					"label": "Enabled",
-					"description": "Generate thumbnail images for this library"
 				}
 			},
 			"ignoreRules": {
@@ -391,7 +387,7 @@
 			"convertOptions": {
 				"section": {
 					"heading": "文件转换",
-					"description": "NoirPanther 能够将某些文件格式转换为更兼容的格式"
+					"description": "Stump 能够将某些文件格式转换为更兼容的格式"
 				},
 				"rarToZip": {
 					"label": "将 RAR 转换为 ZIP",
@@ -421,7 +417,7 @@
 					"description": "为书库中的每个文件生成哈希值以检测重复"
 				},
 				"koreaderHashes": {
-					"label": "KoReader兼容的哈希",
+					"label": "KoReader 兼容的哈希",
 					"description": "如果使用 KoReader，生成它所期望格式的额外哈希值"
 				}
 			},
@@ -439,7 +435,7 @@
 				},
 				"options": {
 					"label": "书库模式",
-					"description": "决定 NoirPanther 如何组织你的书库的设置",
+					"description": "决定 Stump 如何组织你的书库的设置",
 					"collectionPriority": {
 						"label": "集合优先",
 						"description": "书库根目录最顶层的每个文件夹视为一个系列"
@@ -449,12 +445,6 @@
 						"description": "递归任意层级的每个文件夹视为一个系列"
 					}
 				}
-			},
-			"extraPaths": {
-				"label": "Additional folders",
-				"description": "Optional extra folders this library spans, in addition to the main path",
-				"addFolder": "Add folder",
-				"removeFolder": "Remove folder"
 			}
 		},
 		"scan": {
@@ -463,6 +453,10 @@
 				"update": "更新后扫描"
 			},
 			"description": "索引书库文件以填充你的数据库"
+		},
+		"errors": {
+			"failedToUpdate": "更新书库失败",
+			"failedToScan": "扫描书库失败"
 		}
 	},
 	"createLibraryScene": {
@@ -480,12 +474,12 @@
 				{
 					"label": "扫描",
 					"heading": "扫描",
-					"description": "NoirPanther 如何扫描此资料库的相关设置"
+					"description": "Stump 如何扫描此资料库的相关设置"
 				},
 				{
 					"label": "缩略图",
 					"heading": "缩略图",
-					"description": "NoirPanther 是否以及如何为该书库生成缩略图的选项"
+					"description": "Stump 是否以及如何为该书库生成缩略图的选项"
 				},
 				{
 					"label": "确认",
@@ -518,8 +512,7 @@
 					"scaleEvenlyByFactor": "按比例缩放",
 					"exact": "精确大小",
 					"scaleDimension": "按维度缩放"
-				},
-				"default": "Default"
+				}
 			},
 			"buttons": {
 				"confirm": "新建书库"
@@ -546,19 +539,7 @@
 				"series": "拖拽压缩文件到此处",
 				"alt": "或点击浏览你电脑中的书籍进行上传"
 			},
-			"addedFiles": "已添加文件",
-			"toast": {
-				"booksSuccess": "Successfully uploaded file(s)",
-				"booksError": "Failed to upload book(s)",
-				"seriesSuccess": "Successfully uploaded series",
-				"seriesError": "Failed to upload series"
-			},
-			"seriesName": {
-				"label": "Series name",
-				"description": "This will be used as the name of the series directory. Your zip archive will be unpacked here.",
-				"placeholder": "Enter series name"
-			},
-			"moreFiles": "...and {{count}} more files (scroll to load more)"
+			"addedFiles": "已添加文件"
 		}
 	},
 	"librarySettingsScene": {
@@ -599,7 +580,7 @@
 		},
 		"options/scanning": {
 			"title": "扫描",
-			"description": "NoirPanther 如何扫描此资料库的相关设置",
+			"description": "Stump 如何扫描此资料库的相关设置",
 			"sections": {
 				"configureScan": {
 					"heading": "配置扫描",
@@ -765,25 +746,6 @@
 						"永久删除该书库及其全部内容。",
 						"此操作不可撤销"
 					]
-				},
-				"metadataWriteback": {
-					"heading": "Write metadata to files",
-					"description": "Embed the metadata stored in NoirPanther into every epub file of this library (OPF), so it travels with the files. Archives are rewritten atomically; this modifies your files on disk",
-					"keepBackup": "Keep a .bak copy of each original file",
-					"writeAll": "Write metadata to all files",
-					"cleanBackups": "Delete .bak backups",
-					"confirm": {
-						"title": "Write metadata into every epub?",
-						"withBackup": "Every epub in this library will be rewritten with the metadata stored in NoirPanther. Originals are kept as .bak files next to the books.",
-						"withoutBackup": "Every epub in this library will be rewritten with the metadata stored in NoirPanther. No backups will be kept.",
-						"confirm": "Start writeback"
-					},
-					"toasts": {
-						"started": "Metadata writeback job started",
-						"startFailed": "Failed to start metadata writeback",
-						"cleaned": "Removed {{removed}} backup file(s)",
-						"cleanFailed": "Failed to clean backups"
-					}
 				}
 			}
 		}
@@ -1053,7 +1015,8 @@
 									"pages": "页数",
 									"tags": "标签",
 									"createdAt": "创建时间",
-									"updatedAt": "更新时间"
+									"updatedAt": "更新时间",
+									"readingStatus": "阅读状态"
 								}
 							},
 							"book_meta": {
@@ -1130,6 +1093,13 @@
 					"listValue": {
 						"placeholder": "添加值",
 						"emptyState": "没有可显示的值"
+					},
+					"enumValue": {
+						"selectPlaceholder": "选择值",
+						"READING": "阅读中",
+						"FINISHED": "已完成",
+						"NOT_STARTED": "未开始",
+						"ABANDONED": "已放弃"
 					}
 				}
 			}
@@ -1179,8 +1149,8 @@
 		},
 		"fields": {
 			"name": {
-				"label": "Name",
-				"placeholder": "Koreader Sync"
+				"label": "名称",
+				"placeholder": "KoReader 同步"
 			},
 			"expiration": {
 				"label": "过期时间",
@@ -1201,8 +1171,7 @@
 				}
 			}
 		},
-		"inheritDisclaimer": "此 API 密钥将继承你的全部权限，这意味着它可以执行你能做的任何事情。请谨慎使用此设置",
-		"permissionsSelected": "{{count}} permissions"
+		"inheritDisclaimer": "此 API 密钥将继承你的全部权限，这意味着它可以执行你能做的任何事情。请谨慎使用此设置"
 	},
 	"userSmartListsScene": {
 		"heading": "智能清单",
@@ -1314,7 +1283,7 @@
 					"description": "更改此视图会话的过滤器",
 					"rawData": {
 						"heading": "原始过滤器数据",
-						"description": "NoirPanther 将如何处理过滤器"
+						"description": "Stump 将如何处理过滤器"
 					},
 					"buttons": {
 						"save": "保存",
@@ -1417,19 +1386,13 @@
 					"avatarPicker": {
 						"label": "头像",
 						"heading": "上传头像",
-						"subtitle": "您可以上传任何图片作为您在NoirPanther 中的社交功能的头像",
+						"subtitle": "您可以上传任何图片作为您在 Stump 中的社交功能头像",
 						"dropzone": "拖放图片到此处或点击以选择",
 						"changeImage": "更改图像",
 						"removeImage": "删除图片",
 						"removeSelection": "删除上传的图像",
 						"uploadFailed": "头像上传失败",
-						"removeFailed": "删除头像失败",
-						"errors": {
-							"fileTooLarge": "File too large (20MB max)",
-							"unknown": "Unknown error",
-							"onlyOneFile": "Only 1 file allowed",
-							"noFiles": "No files provided"
-						}
+						"removeFailed": "删除头像失败"
 					},
 					"buttons": {
 						"confirm": "保存更改"
@@ -1441,8 +1404,8 @@
 					},
 					"heading": "语言及地区",
 					"subtitle": [
-						"NoirPanther 支持多种语言和本地化，在下方设置您的偏好。请考虑帮助提升质量",
-						"NoirPanther的翻译",
+						"Stump 支持多种语言和本地化，在下方设置您的偏好。请考虑帮助提升质量",
+						"Stump 的翻译",
 						"如果你可以！"
 					]
 				}
@@ -1455,7 +1418,15 @@
 			"sections": {
 				"themeAndAppearance": {
 					"label": "主题和外观",
-					"description": "NoirPanther 的基本外观和风格选项"
+					"description": "Stump 的基本外观和风格选项"
+				},
+				"interface": {
+					"title": "界面",
+					"description": "主要界面区域和交互元素"
+				},
+				"thumbnails": {
+					"title": "缩略图",
+					"description": "缩略图图片的显示选项"
 				},
 				"themeSelect": {
 					"label": "主题",
@@ -1484,10 +1455,14 @@
 					"label": "字体",
 					"description": "自定义应用使用的字体"
 				},
+				"thumbnailPreview": {
+					"label": "Preview",
+					"description": "This is how thumbnails will look with the current settings"
+				},
 				"thumbnailRatioSelect": {
 					"label": "缩略图比率",
 					"description": "缩略图中使用的宽高比",
-					"defaultSuffix": "Default"
+					"defaultSuffix": "默认"
 				},
 				"thumbnailPlaceholder": {
 					"label": "缩略图占位符",
@@ -1499,9 +1474,23 @@
 						"thumbhash": "缩略图哈希"
 					}
 				},
+				"thumbnailRoundness": {
+					"label": "Thumbnail roundness",
+					"description": "How rounded the corners of thumbnail images should be",
+					"options": {
+						"none": "None",
+						"normal": "Normal",
+						"rounded": "Rounded",
+						"large": "Large"
+					}
+				},
+				"navigation": {
+					"title": "导航",
+					"description": "自定义应用的导航元素"
+				},
 				"layoutAndArrangement": {
-					"label": "布局和安排",
-					"description": "自定义NoirPanther 如何显示信息和组织内容"
+					"label": "布局与排列",
+					"description": "自定义 Stump 如何显示信息和组织内容"
 				},
 				"primaryNavigation": {
 					"label": "主要导航",
@@ -1514,11 +1503,11 @@
 				},
 				"doubleSidebar": {
 					"label": "设置边栏",
-					"description": "为设置页面启用侧边栏导航。如果您经常使用一个较小的屏幕，您可能希望禁用它。"
+					"description": "为设置页面启用侧边栏导航"
 				},
 				"replacePrimarySidebar": {
 					"label": "替换主侧边栏",
-					"description": "任何次要侧边栏的实例都将取代主侧边栏，而不是在它旁边显示",
+					"description": "出现二级侧边栏时，用它替换主侧边栏，而不是叠加显示",
 					"tooltips": {
 						"doubleSidebar": "此设置需要启用侧边栏",
 						"topbar": "当主导航设置为顶部栏时，当前不支持此设置"
@@ -1526,10 +1515,7 @@
 				},
 				"navigationArrangement": {
 					"label": "导航排列",
-					"description": {
-						"sidebar": "在侧边栏中排列和自定义导航项",
-						"topbar": "在顶部栏中排列和自定义导航项"
-					},
+					"description": "重新排列或调整主导航中的导航项",
 					"isLocked": "排列已锁定",
 					"lock": "锁定排列",
 					"unlock": "解锁排列",
@@ -1562,15 +1548,15 @@
 				},
 				"maxWidthPreference": {
 					"label": "调整宽度",
-					"description": "NoirPanther 对视图端口应用最大宽度。此设置允许您调整或删除此限制",
+					"description": "Stump 对视图端口应用最大宽度。此设置允许您调整或删除此限制",
 					"tooltip": "当主导航设置为侧边栏时，当前不支持此设置",
 					"options": {
-						"noLimit": "No limit"
+						"noLimit": "无限制"
 					}
 				},
 				"additionalPreferences": {
 					"label": "其他偏好",
-					"description": "通过这些附加设置自定义NoirPanther的外观和行为"
+					"description": "通过这些附加设置自定义 Stump 的外观和行为"
 				},
 				"showThumbnailsInHeader": {
 					"label": "在标题中显示缩略图",
@@ -1607,13 +1593,21 @@
 				"enableJobOverlayToggle": {
 					"label": "作业叠加",
 					"description": "当作业运行时显示浮动叠加层"
+				},
+				"dayResetHourOffset": {
+					"label": "阅读日重置偏移量",
+					"description": "设置阅读日从午夜起延后多少小时重置"
+				},
+				"readingSessionGracePeriod": {
+					"label": "阅读会话宽限期",
+					"description": "如果在此时间范围内（秒）未检测到活动，下次更新将开始新的会话"
 				}
 			}
 		},
 		"app/apiKeys": {
 			"helmet": "API 密钥",
 			"title": "API 密钥",
-			"description": "管理你生成的 NoirPanther API 密钥",
+			"description": "管理你生成的 Stump API 密钥",
 			"shared": {
 				"fields": {
 					"name": "名称",
@@ -1628,12 +1622,11 @@
 			"sections": {
 				"inspector": {
 					"heading": "API 密钥",
-					"description": "A detailed view of this key",
+					"description": "此密钥的详细视图",
 					"unrestrictedKey": {
 						"heading": "无限制密钥",
 						"description": "由于你是服务器所有者，当配置为继承权限时，此密钥具有无限制访问权限。请谨慎。"
-					},
-					"title": "API key"
+					}
 				},
 				"createKey": {
 					"modal": {
@@ -1670,7 +1663,7 @@
 		"app/reader": {
 			"helmet": "阅读设置",
 			"title": "阅读设置",
-			"description": "NoirPanther 阅读器的默认选项。这些选项仅绑定到当前设备",
+			"description": "Default preferences for reading. Some of these are local-only to your current device",
 			"sections": {
 				"universal": {
 					"sections": {
@@ -1726,11 +1719,11 @@
 		"app/desktop": {
 			"helmet": "桌面设置",
 			"title": "桌面设置",
-			"description": "NoirPanther 桌面应用程序相关设置",
+			"description": "Stump 桌面应用程序相关设置",
 			"sections": {
 				"configuredServers": {
 					"label": "已配置的服务器",
-					"description": "你可以连接的 NoirPanther 服务器列表",
+					"description": "你可以连接的 Stump 服务器列表",
 					"getStarted": "添加一个服务器以开始使用",
 					"unreachableServer": {
 						"tooltip": "服务器不可达"
@@ -1752,7 +1745,7 @@
 							},
 							"uri": {
 								"label": "URI",
-								"description": "NoirPanther 服务器的 URL",
+								"description": "Stump 服务器的 URL",
 								"placeholder": "https://stump.example.com"
 							}
 						}
@@ -1760,7 +1753,7 @@
 					"addServer": {
 						"trigger": "添加服务器",
 						"title": "添加新服务器",
-						"description": "向桌面版应用添加新的 NoirPanther 服务器",
+						"description": "向桌面版应用添加新的 Stump 服务器",
 						"confirm": "添加服务器"
 					},
 					"editServer": {
@@ -1806,7 +1799,7 @@
 					"resetTokens": {
 						"label": "删除令牌",
 						"description": [
-							"移除所有安全存储的服务器令牌，包括API密钥",
+							"移除所有安全存储的服务器令牌，包括 API 密钥",
 							"你将需要重新在每个服务器上进行身份验证"
 						],
 						"confirmation": {
@@ -1826,9 +1819,8 @@
 					},
 					"discordPresence": {
 						"label": "Discord 状态",
-						"description": "使用 Discord Rich Presence 在 Discord 中显示你的 NoirPanther 活动",
-						"reconnect": "重新连接到 Discord",
-						"updateError": "Failed to update!"
+						"description": "使用 Discord Rich Presence 在 Discord 中显示你的 Stump 活动",
+						"reconnect": "重新连接到 Discord"
 					}
 				}
 			}
@@ -1836,14 +1828,14 @@
 		"server/general": {
 			"helmet": "服务器设置",
 			"title": "服务器设置",
-			"description": "与您的 NoirPanther 服务器实例相关的常规设置",
+			"description": "与您的 Stump 服务器实例相关的常规设置",
 			"sections": {
 				"updateAvailable": {
 					"message": "您的服务器不是最新版本。请更新到最新版本！"
 				},
 				"serverInfo": {
 					"title": "服务器信息",
-					"description": "NoirPanther 服务器实例的基本详细信息",
+					"description": "Stump 服务器实例的基本详细信息",
 					"build": {
 						"label": "构建",
 						"description": "关于版本和构建的细节",
@@ -1854,20 +1846,16 @@
 						}
 					},
 					"nonStableChannel": {
-						"title": "您正在运行一个不稳定的NoirPanther 构建",
+						"title": "您正在运行一个不稳定的 Stump 构建",
 						"description": [
 							"看起来您正在运行",
 							"构建频道"
 						]
-					},
-					"semanticVersion": "Semantic version",
-					"buildChannel": "Build channel",
-					"exactCommit": "Exact commit",
-					"buildDate": "Build date"
+					}
 				},
 				"helpfulLinks": {
 					"title": "帮助链接",
-					"description": "可能有助于管理NoirPanther 服务器实例的资源链接",
+					"description": "可能有助于管理 Stump 服务器实例的资源链接",
 					"links": {
 						"documentation": "文档",
 						"changelog": "更改日志"
@@ -1875,41 +1863,35 @@
 				},
 				"serverPublicUrl": {
 					"label": "公共 URL",
-					"description": "如果适用，你的服务器从外部网络可访问的 URL。这将启用邀请链接和其他功能",
-					"updateSuccess": "Public URL updated successfully",
-					"updateError": "Failed to update public URL",
-					"unknownError": "An unknown error occurred"
+					"description": "如果适用，你的服务器从外部网络可访问的 URL。这将启用邀请链接和其他功能"
 				},
 				"customEmojis": {
-					"title": "自定义表情",
-					"description": "为您的服务器上传和管理自定义图像 emoji",
+					"title": "自定义 Emoji",
+					"description": "为您的服务器上传和管理自定义 Emoji 图片",
 					"dropzone": "拖放图片到此处或点击以选择",
 					"input": {
-						"label": "表情符号名称",
+						"label": "Emoji 名称",
 						"placeholder": "例如：party_parrot"
 					},
 					"deleteModal": {
-						"title": "删除表情",
-						"description": "确实要删除此录音？"
+						"title": "删除 Emoji",
+						"description": "确定要删除此 Emoji 吗？"
 					},
-					"noCustomEmojis": "尚未添加自定义表情",
-					"invalidName": "请输入有效的表情名称",
-					"uploadError": "头像上传失败",
-					"uploadSuccess": "表情已上传",
-					"renameSuccess": "Emoji重命名了",
-					"renameError": "重命名表情失败",
-					"deleteSuccess": "表情已删除",
-					"deleteError": "删除表情失败",
-					"provideName": "Please provide an emoji name",
-					"renamePlaceholder": "emoji_name",
-					"previewAlt": "emoji preview"
+					"noCustomEmojis": "尚未添加自定义 Emoji",
+					"invalidName": "请输入有效的 Emoji 名称",
+					"uploadError": "Emoji 上传失败",
+					"uploadSuccess": "Emoji 已上传",
+					"renameSuccess": "Emoji 已重命名",
+					"renameError": "重命名 Emoji 失败",
+					"deleteSuccess": "Emoji 已删除",
+					"deleteError": "删除 Emoji 失败"
 				}
 			}
 		},
 		"server/logs": {
 			"helmet": "日志",
 			"title": "日志",
-			"description": "NoirPanther 服务器实例生成的日志",
+			"description": "Stump 服务器实例生成的日志",
 			"sections": {
 				"persistedLogs": {
 					"title": "已存日志",
@@ -1932,14 +1914,14 @@
 				},
 				"liveLogs": {
 					"title": "实时日志",
-					"description": "直接实时从 NoirPanther 服务器串流"
+					"description": "直接实时从 Stump 服务器串流"
 				}
 			}
 		},
 		"server/jobs": {
 			"helmet": "任务",
 			"title": "任务",
-			"description": "NoirPanther 服务器实例上运行的后台任务",
+			"description": "Stump 服务器实例上运行的后台任务",
 			"sections": {
 				"scheduling": {
 					"title": "计划任务",
@@ -2015,7 +1997,7 @@
 				},
 				"history": {
 					"title": "历史记录",
-					"description": "NoirPanther 服务器上已运行的任务记录",
+					"description": "Stump 服务器上已运行的任务记录",
 					"table": {
 						"columns": {
 							"name": "类型",
@@ -2199,7 +2181,7 @@
 						"label": "智能列表",
 						"read": {
 							"label": "访问智能列表功能",
-							"description": "允许用户访问智能列表功能。 Granular 权限尚未实现，\n包括读、创建和更新他们自己的列表的权限"
+							"description": "允许用户访问智能列表功能。细粒度权限尚未实现，\n包括读取、创建和更新自己列表的权限"
 						}
 					}
 				},
@@ -2210,29 +2192,7 @@
 					"usernameAlreadyExists": "用户名已存在"
 				},
 				"createSubmitButton": "创建用户",
-				"updateSubmitButton": "更新用户",
-				"contentRules": {
-					"heading": "Content restrictions",
-					"description": "Hide content from this user by tag, publisher or genre. Rules combine — an item must pass every rule. Tags are inherited from the series and library",
-					"dimensions": {
-						"tag": "Tag",
-						"publisher": "Publisher",
-						"genre": "Genre"
-					},
-					"modes": {
-						"exclude": "Exclude listed",
-						"only": "Only listed"
-					},
-					"valuesPlaceholder": "Search or add a value",
-					"restrictOnUnset": "Hide items without a value",
-					"removeRule": "Remove rule",
-					"addRule": "Add rule",
-					"save": "Save restrictions",
-					"toasts": {
-						"saved": "Content restrictions saved",
-						"saveFailed": "Failed to save content restrictions"
-					}
-				}
+				"updateSubmitButton": "更新用户"
 			},
 			"loginActivity": {
 				"deleteConfirmation": {
@@ -2245,14 +2205,14 @@
 		"server/email": {
 			"helmet": "邮件设置",
 			"title": "邮件",
-			"description": "配置 NoirPanther 服务器实例的 SMTP 邮件功能的设置",
+			"description": "配置 Stump 服务器实例的 SMTP 邮件功能的设置",
 			"sections": {
 				"emailers": {
 					"title": "SMTP 邮件发送器",
-					"description": "你配置的用于从你的 NoirPanther 服务器实例发送邮件的客户端",
-					"singleInstanceDisclaimer": "虽然 NoirPanther 在后端支持多个 SMTP 配置，但 UI 上只能配置一个。将来会改进",
+					"description": "你配置的用于从你的 Stump 服务器实例发送邮件的客户端",
+					"singleInstanceDisclaimer": "虽然 Stump 在后端支持多个 SMTP 配置，但 UI 上只能配置一个。将来会改进",
 					"list": {
-						"emptyHeading": "未配置SMTP电子邮件服务器",
+						"emptyHeading": "未配置 SMTP 邮件服务器",
 						"primaryEmailer": "首选电子邮箱",
 						"sendHistory": {
 							"heading": "发送历史",
@@ -2272,7 +2232,7 @@
 				},
 				"devices": {
 					"title": "邮件设备",
-					"description": "你配置的用于从你的 NoirPanther 服务器实例接收邮件的设备别名",
+					"description": "你配置的用于从你的 Stump 服务器实例接收邮件的设备别名",
 					"addDevice": "添加设备别名",
 					"addOrUpdateDevice": {
 						"title": {
@@ -2298,16 +2258,7 @@
 					},
 					"table": {
 						"emptyHeading": "没有已注册的设备",
-						"emptySubtitle": "创建一个新的设备别名以供将来使用",
-						"columns": {
-							"name": "Name",
-							"email": "Email",
-							"status": "Status"
-						},
-						"status": {
-							"forbidden": "Forbidden",
-							"allowed": "Allowed"
-						}
+						"emptySubtitle": "创建一个新的设备别名以供将来使用"
 					}
 				}
 			},
@@ -2382,7 +2333,7 @@
 			"createEmailer": {
 				"helmet": "创建邮件发送器",
 				"title": "创建邮件发送器",
-				"description": "为你的 NoirPanther 服务器实例创建新的 SMTP 邮件发送器"
+				"description": "为你的 Stump 服务器实例创建新的 SMTP 邮件发送器"
 			},
 			"updateEmailer": {
 				"helmet": "更新邮件发送器",
@@ -2403,12 +2354,12 @@
 				"apiToken": {
 					"label": "API 令牌",
 					"description": "用于向该提供方进行身份验证的 API 令牌",
-					"validationError": "The auto-validation failed for this token",
-					"validationRequestError": "The validation request failed",
-					"validationRequestErrorUnknown": "An unknown error occurred during validation",
-					"hardcoverStatusError": "Hardcover API responded with status {{status}}",
-					"hardcoverValidationError": "Hardcover API responded with an error: {{message}}",
-					"noBearerPrefixRequired": "Remove the 'Bearer ' prefix from the API token"
+					"validationError": "此令牌自动验证失败",
+					"validationRequestError": "验证请求失败",
+					"validationRequestErrorUnknown": "验证期间发生未知错误",
+					"hardcoverStatusError": "Hardcover API 返回状态 {{status}}",
+					"hardcoverValidationError": "Hardcover API 返回错误：{{message}}",
+					"noBearerPrefixRequired": "请移除 API 令牌开头的 'Bearer ' 前缀"
 				},
 				"apiTokenExpiresAt": {
 					"label": "API 令牌过期时间",
@@ -2580,10 +2531,10 @@
 	"serverSOS": {
 		"heading": "服务器不可用",
 		"desktop": {
-			"message": "出现网络错误，您的 NoirPanther 服务器目前不可用。请确保它正在运行并且可以在此设备上访问。\n如果您的服务器 URL 已经更改，您可以使用下面的表单更新它"
+			"message": "出现网络错误，您的 Stump 服务器目前不可用。请确保它正在运行并且可以在此设备上访问。\n如果您的服务器 URL 已经更改，您可以使用下面的表单更新它"
 		},
 		"web": {
-			"message": "网络错误，您的 NoirPanther 服务器目前不可用。请确保它正在运行并且可以从此设备访问"
+			"message": "网络错误，您的 Stump 服务器目前不可用。请确保它正在运行并且可以从此设备访问"
 		},
 		"reconnected": "重连到服务器！正在重定向......",
 		"reconnectionFailed": "出了些问题！"
@@ -2616,15 +2567,7 @@
 		"uploadImage": {
 			"emptyState": "图片预览将显示在这里",
 			"prompt": "拖放图片到此处或点击以选择",
-			"remove": "删除图像",
-			"confirmSelection": "Confirm selection",
-			"errors": {
-				"fileTooLarge": "File too large (20MB max)",
-				"unknown": "Unknown error",
-				"onlyOneFile": "Only 1 file allowed",
-				"noFiles": "No files provided",
-				"uploadFailed": "Failed to upload image"
-			}
+			"remove": "删除图像"
 		}
 	},
 	"common": {
@@ -2634,14 +2577,14 @@
 		"confirm": "确认",
 		"delete": "删除",
 		"deleteConfirmation": {
-			"title": "Delete {{type}}",
-			"description": "Are you sure you want to delete this {{type}}? This action cannot be undone.",
-			"confirm": "Delete {{type}}",
+			"title": "删除 {{type}}",
+			"description": "确定要删除此 {{type}} 吗？此操作不可撤销。",
+			"confirm": "删除 {{type}}",
 			"typeToConfirm": "Type {{name}} to confirm:"
 		},
 		"experimentalDisclaimer": {
 			"title": "该功能为实验性功能",
-			"description": "该功能可能存在缺失、Bug 或无法正常工作。请谨慎使用，并反馈你遇到的问题"
+			"description": "该功能可能缺少部分内容、存在错误或无法正常工作。请谨慎使用，并反馈你遇到的问题"
 		},
 		"enter": "进入",
 		"save": "保存",
@@ -2847,7 +2790,7 @@
 				},
 				"token": {
 					"label": "令牌",
-					"placeholder": "原始令牌"
+					"placeholder": "Raw Token"
 				},
 				"basic": "基本"
 			},
@@ -2855,8 +2798,8 @@
 			"catalogUrl": "目录 URL",
 			"failedToConnect": "连接到服务器失败",
 			"didConnect": "已连接",
-			"checkConnection": "检查连接",
-			"setAsDefaultServer": "设为默认服务器",
+			"checkConnection": "Check Connection",
+			"setAsDefaultServer": "Set as Default Server",
 			"enableOPDS": "启用 OPDS",
 			"validation": {
 				"nameAlreadyExists": "名称已存在",
@@ -2865,58 +2808,89 @@
 		},
 		"bookActions": {
 			"markAsRead": {
-				"label": "标记为已读",
+				"label": "Mark as Read",
 				"confirmation": "您确定要将 {{bookTitle}} 标记为已读吗？"
 			},
 			"clearProgress": {
-				"label": "清除进度",
+				"label": "Clear Progress",
 				"confirmation": "您确定要清除 {{bookTitle}} 的进度吗？"
 			},
+			"deleteReadHistory": {
+				"label": "Delete Read History",
+				"confirmation": "Are you sure you want to delete your read history for {{bookTitle}}?"
+			},
 			"deleteBook": {
-				"label": "删除书籍",
+				"label": "Delete Book",
 				"confirmation": "您确定要删除 {{bookTitle}} 吗？"
 			},
+			"deleteDownload": {
+				"label": "Delete Download",
+				"confirmation": "Are you sure you want to delete the downloaded file for {{bookTitle}}?"
+			},
+			"goToLibrary": "Go to Library",
+			"goToSeries": "Go to Series",
 			"seeDetails": "查看详情"
 		},
 		"bookMetadata": {
 			"ageRating": "年龄分级",
 			"downloadedAt": "下载时间",
+			"characters": "Characters",
 			"format": "格式",
 			"genres": "类型",
 			"language": "语言",
 			"publisher": "出版社",
 			"size": "大小",
 			"volume": "卷",
-			"year": "年份"
+			"writers": "Writers",
+			"colorists": "Colorists",
+			"inkers": "Inkers",
+			"letterers": "Letterers",
+			"coverArtists": "Cover Artists",
+			"links": "Links",
+			"year": "年份",
+			"identifier": "Identifier",
+			"identifiers": "Identifiers"
 		},
 		"common": {
-			"book": "Book",
+			"book": "书籍",
 			"cancel": "取消",
 			"chapter": "章节",
 			"clear": "清除",
-			"completed": "Completed",
+			"completed": "已完成",
 			"confirm": "确认",
-			"content": "Content",
+			"continue": "Continue",
+			"content": "内容",
 			"details": "详情",
 			"delete": "删除",
+			"dismiss": "Dismiss",
+			"download": "Download",
 			"downloads": "下载",
+			"done": "Done",
 			"edit": "编辑",
 			"enabled": "已启用",
 			"enable": "启用",
 			"error": "错误",
-			"grid": "Grid",
-			"list": "List",
-			"lastCompleted": "Last Completed",
+			"favorite": "Favorite",
+			"finished": "Finished",
+			"grid": "网格",
+			"list": "列表",
+			"lastCompleted": "最近完成",
 			"name": "名称",
 			"none": "无",
+			"notAvailable": "Not Available",
 			"options": "选项",
 			"page": "页面",
 			"pages": "页",
+			"pageXOfY": "Page {{current}} of {{total}}",
 			"password": "密码",
 			"progress": "进度",
-			"publication": "Publication",
-			"readTime": "Reading time",
-			"readMore": "阅读更多",
+			"publication": "出版信息",
+			"read": "Read",
+			"readAgain": "Read Again",
+			"readTime": "Reading Time",
+			"readthrough": "Readthrough",
+			"readMore": "Read More",
+			"refresh": "Refresh",
 			"save": "保存",
 			"select": "选择",
 			"settings": "设置",
@@ -2930,46 +2904,62 @@
 			"value": "值",
 			"version": "版本"
 		},
+		"errors": {
+			"unknown": "未知错误"
+		},
+		"epubMenu": {
+			"tableOfContents": "Table of Contents",
+			"bookmarksAndAnnotations": "Bookmarks & Annotations",
+			"appearance": "Appearance"
+		},
 		"formatSeriesPosition": {
 			"none": {
-				"positionWithTotal": "{{position}} of {{total}} in {{seriesName}}",
-				"position": "{{position}} in {{seriesName}}"
+				"positionWithTotal": "{{seriesName}}：第 {{position}} / {{total}}",
+				"position": "{{seriesName}}：第 {{position}}"
 			},
 			"book": {
-				"positionWithTotal": "Book {{position}} of {{total}} in {{seriesName}}",
-				"position": "Book {{position}} in {{seriesName}}"
+				"positionWithTotal": "{{seriesName}}：第 {{position}} 本，共 {{total}} 本",
+				"position": "{{seriesName}}：第 {{position}} 本"
 			},
 			"hashtag": {
-				"positionWithTotal": "#{{position}} of {{total}} in {{seriesName}}",
-				"position": "#{{position}} in {{seriesName}}"
+				"positionWithTotal": "{{seriesName}}：#{{position}} / {{total}}",
+				"position": "{{seriesName}}：#{{position}}"
 			},
-			"unknownSeriesName": "series"
+			"unknownSeriesName": "系列"
 		},
 		"emptyState": {
-			"noStumpServers": "未添加 NoirPanther 服务器",
+			"noStumpServers": "未添加 Stump 服务器",
 			"noOPDSServers": "未添加 OPDS 服务器",
-			"noServers": "未配置服务器",
+			"noServers": "No Servers Configured",
 			"cta": "通过添加服务器来开始访问您的书籍收藏",
-			"seeDocumentation": "查看文档"
+			"seeDocumentation": "查看文档",
+			"noSmartLists": {
+				"label": "No lists returned",
+				"description": "Once created they will appear here"
+			}
 		},
 		"tabs": {
 			"servers": "服务器",
 			"localLibrary": "本地书库",
-			"settings": "设置"
+			"settings": "设置",
+			"home": "Home",
+			"browse": "Browse",
+			"clubs": "Clubs",
+			"search": "Search"
 		},
 		"localLibrary": {
 			"title": "本地书库",
 			"emptyState": {
 				"all": {
-					"title": "暂无可阅读的内容",
+					"title": "Nothing to Read Yet",
 					"description": "一旦您下载了离线阅读的书籍，它们将显示在这里"
 				},
 				"imported": {
-					"title": "未导入书籍",
+					"title": "No Imported Books",
 					"description": "导入书籍以离线阅读"
 				},
 				"server": {
-					"title": "未下载书籍",
+					"title": "No Downloaded Books",
 					"description": "从书库下载书籍以离线阅读"
 				}
 			},
@@ -3023,6 +3013,19 @@
 				"dismissAll": "全部忽略"
 			}
 		},
+		"progressSync": {
+			"skippedSync": {
+				"skippedOneServer": "已跳过 {{skippedCount}} 个服务器的同步",
+				"skippedMultipleServers": "已跳过 {{skippedCount}} 个服务器的同步",
+				"explanation": "部分服务器使用的认证方式无法自动刷新"
+			},
+			"syncFailed": "离线进度同步失败"
+		},
+		"search": {
+			"label": "Search This Server",
+			"description": "Find specific content on this server",
+			"placeholder": "Search"
+		},
 		"settings": {
 			"preferences": {
 				"label": "首选项",
@@ -3041,7 +3044,7 @@
 					"label": "缩略图占位符",
 					"options": {
 						"grayscale": "灰度",
-						"averageColor": "平均颜色",
+						"averageColor": "Average Color",
 						"colorful": "彩色",
 						"thumbhash": "缩略图哈希"
 					}
@@ -3063,20 +3066,28 @@
 				"incognitoReading": "隐身阅读"
 			},
 			"stump": {
-				"label": "NoirPanther 功能",
-				"description": "NoirPanther 功能是可选的，如果您不需要可以关闭",
+				"label": "Stump 功能",
+				"description": "Stump 功能是可选的，如果您不需要可以关闭",
 				"bookClubsEnabled": "读书俱乐部功能"
 			},
 			"autoSyncLocalData": "自动同步本地数据",
-			"lowercaseTranslation": "Lowercase Labels",
+			"textCase": {
+				"label": "Text Case",
+				"options": {
+					"lowerCase": "Lowercase",
+					"sentenceCase": "Sentence Case",
+					"titleCase": "Title Case"
+				}
+			},
+			"tintListBackground": "列表背景着色",
 			"management": {
 				"label": "管理",
 				"dataUsage": {
 					"label": "数据使用",
-					"nonStumpData": "非 NoirPanther 数据",
-					"serversTotal": "服务器总计",
-					"totalFiles": "文件总数",
-					"totalSize": "总大小",
+					"nonStumpData": "Non-Stump Data",
+					"serversTotal": "Servers Total",
+					"totalFiles": "Total Files",
+					"totalSize": "Total Size",
 					"deleteDownloads": {
 						"label": "删除下载",
 						"confirmation": "您确定要删除来自 {{serverName}} 的所有下载吗？",
@@ -3087,7 +3098,7 @@
 					},
 					"noDownloads": "此服务器无下载文件",
 					"storedPreferences": {
-						"label": "存储的首选项",
+						"label": "Stored Preferences",
 						"description": "书籍首选项、阅读计时器等杂项数据"
 					},
 					"clearPreferences": "清除首选项"
@@ -3099,21 +3110,21 @@
 					"label": "清除缓存",
 					"memory": {
 						"button": "内存",
-						"success": "内存缓存已清除"
+						"success": "Memory Cache Cleared"
 					},
 					"disk": {
 						"button": "磁盘",
-						"success": "磁盘缓存已清除"
+						"success": "Disk Cache Cleared"
 					}
 				},
 				"deleteDatabase": {
 					"label": "删除数据库",
 					"success": {
-						"title": "数据库已删除",
+						"title": "Database Deleted",
 						"description": "请重启应用"
 					},
 					"error": {
-						"title": "删除失败",
+						"title": "Deletion Failed",
 						"description": "删除数据库时出错"
 					}
 				},
@@ -3145,9 +3156,35 @@
 				"suuportIdentifier": "支持标识符：{{supportID}}"
 			}
 		},
+		"stumpServer": {
+			"browse": {
+				"books": "Books",
+				"favorites": "Favorites",
+				"files": "Files",
+				"libraries": "Libraries",
+				"series": "Series",
+				"smartLists": "Smart Lists"
+			},
+			"continueReading": {
+				"label": "Continue Reading",
+				"emptyText": "No books in progress"
+			},
+			"onDeck": {
+				"label": "Your Next Read",
+				"emptyText": "No books on deck"
+			},
+			"recentlyAddedSeries": {
+				"label": "Recently Added Series",
+				"emptyText": "No recently added series"
+			},
+			"recentlyAddedBooks": {
+				"label": "Recently Added Books",
+				"emptyText": "No recently added books"
+			}
+		},
 		"readerSettings": {
 			"title": "阅读器设置",
-			"overrideGlobalSettings": "覆盖全局设置",
+			"overrideGlobalSettings": "Override Global Settings",
 			"sections": {
 				"mode": "模式",
 				"imageOptions": "图像选项",
@@ -3188,7 +3225,7 @@
 			},
 			"allowDownscaling": "缩小",
 			"tapSidesToNavigate": "点击两侧导航",
-			"volumeButtonsNavigate": "Volume Buttons Navigate",
+			"volumeButtonsNavigate": "音量键翻页",
 			"footerControls": {
 				"label": "页脚",
 				"options": {
@@ -3202,9 +3239,36 @@
 			},
 			"allSettings": "全部设置"
 		},
+		"tableOfContents": {
+			"goToPageX": "Go to page {{pageNumber}}",
+			"goToPagePlaceholder": "Go to page...",
+			"errors": {
+				"pageDoesNotExist": "Page {{page}} does not exist",
+				"invalidPage": "'{{page}}' is not a page number"
+			},
+			"showCurrentChapter": "Show Current Chapter"
+		},
+		"annotationsSheet": {
+			"tabs": {
+				"all": "All",
+				"bookmarks": "Bookmarks",
+				"highlights": "Highlights",
+				"notes": "Notes"
+			}
+		},
 		"epubSettings": {
-			"title": "Epub 阅读器设置",
-			"typeface": "字体",
+			"title": "EPUB 阅读器设置",
+			"typeface": {
+				"label": "Typeface",
+				"options": {
+					"system": "System",
+					"opendyslexic": "OpenDyslexic",
+					"literata": "Literata",
+					"atkinsonHyperlegible": "Atkinson Hyperlegible",
+					"charisSIL": "Charis SIL",
+					"bitter": "Bitter"
+				}
+			},
 			"fontSize": "字号",
 			"fontWeight": {
 				"label": "字重",
@@ -3242,7 +3306,7 @@
 				}
 			},
 			"publisherStyles": "出版方样式",
-			"volumeButtonsNavigate": "Volume Buttons Navigate",
+			"volumeButtonsNavigate": "音量键翻页",
 			"textAlignment": {
 				"label": "文本对齐",
 				"options": {
@@ -3270,14 +3334,14 @@
 			}
 		},
 		"libraryType": {
-			"BOOK": "Books",
-			"COMIC": "Comics",
-			"LIGHT_NOVEL": "Light Novels",
-			"MANGA": "Manga",
-			"MANHWA": "Manhwa",
-			"MIXED": "Mixed",
-			"WEBTOON": "Webtoons",
-			"WEB_NOVEL": "Web Novels"
+			"BOOK": "书籍",
+			"COMIC": "漫画",
+			"LIGHT_NOVEL": "轻小说",
+			"MANGA": "日漫",
+			"MANHWA": "韩漫",
+			"MIXED": "混合",
+			"WEBTOON": "条漫",
+			"WEB_NOVEL": "网络小说"
 		},
 		"savedServerActions": {
 			"clearCache": "清除缓存",
@@ -3291,1186 +3355,35 @@
 			}
 		},
 		"filtering": {
-			"notStarted": "Not Started",
-			"currentlyReading": "Currently Reading",
-			"finished": "Finished"
+			"notStarted": "未开始",
+			"currentlyReading": "阅读中",
+			"finished": "已完成"
 		},
 		"sorting": {
-			"labelEllipsis": "Sort By...",
+			"labelEllipsis": "排序方式...",
 			"sortField": {
-				"NAME": "Name",
-				"ADDED_AT": "Date Added",
-				"CREATED_AT": "Date Added",
-				"NUMBER": "Series Position",
-				"SERIES": "Series",
-				"YEAR": "Year Published"
+				"NAME": "名称",
+				"ADDED_AT": "添加日期",
+				"CREATED_AT": "添加日期",
+				"NUMBER": "系列位置",
+				"SERIES": "系列",
+				"YEAR": "出版年份"
 			},
 			"sortDirection": {
-				"ASC": "Ascending",
-				"DESC": "Descending"
+				"ASC": "升序",
+				"DESC": "降序"
 			},
 			"sortDirectionString": {
-				"ASC": "A → Z",
-				"DESC": "Z → A"
+				"ASC": "A -> Z",
+				"DESC": "Z -> A"
 			},
 			"sortDirectionDate": {
-				"ASC": "Oldest First",
-				"DESC": "Newest First"
+				"ASC": "最早优先",
+				"DESC": "最新优先"
 			},
 			"sortDirectionNumber": {
 				"ASC": "1 → 10",
 				"DESC": "10 → 1"
-			}
-		}
-	},
-	"seriesSettingsScene": {
-		"developmentAlert": "Series management is currently under development and has very limited functionality",
-		"analysis": {
-			"heading": "Analysis",
-			"description": "Re-analyze this series to update metadata from its files",
-			"button": "Analyze series",
-			"buttonTitle": "Analyze this series",
-			"inProgress": "Analysis already in progress"
-		},
-		"thumbnail": {
-			"heading": "Thumbnail",
-			"description": "Change the cover image for this series",
-			"regenerate": "Regenerate from books",
-			"regenerateTitle": "Regenerate the thumbnail for this series from its first book",
-			"toasts": {
-				"started": "Thumbnail regeneration started",
-				"failed": "Failed to regenerate thumbnail"
-			}
-		},
-		"metadata": {
-			"heading": "Metadata",
-			"description": "Extra information about your series"
-		},
-		"merge": {
-			"heading": "Merge",
-			"description": "Move every book of this series into another series in the same library. The folder on disk is not touched, and future scans keep feeding the target series. Merges can be undone from the target series",
-			"searchPlaceholder": "Search series…",
-			"selectTarget": "Select a target series…",
-			"button": "Merge into",
-			"limitHint": "Showing the first {{limit}} matches — refine the search to find others",
-			"mergedSources": "Folders merged into this series:",
-			"unmergeAll": "Unmerge all",
-			"toasts": {
-				"merged": "Series merged",
-				"mergeFailed": "Failed to merge series",
-				"restored": "Series restored",
-				"restoreFailed": "Failed to unmerge series"
-			}
-		},
-		"delete": {
-			"heading": "Delete series",
-			"description": "Permanently remove this series and its books from NoirPanther. The files on disk are left untouched.",
-			"button": "Delete series",
-			"confirm": {
-				"title": "Delete this series?",
-				"description": "Its books will be removed from the database. The files on disk are left untouched, and a future scan may re-import the series if its folder still exists. This cannot be undone.",
-				"confirm": "Delete"
-			},
-			"toasts": {
-				"deleted": "Series deleted",
-				"failed": "Failed to delete series"
-			}
-		}
-	},
-	"bookManagementScene": {
-		"heading": "Manage",
-		"subtitle": "Make changes to this book",
-		"developmentAlert": "Book management is currently under development and has very limited functionality",
-		"analysis": {
-			"heading": "Analysis",
-			"description": "Re-analyze this book to update metadata from its file",
-			"button": "Analyze Media",
-			"buttonTitle": "Analyze this book",
-			"inProgress": "Analysis already in progress"
-		},
-		"writeback": {
-			"heading": "Write metadata to file",
-			"description": "Embed the metadata stored in NoirPanther into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
-			"button": "Write metadata to file",
-			"toasts": {
-				"written": "Metadata written into the file",
-				"nothingToWrite": "Nothing to write — the book has no stored metadata",
-				"failed": "Failed to write metadata to file"
-			}
-		},
-		"thumbnail": {
-			"heading": "Thumbnail",
-			"description": "Change the cover image for this book"
-		}
-	},
-	"epubReader": {
-		"failedToLoad": "Failed to load the book"
-	},
-	"AppLayout": {
-		"logoutSuccess": "You have been logged out",
-		"logoutError": "There was an error logging you out. Please try again."
-	},
-	"components": {
-		"DirectoryPickerModal": {
-			"title": "Select a Directory",
-			"description": "Specify the directory where your library is located.",
-			"showHidden": "Show Hidden Directories",
-			"cancel": "Cancel",
-			"confirm": "Confirm"
-		},
-		"ErrorFallback": {
-			"copiedToClipboard": "Copied error details to your clipboard",
-			"imageAlt": "Construction illustration",
-			"criticalError": "A critical error occurred",
-			"emptyMessage": "The error message was empty.",
-			"goHomeTitle": "Go back to the homepage",
-			"goHome": "Go Home",
-			"reportBugTitle": "Report this error as a potential bug on GitHub",
-			"reportBug": "Report Bug",
-			"copyDetailsTitle": "Copy the error details to your clipboard",
-			"copyDetails": "Copy Error Details"
-		},
-		"HorizontalCardList": {
-			"nothingToShow": "Nothing to show",
-			"noResults": "No results present to display",
-			"seekBackwards": "Seek backwards",
-			"seekAhead": "Seek Ahead"
-		},
-		"MultiRowHorizontalCardList": {
-			"nothingToShow": "Nothing to show",
-			"noResults": "No results were returned",
-			"seekBackwards": "Seek backwards",
-			"seekAhead": "Seek Ahead"
-		},
-		"ServerStatusOverlay": {
-			"notConnected": "Server is not connected",
-			"checkConnection": "Please check your internet connection.",
-			"clickHere": "Click here",
-			"changeServerUrl": "to change your server URL."
-		},
-		"UserMenu": {
-			"notifications": "Notifications",
-			"settings": "Settings",
-			"switchServer": "Switch server"
-		},
-		"book": {
-			"BookCard": {
-				"fileMissing": "File Missing",
-				"pagesLeft": "{{count}} pages left",
-				"completed": "Completed"
-			},
-			"BookSearch": {
-				"searchPlaceholder": "Search for a book..."
-			},
-			"BookSearchOverlay": {
-				"searchForBook": "Search for a book",
-				"description": "You can use the search bar below to find a book"
-			},
-			"metadata": {
-				"MediaMetadataEditor": {
-					"missing": "Missing",
-					"updateError": "Failed to update metadata",
-					"lockedFieldsError": "Failed to update locked fields"
-				}
-			}
-		},
-		"bookClub": {
-			"DeleteBookClubConfirmation": {
-				"deleteError": "Failed to delete book club",
-				"title": "Delete book club",
-				"description": "Are you sure you want to delete this club? This action cannot be undone.",
-				"confirmText": "Delete club"
-			},
-			"books": {
-				"BookClubBookItem": {
-					"started": "Started {{when}}",
-					"completed": "Completed {{count}} {{days}} ago",
-					"added": "Added {{when}}",
-					"currentlyReading": "Currently reading",
-					"pastBook": "Past book",
-					"untitled": "Untitled",
-					"externalLink": "External link",
-					"accessBook": "Access book",
-					"readFor": "Read for {{count}} {{days}}",
-					"notCompletedYet": "Not completed yet"
-				},
-				"BookClubBooks": {
-					"hidePastBooks": "Hide past books",
-					"showPastBooks": "Show past books",
-					"emptyTitle": "No books to display",
-					"emptySubtitle": "The club has no books scheduled",
-					"createSchedule": "Create a schedule",
-					"books": "Books"
-				}
-			}
-		},
-		"explorer": {
-			"FileExplorer": {
-				"emptyTitle": "No files",
-				"emptySubtitle": "This folder is empty"
-			},
-			"FileExplorerProvider": {
-				"noDbEntry": "No associated DB entry found for this file",
-				"unknownError": "An unknown error occurred"
-			},
-			"table": {
-				"FileTable": {
-					"cover": "Cover",
-					"name": "Name"
-				}
-			},
-			"upload": {
-				"UploadMenu": {
-					"tooltip": "Upload",
-					"addBooks": "Add books",
-					"addSeries": "Add series"
-				}
-			}
-		},
-		"filters": {
-			"FilterDisplay": {
-				"isAnyOf": "is any of",
-				"is": "is",
-				"matches": "matches",
-				"matchesAnyOf": "matches any of"
-			},
-			"FilterSlideOver": {
-				"notImplemented": "Not implemented yet",
-				"title": "Filter options",
-				"description": "Use the options below to narrow your search",
-				"filter": "Filter",
-				"clearFilters": "Clear filters",
-				"applyFilters": "Apply filters"
-			},
-			"URLFilterDrawer": {
-				"title": "Configure URL filters",
-				"description": "Adjust the filters applied to the current view",
-				"tooltip": "Configure filters",
-				"clearFilters": "Clear filters",
-				"applyFilters": "Apply filters"
-			},
-			"URLPageSize": {
-				"perPage": "per page"
-			},
-			"URLPagination": {
-				"ofPages": "of {{pages}}",
-				"previousPage": "Previous page",
-				"nextPage": "Next page"
-			},
-			"form": {
-				"AgeRatingFilter": {
-					"label": "Age Rating",
-					"anyAgeLabel": "Any age",
-					"anyAgeDescription": "No age rating filter will be applied",
-					"customLabel": "Aged N and up",
-					"customDescription": "Only {{variant}} with an age rating of N or lower will be shown, where N is the number you enter below"
-				},
-				"ExtensionSelect": {
-					"label": "Extension",
-					"any": "Any"
-				},
-				"OrderBySelect": {
-					"label": "Order by",
-					"selectOption": "Select an option"
-				},
-				"MediaFilterForm": {
-					"onlyFromSeries": "Only show options available from series",
-					"genre": "Genre",
-					"writer": "Writer",
-					"penciller": "Penciller",
-					"colorist": "Colorist",
-					"letterer": "Letterer",
-					"inker": "Inker",
-					"publisher": "Publisher",
-					"editor": "Editor",
-					"character": "Character"
-				},
-				"ReadStatusSelect": {
-					"label": "Read Status",
-					"completed": "Completed",
-					"reading": "Reading",
-					"unread": "Unread"
-				},
-				"SeriesFilterForm": {
-					"status": {
-						"label": "Status",
-						"options": {
-							"continuing": "Continuing",
-							"ended": "Ended"
-						}
-					}
-				},
-				"OrderByDirection": {
-					"descending": "Descending",
-					"ascending": "Ascending"
-				}
-			},
-			"Search": {
-				"search": "Search",
-				"unavailable": "This functionality isn't available right now"
-			}
-		},
-		"jobs": {
-			"JobOverlay": {
-				"jobInProgress": "Job in Progress",
-				"tasks": "Tasks ({{completed}}/{{total}})"
-			}
-		},
-		"library": {
-			"LastVisitedLibrary": {
-				"lastVisited": "Last visited"
-			},
-			"createOrUpdate": {
-				"sections": {
-					"GenerateThumbnailColorsSwitch": {
-						"label": "Thumbnail colors",
-						"description": "Extract dominant colors for thumbnails. This is used for thumbnail placeholders and accent colors"
-					}
-				}
-			},
-			"DeleteLibraryConfirmation": {
-				"deleteError": "An error occurred while deleting the library"
-			}
-		},
-		"markdown": {
-			"MarkdownEditor": {
-				"write": "Write",
-				"preview": "Preview",
-				"addSpoiler": "Add spoiler",
-				"tagUser": "Tag a user"
-			},
-			"MarkdownPreview": {
-				"clickToReveal": "Click to reveal",
-				"clickToHide": "Click to hide"
-			}
-		},
-		"metadata": {
-			"metadataEditor": {
-				"ResetMetadata": {
-					"deleteMetadata": "Delete metadata",
-					"selectImpact": "Select the impact for the deletion",
-					"confirmDelete": "Delete",
-					"seriesLabel": "Series",
-					"seriesDescription": "Remove only this series' metadata",
-					"booksLabel": "Books",
-					"booksDescription": "Remove all the metadata for books in this series",
-					"everythingLabel": "Everything",
-					"everythingDescription": "Remove all the metadata for everything related to this series",
-					"cannotBeUndone": "This action cannot be undone",
-					"permanentWarning": "This will permanently delete all metadata for the selected items. You will need to trigger a custom scan to regenerate the metadata"
-				},
-				"cells": {
-					"NumberCell": {
-						"resetField": "Reset field"
-					},
-					"TextCell": {
-						"resetField": "Reset field"
-					},
-					"BadgeListCell": {
-						"removeItem": "Remove item"
-					},
-					"InlineBadgeListInput": {
-						"removeItem": "Remove item"
-					},
-					"LockFieldButton": {
-						"unlockField": "Unlock field",
-						"lockField": "Lock field"
-					}
-				},
-				"MetadataEditorTable": {
-					"noMetadata": "No Metadata"
-				}
-			},
-			"metadataMatching": {
-				"PendingMatchesTable": {
-					"reviewMatch": "Review match",
-					"unknownEntity": "Unknown",
-					"acceptAllSuccess": "All pending matches accepted"
-				}
-			}
-		},
-		"navigation": {
-			"sidebar": {
-				"Logout": {
-					"title": "Sign out",
-					"description": "Are you sure you want sign out?",
-					"confirmText": "Sign out",
-					"tooltip": "Sign Out"
-				},
-				"SignOut": {
-					"title": "Sign out",
-					"description": "Are you sure you want sign out?",
-					"confirmText": "Sign out",
-					"label": "Sign out"
-				}
-			},
-			"topbar": {
-				"sections": {
-					"UserMenu": {
-						"logoutError": "There was an error logging you out. Please try again.",
-						"notifications": "Notifications",
-						"logout": "Logout"
-					},
-					"library": {
-						"LibraryNavigationItem": {
-							"noLibraries": "No libraries",
-							"noLibrariesDescription": "You don't have any libraries yet",
-							"libraries": "Libraries",
-							"createLibrary": "Create library",
-							"seeAll": "See all"
-						}
-					}
-				}
-			}
-		},
-		"readers": {
-			"epub": {
-				"EpubReaderHeader": {
-					"bookOverview": "Book Overview"
-				},
-				"controls": {
-					"FontSizeControl": {
-						"fontSize": "Font size",
-						"previewCap": "Live font preview is capped at 50px"
-					},
-					"LineHeightControl": {
-						"lineHeight": "Line height"
-					},
-					"ReadingDirection": {
-						"label": "Reading direction",
-						"leftToRight": "Left to right",
-						"rightToLeft": "Right to left"
-					},
-					"ReadingMode": {
-						"label": "Reading mode",
-						"paged": "Paged",
-						"continuous": "Continuous"
-					},
-					"SearchCommand": {
-						"spineItem": "Spine item {{index}}",
-						"noResults": "No results found.",
-						"placeholder": "Enter a basic query to search for"
-					},
-					"ThemeControls": {
-						"title": "Theme and options",
-						"appearance": "Appearance"
-					},
-					"FontFamily": {
-						"default": "Default"
-					},
-					"FullScreenToggle": {
-						"exitFullscreen": "Exit Fullscreen",
-						"enterFullscreen": "Enter Fullscreen"
-					}
-				},
-				"locations": {
-					"Bookmarks": {
-						"empty": "No bookmarks"
-					},
-					"LocationManager": {
-						"title": "Location manager",
-						"contents": "Contents",
-						"bookmarks": "Bookmarks",
-						"annotations": "Annotations"
-					},
-					"TableOfContents": {
-						"ariaLabel": "Table of Contents"
-					}
-				},
-				"EpubJsReader": {
-					"failedToNavigate": "Failed to navigate, please check the integrity of the epub file",
-					"loadErrorDescription": "You may not have permission to read this book, or the file may be missing or corrupt"
-				}
-			},
-			"imageBased": {
-				"container": {
-					"BrightnessControl": {
-						"label": "Brightness"
-					},
-					"DoubleSpreadBehavior": {
-						"label": "Double Paged",
-						"auto": "Auto",
-						"always": "Always",
-						"off": "Off"
-					},
-					"ImageScalingSelect": {
-						"label": "Image scaling",
-						"auto": "Auto",
-						"height": "Height",
-						"width": "Width",
-						"original": "Original"
-					},
-					"NextInSeries": {
-						"nextUp": "Next Up:",
-						"read": "Read"
-					},
-					"ReaderFooter": {
-						"readingTime": "Reading time: {{time}}",
-						"pageOf": "{{current}} of {{total}}"
-					},
-					"ReaderHeader": {
-						"goToBookOverview": "Go to media overview"
-					},
-					"ReaderSettings": {
-						"mode": "Mode",
-						"imageOptions": "Image Options",
-						"preferences": "Preferences",
-						"separateSecondPage": "Separate second page",
-						"panZoomWithoutCtrl": "Pan and zoom without Ctrl / Cmd",
-						"tapSidesToNavigate": "Tap sides to navigate",
-						"readingTimer": "Reading timer",
-						"experimentalAnimatedReader": "Experimental animated reader"
-					},
-					"ReadingDirectionSelect": {
-						"label": "Reading direction",
-						"leftToRight": "Left to right",
-						"rightToLeft": "Right to left"
-					},
-					"ReadingModeSelect": {
-						"label": "Flow",
-						"verticalScroll": "Vertical scroll",
-						"horizontalScroll": "Horizontal scroll",
-						"paged": "Paged"
-					},
-					"TimerMenu": {
-						"startTimer": "Start Timer",
-						"stopTimer": "Stop Timer",
-						"resetTimer": "Reset Timer"
-					},
-					"SettingsDialog": {
-						"book": "Book",
-						"global": "Global"
-					}
-				}
-			},
-			"pdf": {
-				"NativePDFViewer": {
-					"failedToLoadPrefix": "PDF failed to load.",
-					"clickHere": "Click here",
-					"failedToLoadSuffix": "attempt downloading it directly."
-				}
-			}
-		},
-		"series": {
-			"SeriesCard": {
-				"seriesMissing": "Series Missing"
-			},
-			"StackedSeriesCard": {
-				"seriesMissing": "Series Missing"
-			},
-			"metadata": {
-				"SeriesMetadataEditor": {
-					"missing": "Missing",
-					"updateMetadataError": "Failed to update metadata",
-					"updateLockedFieldsError": "Failed to update locked fields"
-				}
-			}
-		},
-		"smartList": {
-			"createOrUpdate": {
-				"sections": {
-					"FilterConfigJSON": {
-						"showJSON": "Show JSON",
-						"description": "View the raw JSON representation of the filters"
-					}
-				},
-				"queryBuilder": {
-					"filterGroup": {
-						"OperatorSelect": {
-							"list": "List",
-							"match": "Match",
-							"equality": "Equality",
-							"placeholder": "Operator",
-							"operators": {
-								"anyOf": "any in list",
-								"contains": "contains string",
-								"eq": "equal to",
-								"excludes": "excludes string",
-								"is": "is",
-								"isNot": "is not",
-								"isAnyOf": "is any of",
-								"isNoneOf": "is none of",
-								"gt": "greater than",
-								"gte": "greater than or equal to",
-								"lt": "less than",
-								"lte": "less than or equal to",
-								"noneOf": "none in list",
-								"neq": "not equal to",
-								"range": "in range"
-							}
-						},
-						"filterValue": {
-							"EnumValue": {
-								"finished": "Finished",
-								"notStarted": "Not Started",
-								"abandoned": "Abandoned"
-							}
-						}
-					}
-				}
-			}
-		},
-		"table": {
-			"Table": {
-				"to": "to",
-				"of": "of",
-				"nothingToShow": "Nothing to show",
-				"showRows": "Show {{count}} rows"
-			},
-			"TableFilterInput": {
-				"placeholder": "Filter data"
-			},
-			"TableFooter": {
-				"to": "to",
-				"of": "of"
-			},
-			"EntityTableColumnConfiguration": {
-				"title": "Configure columns",
-				"description": "Adjust which columns are displayed in book-exploration tables",
-				"visible": "Visible",
-				"hidden": "Hidden",
-				"moveToHidden": "Move to hidden",
-				"moveToVisible": "Move to visible",
-				"dropColumnsHere": "Drop columns here"
-			}
-		},
-		"PagePopoverForm": {
-			"validation": "Please enter a number from 1 to {{max}}.",
-			"label": "Jump to another page",
-			"description": "Enter a number from 1 to {{max}}."
-		},
-		"ReadMore": {
-			"readLess": "Read less",
-			"readMore": "Read more"
-		}
-	},
-	"scenes": {
-		"book": {
-			"BookActionMenu": {
-				"toast": {
-					"completionError": "Failed to update book completion status",
-					"deleteSessionError": "Failed to delete current session",
-					"deleteHistoryError": "Failed to delete read history"
-				},
-				"menu": {
-					"continueReading": "Continue reading",
-					"readFromBeginning": "Read from beginning",
-					"incognitoMode": "Incognito mode",
-					"nativePdfViewer": "Native PDF viewer",
-					"markAsRead": "Mark as read",
-					"clearProgress": "Clear progress",
-					"deleteHistory": "Delete history",
-					"manage": "Manage",
-					"email": "Email"
-				},
-				"download": "Download"
-			},
-			"BookFileInformation": {
-				"title": "File Information",
-				"size": "Size: {{value}}",
-				"format": "Format: {{value}}",
-				"hash": "Hash: {{value}}",
-				"relativePath": "Relative path: {{value}}"
-			},
-			"BookOverviewScene": {
-				"bookNotFound": "Book not found",
-				"metadata": "Metadata"
-			},
-			"BookOverviewSceneHeader": {
-				"pages": "Pages",
-				"size": "Size",
-				"format": "Format",
-				"year": "Year",
-				"progress": "Progress",
-				"ageRating": "Age {{value}}+",
-				"lastCompletedOn": "Last completed on {{date}}",
-				"completedOn": "Completed on {{date}}",
-				"genres": "Genres",
-				"writers": "Writers",
-				"tags": "Tags",
-				"links": "Links"
-			},
-			"BooksAfterCursor": {
-				"nextInSeries": "Next in series",
-				"emptyTitle": "Nothing to show",
-				"emptyDescription": "No books remain after this one"
-			},
-			"DeleteHistoryConfirmation": {
-				"title": "Delete reading history",
-				"description": "Are you sure you want to delete your reading history?",
-				"alertTitle": "This cannot be undone",
-				"alertDescription": "Your completion history cannot be recovered once deleted"
-			},
-			"settings": {
-				"BookTagEditor": {
-					"heading": "Tags",
-					"description": "Assign tags to this book"
-				},
-				"BookThumbnailSelector": {
-					"uploadError": "Failed to upload image",
-					"updateError": "Failed to update thumbnail",
-					"dialogTitle": "Select a thumbnail",
-					"dialogDescription": "Choose a page from this book to use as the new thumbnail",
-					"cancel": "Cancel",
-					"confirm": "Confirm selection"
-				}
-			},
-			"EmailBookDialog": {
-				"sendErrors": "Some errors occurred while sending email(s). Check the logs for more detail",
-				"sendFailed": "Failed to send email"
-			}
-		},
-		"bookClub": {
-			"BookClubHeader": {
-				"createdBy": "Created by",
-				"created": "Created"
-			},
-			"UserBookClubsScene": {
-				"active": "Active",
-				"inactive": "Inactive",
-				"memberCount": "{{count}} members",
-				"goToClub": "Go to club",
-				"noClubs": "You are not a member of any book clubs",
-				"explorePublic": "Explore public book clubs",
-				"yourClubs": "Your clubs",
-				"helmet": "Book Clubs"
-			},
-			"tabs": {
-				"settings": {
-					"members": {
-						"RemoveMemberConfirmation": {
-							"title": "Remove member",
-							"description": "Are you sure you want to remove this member?",
-							"confirm": "Confirm"
-						},
-						"MembersTable": {
-							"removeError": "Failed to remove member",
-							"member": "Member"
-						},
-						"MemberActionMenu": {
-							"remove": "Remove"
-						}
-					},
-					"roles": {
-						"MemberSpecDisplay": {
-							"heading": "Custom names",
-							"description": "You can override the default name for any role. This is purely cosmetic and will not affect permissions",
-							"roleColumn": "Role",
-							"showAsColumn": "Show as"
-						}
-					},
-					"scheduler": {
-						"AddBookCard": {
-							"removeSelection": "Remove selection",
-							"pickBookHeading": "Pick a book",
-							"pickBookDescription": "You can add a book from your library",
-							"externalBookHeading": "Add an external book",
-							"externalBookDescription": "If you want to add a book that isn't in your library, you can add information about it here",
-							"titleLabel": "Title",
-							"authorLabel": "Author",
-							"bookUrlLabel": "Book URL",
-							"dividerOr": "OR",
-							"dividerAndThen": "AND THEN",
-							"configureDatesHeading": "Configure the dates",
-							"configureDatesDescription": "If not provided, the start and end dates will be set to a reasonable default based on the last book's end date",
-							"startDateLabel": "Start date",
-							"endDateLabel": "End date"
-						},
-						"CreateOrAddToScheduleForm": {
-							"booksToAdd": "Books to add"
-						}
-					},
-					"basics": {
-						"BasicSettingsScene": {
-							"updateClub": "Update club"
-						}
-					}
-				}
-			},
-			"BookClubNavigation": {
-				"home": "Home",
-				"discussion": "Discussion",
-				"members": "Members"
-			}
-		},
-		"createLibrary": {
-			"CreateLibraryScene": {
-				"errorTitle": "Failed to create library"
-			}
-		},
-		"error": {
-			"FourOhFour": {
-				"message": "The page you are looking for does not seem to exist!",
-				"goHome": "Go home",
-				"reportIssue": "Report an issue"
-			}
-		},
-		"library": {
-			"LibraryHeader": {
-				"series": "Series",
-				"books": "Books",
-				"completed": "Completed",
-				"inProgress": "In progress",
-				"readingTime": "Reading time",
-				"totalSize": "Total size",
-				"genres": "Genres",
-				"tags": "Tags"
-			},
-			"tabs": {
-				"settings": {
-					"LibrarySettingsRouter": {
-						"scanFailed": "Failed to scan library",
-						"scanFailedDescription": "Please check the logs for more details"
-					},
-					"integrations": {
-						"analysis": {
-							"LibraryAnalysisScene": {
-								"workInProgress": "Work in progress",
-								"workInProgressDescription": "This page has limited functionality and is a work in progress"
-							}
-						}
-					},
-					"options": {
-						"thumbnails": {
-							"DeleteLibraryThumbnails": {
-								"deleteSuccess": "Library thumbnails deleted",
-								"deleteError": "An error occurred while deleting the library thumbnails",
-								"heading": "Delete thumbnails",
-								"description": "Remove all generated thumbnails for this library",
-								"button": "Delete thumbnails",
-								"modalTitle": "Delete library thumbnails",
-								"modalDescription": "Are you sure you want to delete all thumbnails for this library?",
-								"alertTitle": "This cannot be undone",
-								"alertDescription": "Deleting the library thumbnails will remove all generated images and you will have to manually regenerate them"
-							},
-							"LibraryThumbnailSelector": {
-								"uploadFailed": "Failed to upload image",
-								"updateFailed": "Failed to update thumbnail",
-								"choosePage": "Choose a page from this book to use as the new thumbnail",
-								"selectBook": "Select a book from the series",
-								"selectSeries": "Select a series from the library",
-								"goBack": "Go back",
-								"label": "Select thumbnail",
-								"labelDescription": "Choose a different thumbnail for this library, either from a book or upload a custom one",
-								"dialogTitle": "Select a thumbnail",
-								"cancel": "Cancel",
-								"confirm": "Confirm selection"
-							},
-							"ProcessLibraryThumbnails": {
-								"label": "Process thumbnail colors",
-								"description": "Extract missing thumbnail color metadata or force the regeneration of it for all thumbnails",
-								"button": "Extract colors",
-								"missingOnly": "Missing only",
-								"reprocessAll": "Reprocess all"
-							},
-							"RegenerateThumbnails": {
-								"label": "Regenerate thumbnails",
-								"description": "Either generate missing thumbnails or force the recreation of all thumbnails",
-								"button": "Generate thumbnails",
-								"createMissingOnly": "Create missing only",
-								"forceRecreateAll": "Force recreate all"
-							}
-						},
-						"scanner": {
-							"customScan": {
-								"ScanConfigForm": {
-									"rebuildMetadata": {
-										"label": "Rebuild metadata",
-										"description": "Rebuild metadata for all books in the library"
-									},
-									"rebuildHashes": {
-										"label": "Rebuild hashes",
-										"description": "Rebuild hashes for all books in the library"
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			"LibraryNavigation": {
-				"files": "Files"
-			}
-		},
-		"series": {
-			"SeriesHeader": {
-				"books": "Books",
-				"completed": "Completed",
-				"inProgress": "In progress",
-				"readingTime": "Reading time",
-				"totalSize": "Total size",
-				"genres": "Genres",
-				"tags": "Tags",
-				"links": "Links"
-			},
-			"tabs": {
-				"settings": {
-					"SeriesTagEditor": {
-						"heading": "Tags",
-						"description": "Assign tags to this series"
-					},
-					"SeriesThumbnailSelector": {
-						"uploadError": "Failed to upload image",
-						"updateError": "Failed to update thumbnail",
-						"dialogTitle": "Select a thumbnail",
-						"choosePage": "Choose a page from this book to use as the new thumbnail",
-						"selectBook": "Select a book from the series",
-						"goBack": "Go back",
-						"cancel": "Cancel",
-						"confirm": "Confirm selection"
-					}
-				}
-			},
-			"SeriesNavigation": {
-				"files": "Files"
-			}
-		},
-		"settings": {
-			"app": {
-				"apiKeys": {
-					"DeleteAPIKeyConfirmModal": {
-						"title": "Delete API key",
-						"description": "Anything using this key will immediately lose authentication",
-						"confirmText": "Delete key"
-					}
-				},
-				"preferences": {
-					"DebugSettings": {
-						"heading": "Debug settings",
-						"description": "These won't exist in production, but are useful for debugging",
-						"queryToolsLabel": "Query Tools",
-						"queryToolsDescription": "Enable debugging tools for queries"
-					},
-					"PreferColorToggle": {
-						"label": "Prefer colors",
-						"description": "Display more of the main accent color instead of monochrome colors",
-						"title": "This setting is not currently supported"
-					}
-				},
-				"reader": {
-					"DefaultFontFamily": {
-						"default": "Default"
-					}
-				}
-			},
-			"server": {
-				"email": {
-					"devices": {
-						"DeleteDeviceConfirmation": {
-							"deleteError": "Failed to delete device",
-							"title": "Delete device",
-							"description": "Are you sure you want to delete this device?",
-							"confirmText": "Delete device"
-						}
-					},
-					"emailers": {
-						"EmailerListItem": {
-							"notUsedYet": "Not used yet",
-							"primaryEmailer": "Primary emailer"
-						},
-						"EmailerSendRecordAttachmentTable": {
-							"notFound": "Not Found",
-							"media": "Media",
-							"filename": "Filename",
-							"size": "Size"
-						},
-						"CreateOrUpdateEmailerForm": {
-							"custom": "Custom"
-						},
-						"EmailerSendHistoryTable": {
-							"sentAt": "Sent at",
-							"recipient": "Recipient",
-							"sender": "Sender",
-							"unknown": "Unknown",
-							"attachments": "Attachments",
-							"none": "None",
-							"hide": "Hide",
-							"show": "Show"
-						}
-					}
-				},
-				"jobs": {
-					"JobActionMenu": {
-						"invalidStateTitle": "This job was found in an invalid state",
-						"invalidStateDescription": "Please check server logs and report this issue",
-						"unknownError": "An unknown error occurred",
-						"cancel": "Cancel",
-						"viewData": "View data",
-						"viewLogs": "View logs",
-						"clearLogs": "Clear logs",
-						"delete": "Delete"
-					},
-					"JobDataInspector": {
-						"title": "Job data",
-						"description": "The final output of the job after it had completed",
-						"rawJson": "Raw JSON"
-					}
-				},
-				"users": {
-					"create-or-update": {
-						"AccountDetails": {
-							"usernameLabel": "Username",
-							"usernamePlaceholder": "Username",
-							"passwordLabel": "Password",
-							"passwordPlaceholder": "Password",
-							"generateRandomPassword": "Generate Random Password"
-						},
-						"MaxSessionsAllowed": {
-							"label": "Max sessions allowed",
-							"description": "The maximum number of valid sessions allowed at a time. If a user tries to log in once this limit is reached, the oldest session will be invalidated."
-						},
-						"CreateOrUpdateUserForm": {
-							"accountDetailsHeading": "Account details",
-							"accountDetailsDescription": "They can change these values at any time"
-						},
-						"UserRestrictionsForm": {
-							"heading": "Access control"
-						}
-					},
-					"login-activity": {
-						"LoginActivitySection": {
-							"heading": "Authentication history",
-							"description": "All login attempts are logged and stored for security purposes"
-						},
-						"LoginActivityTable": {
-							"emptyHeading": "No login activity",
-							"emptySubtitle": "You cleared this, didn't you?"
-						}
-					},
-					"user-table": {
-						"InspectUserSlideOver": {
-							"title": "Inspect user",
-							"description": "Inspect a user's information and configuration",
-							"rawJson": "Raw JSON"
-						},
-						"UserActionMenu": {
-							"lockError": "An error occurred while locking the user",
-							"deleteSessionsError": "An error occurred while deleting user sessions",
-							"inspect": "Inspect",
-							"clearSessions": "Clear sessions",
-							"edit": "Edit",
-							"delete": "Delete",
-							"lockAccount": "Lock account",
-							"unlockAccount": "Unlock account"
-						},
-						"UserTableSection": {
-							"heading": "Existing accounts",
-							"description": "A list of all existing accounts on the server",
-							"createUser": "Create user"
-						},
-						"DeleteUserModal": {
-							"title": "Delete User Account",
-							"description": "Are you sure you want to delete this user? If you select the hard delete option, this user and all of their data will be permanently deleted.",
-							"hardDeleteLabel": "Hard Delete User",
-							"cancel": "Cancel",
-							"deleteUser": "Delete User"
-						}
-					},
-					"UsersStats": {
-						"users": "Users",
-						"booksCompleted": "Books completed",
-						"booksInProgress": "Books in progress",
-						"powerReader": "Power Reader",
-						"booksCount": "{{count}} books"
-					},
-					"UserPermissionsTable": {
-						"permission": "Permission"
-					},
-					"loginActivity": {
-						"LoginActivityTable": {
-							"user": "User",
-							"timestamp": "Timestamp",
-							"ipAddress": "IP address",
-							"userAgent": "User-agent",
-							"authResult": "Auth result",
-							"authSuccess": "Success",
-							"authFailure": "Failure"
-						}
-					},
-					"UserTable": {
-						"user": "User",
-						"createdAt": "Created at",
-						"lastLogin": "Last login",
-						"role": "Role",
-						"serverOwner": "Server Owner",
-						"member": "Member",
-						"never": "Never",
-						"sessions": "Sessions",
-						"sessionsTooltip": "The number of non-expired login sessions for this user",
-						"status": "Status",
-						"locked": "Locked",
-						"active": "Active"
-					}
-				},
-				"general": {
-					"ServerStats": {
-						"libraries": "Libraries",
-						"series": "Series",
-						"books": "Books",
-						"diskUsage": "Disk Usage"
-					}
-				},
-				"logs": {
-					"persistedLogs": {
-						"PersistedLogsTable": {
-							"time": "Time",
-							"level": "Level",
-							"message": "Message",
-							"jobId": "Job ID"
-						}
-					}
-				}
-			},
-			"SettingsNavigation": {
-				"section": "Section"
-			}
-		},
-		"smartList": {
-			"items": {
-				"table": {
-					"TableColumnsBottomDrawer": {
-						"selectAtLeastOne": "You must select at least one column",
-						"adjustColumns": "Adjust columns",
-						"title": "Table configuration",
-						"subtitle": "Choose which columns to display or hide",
-						"groupColumns": "Group columns",
-						"groupColumnsDescription": "This only affects the parent table by which books are grouped",
-						"bookColumns": "Book columns",
-						"bookColumnsDescription": "This only affects the nested book table(s)",
-						"enableMultiSort": "Enable multi-sort",
-						"enableMultiSortDescription": "Sorting by a column removes the previous sort. This setting allows combining them, instead",
-						"save": "Save",
-						"cancel": "Cancel"
-					},
-					"FilterBottomDrawer": {
-						"adjustFilter": "Adjust filter",
-						"notImplemented": "This functionality is not yet implemented"
-					},
-					"groupColumns": {
-						"collapse": "Collapse",
-						"expand": "Expand",
-						"collapseAll": "Collapse all",
-						"expandAll": "Expand all",
-						"series": "Series",
-						"library": "Library",
-						"books": "Books",
-						"nameOption": "Name ({{scope}})",
-						"seriesScope": "series",
-						"libraryScope": "library"
-					}
-				}
-			},
-			"UserSmartListsScene": {
-				"heading": "Smart lists",
-				"subtitle": "Your favorite searches and filters saved for easy access",
-				"accessCount": "You have access to {{count}} smart {{lists}}"
-			},
-			"settings": {
-				"access": {
-					"ChangeVisibilityConfirmation": {
-						"title": "Change visibility"
-					}
-				}
 			}
 		}
 	}

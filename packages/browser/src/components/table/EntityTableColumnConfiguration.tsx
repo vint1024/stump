@@ -262,18 +262,14 @@ export default function EntityTableColumnConfiguration({ entity, configuration, 
 
 	return (
 		<Sheet
-			title={t('components.table.EntityTableColumnConfiguration.title')}
-			description={t('components.table.EntityTableColumnConfiguration.description')}
+			title="Configure columns"
+			description="Adjust which columns are displayed in book-exploration tables"
 			open={isOpen}
 			onClose={() => setIsOpen(false)}
 			onOpen={() => setIsOpen(true)}
 			trigger={
-				<ToolTip
-					content={t('components.table.EntityTableColumnConfiguration.title')}
-					size="sm"
-					align="start"
-				>
-					<IconButton size="xs" variant="ghost" pressEffect={false} onClick={() => setIsOpen(true)}>
+				<ToolTip content="Configure columns" size="sm" align="start">
+					<IconButton size="xs" variant="ghost" onClick={() => setIsOpen(true)}>
 						<Columns className="h-4 w-4" />
 					</IconButton>
 				</ToolTip>
@@ -308,14 +304,14 @@ export default function EntityTableColumnConfiguration({ entity, configuration, 
 				>
 					<div className="gap-3 p-4 md:grid-cols-2 grid grid-cols-1">
 						<ColumnBucket
-							title={t('components.table.EntityTableColumnConfiguration.visible')}
+							title="Visible"
 							containerId="visible-container"
 							items={visible}
 							identifiers={visibleIdentifiers}
 							onMoveToOtherList={(id) => handleMoveColumn(id, false)}
 						/>
 						<ColumnBucket
-							title={t('components.table.EntityTableColumnConfiguration.hidden')}
+							title="Hidden"
 							containerId="hidden-container"
 							items={hidden}
 							identifiers={hiddenIdentifiers}
@@ -372,7 +368,7 @@ function DraggableColumn({ column, moveToOtherList, buttonLabel }: DraggableColu
 			style={style}
 			{...attributes}
 			{...listeners}
-			className={`rounded-md px-2 py-1 flex shrink-0 items-center justify-between border border-edge bg-background-surface ${
+			className={`px-2 py-1 flex shrink-0 items-center justify-between rounded-md border border-border bg-muted ${
 				isDragging ? 'opacity-40' : ''
 			}`}
 		>
@@ -386,7 +382,7 @@ function DraggableColumn({ column, moveToOtherList, buttonLabel }: DraggableColu
 
 function ColumnOverlay({ column }: { column: ReturnType<typeof resolveConfiguration>[number] }) {
 	return (
-		<div className="min-w-40 rounded-md px-2 py-1 shadow-sm flex items-center justify-between border border-edge bg-background-surface">
+		<div className="min-w-40 px-2 py-1 shadow-sm flex items-center justify-between rounded-md border border-border bg-muted">
 			<Text size="sm">{column.label}</Text>
 		</div>
 	)
@@ -407,15 +403,11 @@ function ColumnBucket({
 	identifiers,
 	onMoveToOtherList,
 }: ColumnBucketProps) {
-	const { t } = useLocaleContext()
 	const { setNodeRef } = useDroppable({ id: containerId })
-	const moveLabel =
-		containerId === 'visible-container'
-			? t('components.table.EntityTableColumnConfiguration.moveToHidden')
-			: t('components.table.EntityTableColumnConfiguration.moveToVisible')
+	const moveLabel = title === 'Visible' ? 'Move to hidden' : 'Move to visible'
 
 	return (
-		<div ref={setNodeRef} className="rounded-md p-3 border border-edge bg-background">
+		<div ref={setNodeRef} className="p-3 rounded-md border border-border bg-background">
 			<div className="mb-2 flex items-center justify-between">
 				<Text size="sm" variant="secondary">
 					{title}
@@ -436,9 +428,9 @@ function ColumnBucket({
 						/>
 					))}
 					{items.length === 0 && (
-						<div className="min-h-10 rounded px-2 py-3 flex items-center justify-center border border-dashed border-edge">
+						<div className="min-h-10 rounded px-2 py-3 flex items-center justify-center border border-dashed border-border">
 							<Text size="xs" variant="muted">
-								{t('components.table.EntityTableColumnConfiguration.dropColumnsHere')}
+								Drop columns here
 							</Text>
 						</div>
 					)}

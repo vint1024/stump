@@ -1,4 +1,5 @@
 import { useGraphQLUploadMutation } from '@stump/client'
+import { formatBytes } from '@stump/client'
 import {
 	Accordion,
 	Button,
@@ -12,15 +13,15 @@ import {
 } from '@stump/components'
 import { graphql, UploadBooksInput } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { AxiosProgressEvent } from 'axios'
 import { Book, FolderArchive } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FileRejection, useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
 
 import { useCurrentOrPrevious } from '@/hooks/useCurrentOrPrevious'
 import { useSeriesContextSafe } from '@/scenes/series'
-import { formatBytes } from '@/utils/format'
 
 import { useFileExplorerContext } from '../context'
 import UploadMenu from './UploadMenu'
@@ -37,37 +38,50 @@ const uploadSeriesMutation = graphql(`
 	}
 `)
 
+const ESTIMATED_FILE_ROW_HEIGHT = 44
+
+type UploadFileEntry = {
+	id: string
+	file: File
+}
+
+const getFileFingerprint = (file: File) => `${file.name}:${file.size}:${file.lastModified}`
+
 export default function UploadModal() {
 	const [uploadType, setUploadType] = useState<'books' | 'series'>()
 
 	const [seriesDirName, setSeriesDirName] = useState<string | undefined>(undefined)
-	const [files, setFiles] = useState<File[]>([])
+	const [files, setFiles] = useState<UploadFileEntry[]>([])
+	const nextFileIdRef = useRef(0)
 
 	const { t } = useLocaleContext()
 
 	const { currentPath, refetch, uploadConfig, libraryID } = useFileExplorerContext()
 
 	const [uploadProgress, setUploadProgress] = useState(0)
-	const [visibleCount, setVisibleCount] = useState(50)
+	const [filesViewportElement, setFilesViewportElement] = useState<HTMLDivElement | null>(null)
 
-	useEffect(() => {
-		setVisibleCount(50)
-	}, [files.length, uploadType])
+	const filesVirtualizer = useVirtualizer({
+		count: files.length,
+		enabled: files.length > 0 && !!filesViewportElement,
+		estimateSize: () => ESTIMATED_FILE_ROW_HEIGHT,
+		getItemKey: (index) => files[index]?.id ?? index,
+		getScrollElement: () => filesViewportElement,
+		overscan: 10,
+	})
 
-	const handleScroll = useCallback(
-		(e: React.UIEvent<HTMLDivElement>) => {
-			const target = e.currentTarget
-			if (target.scrollHeight - target.scrollTop <= target.clientHeight + 150) {
-				setVisibleCount((prev) => Math.min(prev + 50, files.length))
-			}
-		},
-		[files.length],
-	)
+	const virtualFileRows = filesVirtualizer.getVirtualItems()
+	const totalFileRowsSize = filesVirtualizer.getTotalSize()
 
 	const config = useMemo(
 		() => ({
 			onUploadProgress: ({ loaded, total }: AxiosProgressEvent) => {
-				const progress = Math.round((loaded * 100) / (total || 0))
+				if (!total || total <= 0) {
+					setUploadProgress(0)
+					return
+				}
+
+				const progress = Math.round((loaded * 100) / total)
 				setUploadProgress(progress)
 			},
 		}),
@@ -91,20 +105,24 @@ export default function UploadModal() {
 
 	const isUploading = isUploadingBooks || isUploadingSeries
 
-	const handleDrop = useCallback(
-		(acceptedFiles: File[], rejections: FileRejection[]) => {
-			if (rejections.length) {
-				console.warn('Some files were rejected:', rejections)
-				toast.error(t('common.fileUpload.someRejected'))
-			}
+	const handleDrop = useCallback((acceptedFiles: File[], rejections: FileRejection[]) => {
+		if (rejections.length) {
+			console.warn('Some files were rejected:', rejections)
+			toast.error('Some files were rejected. Please check the file type and size')
+		}
 
-			setFiles((prev) => [
-				...prev,
-				...acceptedFiles.filter((file) => !prev.some((f) => f.name === file.name)),
-			])
-		},
-		[t],
-	)
+		setFiles((prev) => {
+			const existingFingerprints = new Set(prev.map(({ file }) => getFileFingerprint(file)))
+			const nextEntries = acceptedFiles
+				.filter((file) => !existingFingerprints.has(getFileFingerprint(file)))
+				.map((file) => ({
+					id: `${nextFileIdRef.current++}`,
+					file,
+				}))
+
+			return [...prev, ...nextEntries]
+		})
+	}, [])
 
 	const { getRootProps, getInputProps, isFileDialogActive, isDragActive } = useDropzone({
 		accept: {
@@ -134,13 +152,13 @@ export default function UploadModal() {
 		async (params: UploadBooksInput) => {
 			try {
 				await uploadBooks({ input: params })
-				toast.success(t(getKey('toast.booksSuccess')))
+				toast.success('Successfully uploaded file(s)')
 			} catch (error) {
 				console.error(error)
-				toast.error(t(getKey('toast.booksError')))
+				toast.error('Failed to upload book(s)')
 			}
 		},
-		[uploadBooks, t],
+		[uploadBooks],
 	)
 
 	const enableSeries = useSeriesContextSafe() == null
@@ -148,7 +166,7 @@ export default function UploadModal() {
 	const doUploadSeries = useCallback(async () => {
 		if (!enableSeries) return
 
-		const firstFile = files?.at(0)
+		const firstFile = files.at(0)?.file
 		if (!seriesDirName || !firstFile || !currentPath) return
 
 		try {
@@ -160,12 +178,12 @@ export default function UploadModal() {
 					seriesDirName,
 				},
 			})
-			toast.success(t(getKey('toast.seriesSuccess')))
+			toast.success('Successfully uploaded series')
 		} catch (error) {
 			console.error(error)
-			toast.error(t(getKey('toast.seriesError')))
+			toast.error('Failed to upload series')
 		}
-	}, [uploadSeries, files, seriesDirName, currentPath, libraryID, enableSeries, t])
+	}, [uploadSeries, files, seriesDirName, currentPath, libraryID, enableSeries])
 
 	const onUploadClicked = useCallback(async () => {
 		// Return if files is empty
@@ -181,7 +199,7 @@ export default function UploadModal() {
 		// Handle books/series upload paths
 		if (uploadType == 'books') {
 			doUploadBooks({
-				uploads: files,
+				uploads: files.map(({ file }) => file),
 				placeAt: currentPath,
 				libraryId: libraryID,
 			})
@@ -216,7 +234,7 @@ export default function UploadModal() {
 		if (isUploading) {
 			return (
 				<>
-					<span className="rounded-lg p-4 flex items-center justify-center border border-edge bg-background-surface/80">
+					<span className="p-4 flex items-center justify-center rounded-lg border border-border bg-muted/80">
 						<ProgressSpinner className="h-7 w-7" />
 					</span>
 
@@ -224,7 +242,7 @@ export default function UploadModal() {
 						<Heading size="xs" className="space-x-1 flex items-center justify-center">
 							{t('common.uploading')}{' '}
 							{uploadProgress > 0 && (
-								<span className="text-foreground-muted">({uploadProgress}%)</span>
+								<span className="text-muted-foreground">({uploadProgress}%)</span>
 							)}
 						</Heading>
 						<div className="mt-2 h-4 w-64 flex items-center justify-center">
@@ -233,7 +251,6 @@ export default function UploadModal() {
 								isIndeterminate={uploadProgress === 0}
 								className="h-1.5 rounded-lg"
 								max={100}
-								variant="primary"
 							/>
 						</div>
 					</div>
@@ -243,8 +260,8 @@ export default function UploadModal() {
 			const Icon = displayedType === 'books' ? Book : FolderArchive
 			return (
 				<>
-					<span className="rounded-lg p-4 flex items-center justify-center border border-edge bg-background-surface/80">
-						<Icon className="h-8 w-8 text-foreground-muted" />
+					<span className="p-4 flex items-center justify-center rounded-lg border border-border bg-muted/80">
+						<Icon className="h-8 w-8 text-muted-foreground" />
 					</span>
 
 					<div className="text-center">
@@ -278,18 +295,12 @@ export default function UploadModal() {
 						</Dialog.Description>
 					</Dialog.Header>
 
-					<div
-						className="space-y-4 pr-2 max-h-[55vh] overflow-y-auto"
-						onScroll={handleScroll}
-						style={{
-							scrollbarColor: 'var(--color-scrollbar-thumb) transparent',
-						}}
-					>
+					<div className="space-y-4 pr-2">
 						<div
 							{...getRootProps()}
 							className={cn(
-								'space-y-4 rounded-lg p-4 flex shrink-0 grow cursor-pointer flex-col items-center justify-center border border-dashed border-edge-subtle ring-2 ring-transparent ring-offset-2 ring-offset-background-overlay outline-none!',
-								{ 'ring-edge-brand': isFocused },
+								'space-y-4 p-4 flex shrink-0 grow cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-border ring-2 ring-transparent ring-offset-2 ring-offset-background outline-none!',
+								{ 'ring-ring/50': isFocused },
 							)}
 						>
 							<input {...getInputProps()} />
@@ -297,13 +308,15 @@ export default function UploadModal() {
 							{renderDropContent()}
 						</div>
 
-						{/* Conditionally render the series name input */}
 						{uploadType === 'series' && (
 							<div className="mt-2">
-								<Heading size="xs">{t(getKey('seriesName.label'))}</Heading>
-								<Dialog.Description>{t(getKey('seriesName.description'))}</Dialog.Description>
+								<Heading size="xs">Series name</Heading>
+								<Dialog.Description>
+									This will be used as the name of the series directory. Your zip archive will be
+									unpacked here.
+								</Dialog.Description>
 								<Input
-									placeholder={t(getKey('seriesName.placeholder'))}
+									placeholder="Enter series name"
 									value={seriesDirName}
 									onChange={(e) => setSeriesDirName(e.target.value)}
 									className="mt-2"
@@ -314,7 +327,7 @@ export default function UploadModal() {
 						<Accordion type="single" collapsible>
 							<Accordion.Item
 								value="files"
-								className="rounded-lg px-4 py-2 border-none bg-background-surface/80"
+								className="px-4 py-2 rounded-lg border-none bg-muted/80"
 							>
 								<Accordion.Trigger
 									noUnderline
@@ -329,37 +342,52 @@ export default function UploadModal() {
 								</Accordion.Trigger>
 
 								<Accordion.Content>
-									<div className="space-y-1 flex flex-col">
-										{files.slice(0, visibleCount).map((file, idx) => (
-											<div
-												key={file.name}
-												className="group gap-x-2 rounded-lg p-2 flex items-center border border-edge"
-											>
-												<Text size="sm" className="line-clamp-1">
-													{file.name}
-												</Text>
-												<Text size="sm" variant="muted" className="shrink-0">
-													{formatBytes(file.size)}
-												</Text>
+									<div
+										ref={setFilesViewportElement}
+										className="h-60 pr-1 overflow-y-auto"
+										style={{
+											scrollbarColor: 'var(--color-scrollbar-thumb) transparent',
+										}}
+									>
+										<div className="relative w-full" style={{ height: totalFileRowsSize }}>
+											{virtualFileRows.map((virtualItem) => {
+												const fileEntry = files[virtualItem.index]
+												if (!fileEntry) return null
 
-												<div className="flex-1" />
-												<Button
-													variant="ghost"
-													size="xs"
-													className="opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-													onClick={() => {
-														setFiles((prev) => prev.filter((_, i) => i !== idx))
-													}}
-												>
-													{t('common.remove')}
-												</Button>
-											</div>
-										))}
-										{files.length > visibleCount && (
-											<div className="p-2 text-xs text-center text-foreground-muted italic">
-												{t(getKey('moreFiles'), { count: files.length - visibleCount })}
-											</div>
-										)}
+												return (
+													<div
+														key={virtualItem.key}
+														ref={filesVirtualizer.measureElement}
+														data-index={virtualItem.index}
+														className="py-0.5 absolute w-full"
+														style={{
+															transform: `translateY(${virtualItem.start}px)`,
+														}}
+													>
+														<div className="group gap-x-2 p-2 flex items-center rounded-lg border border-border">
+															<Text size="sm" className="line-clamp-1">
+																{fileEntry.file.name}
+															</Text>
+															<Text size="sm" variant="muted" className="shrink-0">
+																{formatBytes(fileEntry.file.size)}
+															</Text>
+
+															<div className="flex-1" />
+															<Button
+																variant="ghost"
+																size="xs"
+																className="opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+																onClick={() => {
+																	setFiles((prev) => prev.filter(({ id }) => id !== fileEntry.id))
+																}}
+															>
+																{t('common.remove')}
+															</Button>
+														</div>
+													</div>
+												)
+											})}
+										</div>
 									</div>
 								</Accordion.Content>
 							</Accordion.Item>
@@ -367,10 +395,10 @@ export default function UploadModal() {
 					</div>
 
 					<Dialog.Footer>
-						<Button variant="default" onClick={() => setUploadType(undefined)}>
+						<Button variant="outline" onClick={() => setUploadType(undefined)}>
 							{t('common.cancel')}
 						</Button>
-						<Button variant="primary" disabled={!files.length} onClick={onUploadClicked}>
+						<Button disabled={!files.length} onClick={onUploadClicked}>
 							{t('common.upload')}
 						</Button>
 					</Dialog.Footer>

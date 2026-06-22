@@ -1,7 +1,6 @@
 import { useGraphQLMutation } from '@stump/client'
 import { Button, DropdownMenu, Label, Text } from '@stump/components'
 import { graphql } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { AlertTriangle, ChevronDown, ImagePlus } from 'lucide-react'
 import { useCallback } from 'react'
 
@@ -14,7 +13,6 @@ const mutation = graphql(`
 `)
 
 export default function ProcessLibraryThumbnails() {
-	const { t } = useLocaleContext()
 	const { library } = useLibraryContext()
 
 	const { mutate } = useGraphQLMutation(mutation)
@@ -29,21 +27,18 @@ export default function ProcessLibraryThumbnails() {
 	return (
 		<div className="gap-4 flex flex-col">
 			<div>
-				<Label>
-					{t('scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.label')}
-				</Label>
+				<Label>Process thumbnail colors</Label>
 				<Text size="sm" variant="muted">
-					{t(
-						'scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.description',
-					)}
+					Extract missing thumbnail color metadata or force the regeneration of it for all
+					thumbnails
 				</Text>
 			</div>
 
 			<div>
 				<DropdownMenu
 					trigger={
-						<Button size="md" variant="outline">
-							{t('scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.button')}
+						<Button variant="outline">
+							Extract colors
 							<ChevronDown className="ml-2 h-4 w-4" />
 						</Button>
 					}
@@ -51,16 +46,13 @@ export default function ProcessLibraryThumbnails() {
 						{
 							items: [
 								{
-									label: t(
-										'scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.missingOnly',
-									),
+									label: 'Missing only',
 									leftIcon: <ImagePlus className={iconStyle} />,
 									onClick: () => process(false),
 								},
 								{
-									label: t(
-										'scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.reprocessAll',
-									),
+									label: 'Reprocess all',
+									isDestructive: true,
 									leftIcon: <AlertTriangle className={iconStyle} />,
 									onClick: () => process(true),
 								},

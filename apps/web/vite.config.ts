@@ -1,7 +1,10 @@
+import { constants as zlibConstants } from 'node:zlib'
+
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import type { PluginOption } from 'vite'
 import { defineConfig } from 'vite'
+import { compression, defineAlgorithm } from 'vite-plugin-compression2'
 import { VitePWA } from 'vite-plugin-pwa'
 import tsconfigPaths from 'vite-plugin-tsconfig-paths'
 
@@ -27,20 +30,37 @@ export default defineConfig({
 			},
 		}),
 		tsconfigPaths(),
+		compression({
+			include: [/\.(js|mjs|json|css|html|svg|xml|wasm)$/i],
+			exclude: [/\.(png|jpe?g|gif|webp|avif|woff2?|mp4|webm)$/i],
+			threshold: 1024,
+			algorithms: [
+				defineAlgorithm('gzip', { level: 9 }),
+				defineAlgorithm('brotliCompress', {
+					params: {
+						[zlibConstants.BROTLI_PARAM_QUALITY]: 11,
+					},
+				}),
+			],
+		}),
 		VitePWA({
+			// We manually register in src/index.tsx to add idle scheduling and script preflight checks.
+			injectRegister: null,
 			registerType: 'autoUpdate',
 			devOptions: {
 				enabled: false,
 			},
 			workbox: {
-				// The main chunk bundles every locale and crossed 5 MiB once the
-				// Russian locale was fully translated (5.31 MB). Splitting locales
-				// out of the main bundle would be the real fix
+				inlineWorkboxRuntime: true,
+				navigateFallbackDenylist: [
+					/^\/api(?:\/|$)/,
+					/^\/opds(?:\/|$)/,
+					/^\/kobo(?:\/|$)/,
+					/^\/koreader(?:\/|$)/,
+				],
 				maximumFileSizeToCacheInBytes: 6 * 1024 * 1024, // 6MB
 			},
-			// Emit SW + registerSW.js + manifest at the dist ROOT (default vite outDir)
-				// so /sw.js gets root scope and /registerSW.js is served as JS. The server
-				// serves root-level files before the SPA fallback — see routers/spa.rs.
+			outDir: '../dist',
 			base: '/',
 			// TODO(pwa): Add more manifest definitions for better overall experience
 			manifest: {

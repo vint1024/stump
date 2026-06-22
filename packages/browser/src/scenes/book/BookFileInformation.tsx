@@ -1,8 +1,7 @@
+import { formatBytes } from '@stump/client'
 import { Heading, Text } from '@stump/components'
 import { FragmentType, graphql, useFragment } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
-
-import { formatBytes } from '../../utils/format'
 
 export const BookFileInformationFragment = graphql(`
 	fragment BookFileInformation on Media {

@@ -5,18 +5,18 @@ use async_graphql::{
 };
 
 use models::{
-	entity::{
-		finished_reading_session, library, media, reading_session, series, series_merge,
-		series_tag, tag,
-	},
+	entity::{library, media, reading_session, series, series_merge, series_tag, tag},
 	shared::{
 		alphabet::{AvailableAlphabet, EntityLetter},
+		enums::ReadingStatus,
 		image::ImageRef,
 	},
 };
 use sea_orm::{
-	prelude::*, sea_query::Query, Condition, DatabaseBackend, FromQueryResult, JoinType,
-	PaginatorTrait, QueryOrder, QuerySelect, QueryTrait, Statement,
+	prelude::*,
+	sea_query::{Expr, Query},
+	Condition, DatabaseBackend, FromQueryResult, JoinType, PaginatorTrait, QueryOrder,
+	QuerySelect, QueryTrait, Statement,
 };
 
 use crate::{
@@ -189,6 +189,8 @@ impl Series {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
 		let user_id = user.id.clone();
+		let newer_exists = reading_session::Entity::newer_session_exists_subquery();
+		let latest_only = Expr::expr(Expr::exists(newer_exists)).not();
 
 		let name_cmp = if let Some(id) = cursor {
 			let media = media::Entity::find_for_user(user)
@@ -205,16 +207,14 @@ impl Series {
 		};
 
 		let query = media::ModelWithMetadata::find_for_user(user)
-			.left_join(reading_session::Entity)
 			.join_rev(
 				JoinType::LeftJoin,
-				finished_reading_session::Entity::belongs_to(media::Entity)
-					.from(finished_reading_session::Column::MediaId)
+				reading_session::Entity::belongs_to(media::Entity)
+					.from(reading_session::Column::MediaId)
 					.to(media::Column::Id)
 					.on_condition(move |_left, _right| {
-						Condition::all().add(
-							finished_reading_session::Column::UserId.eq(user_id.clone()),
-						)
+						Condition::all()
+							.add(reading_session::Column::UserId.eq(user_id.clone()))
 					})
 					.into(),
 			)
@@ -222,30 +222,19 @@ impl Series {
 			// We only want to consider media that the user hasn't started or is in progress
 			.filter(
 				Condition::any()
+					// not started
 					.add(reading_session::Column::Id.is_null())
+					// in progress (latest is reading + no newer sessions)
 					.add(
 						Condition::all()
-							.add(reading_session::Column::UserId.eq(&user.id))
 							.add(
-								Condition::any()
-									.add(reading_session::Column::Epubcfi.is_not_null())
-									.add(
-										reading_session::Column::PercentageCompleted
-											.lt(1.0),
-									)
-									.add(
-										Condition::all()
-											.add(
-												reading_session::Column::Page
-													.is_not_null(),
-											)
-											.add(reading_session::Column::Page.gt(0)),
-									),
-							),
+								reading_session::Column::Status
+									.eq(ReadingStatus::Reading),
+							)
+							.add(latest_only.clone()),
 					),
 			)
-			// If the book is finshed, we don't even want to consider it
-			.filter(finished_reading_session::Column::Id.is_null());
+			.group_by(media::Column::Id);
 
 		let books = if let Some(name) = name_cmp {
 			let mut cursor = query.cursor_by(media::Column::Name);
@@ -409,9 +398,10 @@ async fn series_finished_count_for_user(
 	if !user.content_rules.is_empty() {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 		let finished_media = Query::select()
-			.column(finished_reading_session::Column::MediaId)
-			.from(finished_reading_session::Entity)
-			.and_where(finished_reading_session::Column::UserId.eq(user.id.clone()))
+			.column(reading_session::Column::MediaId)
+			.from(reading_session::Entity)
+			.and_where(reading_session::Column::UserId.eq(user.id.clone()))
+			.and_where(reading_session::Column::Status.eq(ReadingStatus::Finished))
 			.to_owned();
 		let count = media::Entity::find_for_user(user)
 			.filter(media::Column::SeriesId.eq(series_id))

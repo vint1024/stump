@@ -74,7 +74,7 @@ function EmailBookDialog({ mediaId, isOpen, onClose, canArbitrarySendEmail }: Pr
 			if (errors.length > 0) {
 				onClose()
 				console.warn(errors)
-				toast.error(t('scenes.book.EmailBookDialog.sendErrors'))
+				toast.error('Some errors occurred while sending email(s). Check the logs for more detail')
 			}
 		},
 	})
@@ -102,9 +102,9 @@ function EmailBookDialog({ mediaId, isOpen, onClose, canArbitrarySendEmail }: Pr
 			mutate({ id: mediaId, sendTo })
 		} catch (error) {
 			console.error(error)
-			toast.error(t('scenes.book.EmailBookDialog.sendFailed'))
+			toast.error('Failed to send email')
 		}
-	}, [mutate, deviceIds, emails, canArbitrarySendEmail, mediaId, t])
+	}, [mutate, deviceIds, emails, canArbitrarySendEmail, mediaId])
 
 	const renderArbitraryEmails = () => {
 		if (!canArbitrarySendEmail) {
@@ -117,7 +117,6 @@ function EmailBookDialog({ mediaId, isOpen, onClose, canArbitrarySendEmail }: Pr
 							<Badge
 								key={index}
 								size="sm"
-								variant="default"
 								onClick={() => setEmails((curr) => curr.filter((e) => e !== email))}
 							>
 								{email}
@@ -130,7 +129,6 @@ function EmailBookDialog({ mediaId, isOpen, onClose, canArbitrarySendEmail }: Pr
 							label={t(getFormKey('email.label'))}
 							description={t(getFormKey('email.description'))}
 							fullWidth
-							variant="primary"
 							value={currentEmail}
 							onChange={(e) => setCurrentEmail(e.target.value)}
 						/>
@@ -182,11 +180,11 @@ function EmailBookDialog({ mediaId, isOpen, onClose, canArbitrarySendEmail }: Pr
 				</div>
 
 				<Dialog.Footer>
-					<Button onClick={onClose} disabled={isSending}>
-						{t('common.cancel')}
+					<Button variant="outline" onClick={onClose} disabled={isSending}>
+						Cancel
 					</Button>
-					<Button variant="primary" onClick={handleSend} disabled={isSending} isLoading={isSending}>
-						{t('common.confirm')}
+					<Button onClick={handleSend} disabled={isSending} isLoading={isSending}>
+						Confirm
 					</Button>
 				</Dialog.Footer>
 			</Dialog.Content>

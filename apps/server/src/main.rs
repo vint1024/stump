@@ -63,6 +63,10 @@ async fn run() -> Result<(), EntryError> {
 		// level is used for logging.
 		init_tracing(&resolved_config);
 
+		if let Some(ref oidc) = resolved_config.oidc {
+			tracing::info!(enabled = oidc.enabled, "OIDC configuration loaded");
+		}
+
 		if resolved_config.verbosity >= 3 {
 			tracing::trace!(?resolved_config, "App config");
 		}

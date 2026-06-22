@@ -49,7 +49,7 @@ export default function NumberCell<Field extends string>({
 
 				<ToolTip content={t('components.metadata.metadataEditor.cells.NumberCell.resetField')}>
 					<Button
-						variant="danger"
+						variant="destructive"
 						size="icon"
 						className="h-4 w-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
 						aria-label={t('components.metadata.metadataEditor.cells.NumberCell.resetField')}

@@ -1,7 +1,6 @@
 import { useGraphQLMutation, useSDK } from '@stump/client'
 import { Button, Dialog, Label, PickSelect, Text } from '@stump/components'
 import { graphql, LibraryThumbnailSelectorUpdateMutation } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -39,7 +38,6 @@ const uploadMutation = graphql(`
 type OnSuccessData = PickSelect<LibraryThumbnailSelectorUpdateMutation, 'updateLibraryThumbnail'>
 
 export default function LibraryThumbnailSelector() {
-	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 	const [selectedSeries, setSelectedSeries] = useState<SelectedSeries>()
 	const [selectedBook, setSelectedBook] = useState<SelectedBook>()
@@ -95,14 +93,10 @@ export default function LibraryThumbnailSelector() {
 				setIsOpen(false)
 			} catch (error) {
 				console.error(error)
-				toast.error(
-					t(
-						'scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.uploadFailed',
-					),
-				)
+				toast.error('Failed to upload image')
 			}
 		},
-		[library.id, uploadThumbnail, t],
+		[library.id, uploadThumbnail],
 	)
 
 	const handleConfirm = useCallback(async () => {
@@ -113,11 +107,9 @@ export default function LibraryThumbnailSelector() {
 			setIsOpen(false)
 		} catch (error) {
 			console.error(error)
-			toast.error(
-				t('scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.updateFailed'),
-			)
+			toast.error('Failed to update thumbnail')
 		}
-	}, [patchThumbnail, selectedBook, page, library.id, t])
+	}, [patchThumbnail, selectedBook, page, library.id])
 
 	useEffect(() => {
 		return () => {
@@ -146,17 +138,11 @@ export default function LibraryThumbnailSelector() {
 
 	const renderDescription = () => {
 		if (selectedBook) {
-			return t(
-				'scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.choosePage',
-			)
+			return 'Choose a page from this book to use as the new thumbnail'
 		} else if (selectedSeries) {
-			return t(
-				'scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.selectBook',
-			)
+			return 'Select a book from the series'
 		} else {
-			return t(
-				'scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.selectSeries',
-			)
+			return 'Select a series from the library'
 		}
 	}
 
@@ -175,7 +161,7 @@ export default function LibraryThumbnailSelector() {
 					}
 				}}
 			>
-				{t('scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.goBack')}
+				Go back
 			</span>
 		)
 	}
@@ -183,13 +169,9 @@ export default function LibraryThumbnailSelector() {
 	return (
 		<div className="gap-4 flex flex-col">
 			<div>
-				<Label>
-					{t('scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.label')}
-				</Label>
+				<Label>Select thumbnail</Label>
 				<Text size="sm" variant="muted">
-					{t(
-						'scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.labelDescription',
-					)}
+					Choose a different thumbnail for this library, either from a book or upload a custom one
 				</Text>
 			</div>
 
@@ -203,11 +185,7 @@ export default function LibraryThumbnailSelector() {
 			<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 				<Dialog.Content size="xl">
 					<Dialog.Header>
-						<Dialog.Title>
-							{t(
-								'scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.dialogTitle',
-							)}
-						</Dialog.Title>
+						<Dialog.Title>Select a thumbnail</Dialog.Title>
 						<Dialog.Description>
 							{renderDescription()}
 							{renderGoBack()}
@@ -216,20 +194,16 @@ export default function LibraryThumbnailSelector() {
 					</Dialog.Header>
 
 					<Suspense>{renderContent()}</Suspense>
-
 					<Dialog.Footer>
-						<Button variant="default" onClick={handleCancel}>
-							{t('scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.cancel')}
+						<Button variant="outline" onClick={handleCancel}>
+							Cancel
 						</Button>
 						<Button
-							variant="primary"
 							onClick={handleConfirm}
 							disabled={!selectedSeries || !selectedBook || !page}
 							isLoading={isPatchingThumbnail || isUploadingThumbnail}
 						>
-							{t(
-								'scenes.library.tabs.settings.options.thumbnails.LibraryThumbnailSelector.confirm',
-							)}
+							Confirm selection
 						</Button>
 					</Dialog.Footer>
 				</Dialog.Content>

@@ -1,10 +1,9 @@
 import { useSuspenseGraphQL } from '@stump/client'
+import { formatBytesSeparate } from '@stump/client'
 import { Statistic } from '@stump/components'
 import { graphql } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
 import { useMemo } from 'react'
-
-import { formatBytesSeparate } from '@/utils/format'
 
 const query = graphql(`
 	query ServerStats {
@@ -30,7 +29,7 @@ export default function ServerStats() {
 	)
 
 	return (
-		<div className="max-w-xl gap-4 flex items-center justify-around divide-x divide-edge">
+		<div className="max-w-xl gap-4 flex items-center justify-around divide-x divide-border">
 			<Statistic className="pr-10">
 				<Statistic.Label>{t(getKey('libraries'))}</Statistic.Label>
 				<Statistic.CountUpNumber value={Number(stats.libraryCount)} />

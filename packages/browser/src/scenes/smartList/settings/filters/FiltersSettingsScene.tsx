@@ -58,8 +58,8 @@ export default function FiltersSettingsScene() {
 			<SmartListQueryBuilder />
 
 			<div>
-				<Button type="submit" disabled={!isChanged} variant="primary">
-					{t('smartListSettingsScene.filters.form.submit')}
+				<Button type="submit" disabled={!isChanged}>
+					Update filters
 				</Button>
 			</div>
 		</Form>

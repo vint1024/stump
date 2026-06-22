@@ -1,5 +1,4 @@
 import { ConfirmationModal, IconButton, ToolTip, useBoolean } from '@stump/components'
-import { useLocaleContext } from '@stump/i18n'
 import { LogOut } from 'lucide-react'
 
 import { useAppContext } from '@/context'
@@ -9,7 +8,6 @@ type Props = {
 }
 
 export default function Logout({ trigger }: Props) {
-	const { t } = useLocaleContext()
 	const { logout } = useAppContext()
 	const [isOpen, { on, off }] = useBoolean()
 
@@ -20,22 +18,23 @@ export default function Logout({ trigger }: Props) {
 
 	return (
 		<ConfirmationModal
-			title={t('components.navigation.sidebar.Logout.title')}
-			description={t('components.navigation.sidebar.Logout.description')}
-			confirmText={t('components.navigation.sidebar.Logout.confirmText')}
-			confirmVariant="danger"
+			title="Sign out"
+			description="Are you sure you want sign out?"
+			confirmText="Sign out"
+			confirmVariant="destructive"
 			isOpen={isOpen}
 			onClose={off}
 			onConfirm={handleLogout}
 			trigger={
-				<ToolTip content={t('components.navigation.sidebar.Logout.tooltip')}>
+				<ToolTip content="Sign Out">
 					{trigger ? (
 						trigger(on)
 					) : (
 						<IconButton
-							className="hover:text-foreground-500 text-foreground-subtle"
+							variant="ghost"
+							className="text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
 							onClick={on}
-							aria-label={t('components.navigation.sidebar.Logout.tooltip')}
+							aria-label="Sign Out"
 						>
 							<LogOut />
 						</IconButton>

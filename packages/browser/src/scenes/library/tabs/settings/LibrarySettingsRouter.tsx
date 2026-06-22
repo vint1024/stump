@@ -1,5 +1,11 @@
 import { useGraphQLMutation } from '@stump/client'
-import { CreateOrUpdateLibraryInput, graphql, useFragment, UserPermission } from '@stump/graphql'
+import {
+	CreateOrUpdateLibraryInput,
+	extractErrorMessage,
+	graphql,
+	useFragment,
+	UserPermission,
+} from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import omit from 'lodash/omit'
@@ -42,6 +48,7 @@ export const LibrarySettingsConfig = graphql(`
 			processMetadata
 			watch
 			libraryPattern
+			libraryType
 			thumbnailConfig {
 				__typename
 				resizeMethod {
@@ -106,13 +113,17 @@ export default function LibrarySettingsRouter() {
 					),
 			})
 		},
+		onError: (error) => {
+			toast.error(t('createOrUpdateLibrary.errors.failedToUpdate'), {
+				description: extractErrorMessage(error),
+			})
+		},
 	})
 
 	const { mutate: scan } = useGraphQLMutation(scanMutation, {
 		onError: (error) => {
-			console.error('Failed to scan library', error)
-			toast.error(t('scenes.library.tabs.settings.LibrarySettingsRouter.scanFailed'), {
-				description: t('scenes.library.tabs.settings.LibrarySettingsRouter.scanFailedDescription'),
+			toast.error(t('createOrUpdateLibrary.errors.failedToScan'), {
+				description: extractErrorMessage(error),
 			})
 		},
 	})

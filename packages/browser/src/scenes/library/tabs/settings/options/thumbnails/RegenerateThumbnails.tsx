@@ -1,7 +1,6 @@
 import { useGraphQLMutation } from '@stump/client'
 import { Button, DropdownMenu, Label, Text } from '@stump/components'
 import { graphql } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { AlertTriangle, ChevronDown, ImagePlus } from 'lucide-react'
 import { useCallback } from 'react'
 
@@ -14,7 +13,6 @@ const mutation = graphql(`
 `)
 
 export default function RegenerateThumbnails() {
-	const { t } = useLocaleContext()
 	const { library } = useLibraryContext()
 
 	const { mutate } = useGraphQLMutation(mutation)
@@ -29,19 +27,17 @@ export default function RegenerateThumbnails() {
 	return (
 		<div className="gap-4 flex flex-col">
 			<div>
-				<Label>
-					{t('scenes.library.tabs.settings.options.thumbnails.RegenerateThumbnails.label')}
-				</Label>
+				<Label>Regenerate thumbnails</Label>
 				<Text size="sm" variant="muted">
-					{t('scenes.library.tabs.settings.options.thumbnails.RegenerateThumbnails.description')}
+					Either generate missing thumbnails or force the recreation of all thumbnails
 				</Text>
 			</div>
 
 			<div>
 				<DropdownMenu
 					trigger={
-						<Button size="md" variant="outline">
-							{t('scenes.library.tabs.settings.options.thumbnails.RegenerateThumbnails.button')}
+						<Button variant="outline">
+							Generate thumbnails
 							<ChevronDown className="ml-2 h-4 w-4" />
 						</Button>
 					}
@@ -49,16 +45,13 @@ export default function RegenerateThumbnails() {
 						{
 							items: [
 								{
-									label: t(
-										'scenes.library.tabs.settings.options.thumbnails.RegenerateThumbnails.createMissingOnly',
-									),
+									label: 'Create missing only',
 									leftIcon: <ImagePlus className={iconStyle} />,
 									onClick: () => regenerate(false),
 								},
 								{
-									label: t(
-										'scenes.library.tabs.settings.options.thumbnails.RegenerateThumbnails.forceRecreateAll',
-									),
+									label: 'Force recreate all',
+									isDestructive: true,
 									leftIcon: <AlertTriangle className={iconStyle} />,
 									onClick: () => regenerate(true),
 								},

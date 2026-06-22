@@ -211,7 +211,7 @@ export default function UserTable() {
 	)
 
 	return (
-		<Card>
+		<Card className="overflow-hidden">
 			<Table
 				sortable
 				columns={columns}

@@ -88,12 +88,8 @@ export default function CreateSmartListForm({ onSubmit, isLoading }: Props) {
 						<AccessSettings isCreating />
 
 						<div className="mt-6 md:max-w-sm flex w-full">
-							<Button
-								className="md:w-auto w-full"
-								variant="primary"
-								onClick={() => handleChangeStep(2)}
-							>
-								{t('createSmartListScene.form.buttons.nextStep')}
+							<Button className="md:w-auto w-full" onClick={() => handleChangeStep(2)}>
+								Next step
 							</Button>
 						</div>
 					</>
@@ -104,12 +100,8 @@ export default function CreateSmartListForm({ onSubmit, isLoading }: Props) {
 						<SmartListQueryBuilder />
 
 						<div className="mt-6 md:max-w-sm flex w-full">
-							<Button
-								className="md:w-auto w-full"
-								variant="primary"
-								onClick={() => handleChangeStep(3)}
-							>
-								{t('createSmartListScene.form.buttons.nextStep')}
+							<Button className="md:w-auto w-full" onClick={() => handleChangeStep(3)}>
+								Next step
 							</Button>
 						</div>
 					</>
@@ -137,10 +129,9 @@ export default function CreateSmartListForm({ onSubmit, isLoading }: Props) {
 						type="submit"
 						form="createSmartListForm"
 						className="md:w-auto w-full"
-						variant="primary"
 						isLoading={isLoading}
 					>
-						{t('createSmartListScene.form.buttons.confirm')}
+						Create list
 					</Button>
 				</div>
 			</ContentContainer>

@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, cn, Form } from '@stump/components'
 import { CreateLibrarySceneExistingLibrariesQuery, UserPermission } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
@@ -34,7 +33,6 @@ type Props = {
 }
 
 export default function CreateLibraryForm({ existingLibraries, onSubmit, isLoading }: Props) {
-	const { t } = useLocaleContext()
 	const { currentStep, setStep } = useSteppedFormContext()
 	const { checkPermission } = useAppContext()
 
@@ -108,10 +106,9 @@ export default function CreateLibraryForm({ existingLibraries, onSubmit, isLoadi
 							<Button
 								type="button"
 								className="md:w-auto w-full"
-								variant="primary"
 								onClick={() => handleChangeStep(2)}
 							>
-								{t('createLibraryScene.form.buttons.nextStep')}
+								Next step
 							</Button>
 						</div>
 					</>
@@ -125,12 +122,8 @@ export default function CreateLibraryForm({ existingLibraries, onSubmit, isLoadi
 						<FileConversionOptions />
 						<IgnoreRulesConfig />
 						<div className="mt-6 md:max-w-sm flex w-full">
-							<Button
-								className="md:w-auto w-full"
-								variant="primary"
-								onClick={() => handleChangeStep(3)}
-							>
-								{t('createLibraryScene.form.buttons.nextStep')}
+							<Button className="md:w-auto w-full" onClick={() => handleChangeStep(3)}>
+								Next step
 							</Button>
 						</div>
 					</>
@@ -142,11 +135,10 @@ export default function CreateLibraryForm({ existingLibraries, onSubmit, isLoadi
 						<div className="mt-6 md:max-w-sm flex w-full">
 							<Button
 								className="md:w-auto w-full"
-								variant="primary"
 								onClick={() => handleChangeStep(4)}
 								type="button"
 							>
-								{t('createLibraryScene.form.buttons.continueToReview')}
+								Continue to review
 							</Button>
 						</div>
 					</>
@@ -199,10 +191,9 @@ export default function CreateLibraryForm({ existingLibraries, onSubmit, isLoadi
 							type="submit"
 							form="createLibraryForm"
 							className="md:w-auto w-full"
-							variant="primary"
 							isLoading={isLoading}
 						>
-							{t('createLibraryScene.form.buttons.confirm')}
+							Create library
 						</Button>
 					</div>
 				</ContentContainer>

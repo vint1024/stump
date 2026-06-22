@@ -1,7 +1,6 @@
 import { useGraphQLMutation, useSDK } from '@stump/client'
 import { ConfirmationModal } from '@stump/components'
 import { ApiKeyTableQuery, graphql } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
@@ -21,7 +20,6 @@ type Props = {
 }
 
 export default function DeleteAPIKeyConfirmModal({ apiKey, onClose }: Props) {
-	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 
 	const client = useQueryClient()
@@ -46,10 +44,10 @@ export default function DeleteAPIKeyConfirmModal({ apiKey, onClose }: Props) {
 
 	return (
 		<ConfirmationModal
-			title={t('scenes.settings.app.apiKeys.DeleteAPIKeyConfirmModal.title')}
-			description={t('scenes.settings.app.apiKeys.DeleteAPIKeyConfirmModal.description')}
-			confirmText={t('scenes.settings.app.apiKeys.DeleteAPIKeyConfirmModal.confirmText')}
-			confirmVariant="danger"
+			title="Delete API key"
+			description="Anything using this key will immediately lose authentication"
+			confirmText="Delete key"
+			confirmVariant="destructive"
 			isOpen={!!apiKey}
 			onClose={onClose}
 			onConfirm={handleConfirm}

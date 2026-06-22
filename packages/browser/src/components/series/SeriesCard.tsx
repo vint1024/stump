@@ -1,7 +1,6 @@
 import { useSDK } from '@stump/client'
 import { Text } from '@stump/components'
 import { FileStatus } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { useCallback } from 'react'
 
 import { usePrefetchSeries } from '@/scenes/series'
@@ -26,7 +25,6 @@ export type SeriesCardProps = {
 }
 
 export default function SeriesCard({ data, fullWidth, variant = 'default' }: SeriesCardProps) {
-	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 
 	const isCoverOnly = variant === 'cover'
@@ -54,8 +52,8 @@ export default function SeriesCard({ data, fullWidth, variant = 'default' }: Ser
 		const isMissing = data.status === 'MISSING'
 		if (isMissing) {
 			return (
-				<Text size="xs" className="text-amber-500 uppercase">
-					{t('components.series.SeriesCard.seriesMissing')}
+				<Text size="xs" className="text-warning uppercase">
+					Series Missing
 				</Text>
 			)
 		}
@@ -67,7 +65,7 @@ export default function SeriesCard({ data, fullWidth, variant = 'default' }: Ser
 				</Text>
 			</div>
 		)
-	}, [isCoverOnly, data, t])
+	}, [isCoverOnly, data])
 
 	const overrides = isCoverOnly
 		? {

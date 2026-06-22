@@ -1,7 +1,6 @@
 import { useGraphQLMutation, useSDK } from '@stump/client'
 import { Badge, Card, Text, ToolTip } from '@stump/components'
 import { FragmentType, graphql, useFragment } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import { Sparkles } from 'lucide-react'
 import { Suspense, useCallback, useMemo } from 'react'
@@ -43,7 +42,6 @@ type Props = {
 }
 
 export default function EmailerListItem({ fragment }: Props) {
-	const { t } = useLocaleContext()
 	const navigate = useNavigate()
 	const emailer = useFragment(EmailerListItemFragment, fragment)
 
@@ -68,7 +66,7 @@ export default function EmailerListItem({ fragment }: Props) {
 		if (!emailer.lastUsedAt) {
 			return (
 				<Text size="sm" variant="muted">
-					{t('scenes.settings.server.email.emailers.EmailerListItem.notUsedYet')}
+					Not used yet
 				</Text>
 			)
 		} else {
@@ -90,12 +88,8 @@ export default function EmailerListItem({ fragment }: Props) {
 				</Text>
 				<div className="space-x-2 flex items-center">
 					{emailer.isPrimary && (
-						<ToolTip
-							content={t('scenes.settings.server.email.emailers.EmailerListItem.primaryEmailer')}
-							align="end"
-							size="xs"
-						>
-							<Sparkles className="text-primary h-4 w-4" strokeWidth={1} />
+						<ToolTip content="Primary emailer" align="end" size="xs">
+							<Sparkles className="h-4 w-4 text-primary" strokeWidth={1} />
 						</ToolTip>
 					)}
 					{canEditEmailer && (
@@ -109,7 +103,7 @@ export default function EmailerListItem({ fragment }: Props) {
 
 			<div>
 				<ToolTip content={`${emailer.smtpHost}:${emailer.smtpPort}`} align="start" size="xs">
-					<Badge size="xs" variant="default" className="cursor-default">
+					<Badge size="xs" className="cursor-default">
 						{displayedHost.name}
 					</Badge>
 				</ToolTip>

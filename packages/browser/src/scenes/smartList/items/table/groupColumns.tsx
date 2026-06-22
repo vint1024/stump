@@ -37,7 +37,7 @@ const buildNameColumn = (isGroupedBySeries: boolean, t: TranslateFn) =>
 				>
 					<ChevronDown
 						className={cn(
-							'h-4 w-4 shrink-0 text-foreground-muted transition-transform duration-200',
+							'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
 							{
 								'rotate-180': isExpanded,
 							},
@@ -64,7 +64,7 @@ const buildNameColumn = (isGroupedBySeries: boolean, t: TranslateFn) =>
 						title={isAllRowsExpanded ? t(`${NS}.collapseAll`) : t(`${NS}.expandAll`)}
 					>
 						<ChevronDown
-							className={cn('h-4 w-4 text-foreground-muted transition-transform duration-200', {
+							className={cn('h-4 w-4 text-muted-foreground transition-transform duration-200', {
 								'rotate-180': isAllRowsExpanded,
 							})}
 						/>

@@ -1,5 +1,4 @@
 import { Text } from '@stump/components'
-import { useLocaleContext } from '@stump/i18n'
 import { useCallback } from 'react'
 
 import { EpubContent, useEpubReaderContext } from '../context'
@@ -17,7 +16,7 @@ function TableOfContentsItem({ item, handleSelect }: ItemProps) {
 	return (
 		<>
 			<button
-				className="px-1 py-1.5 justify-start text-left hover:bg-background-surface"
+				className="px-1 py-1.5 justify-start text-left hover:bg-muted"
 				onClick={() => handleSelect(item.content)}
 			>
 				<Text className="line-clamp-1">{item.label}</Text>
@@ -30,7 +29,6 @@ function TableOfContentsItem({ item, handleSelect }: ItemProps) {
 }
 
 export default function TableOfContents({ onLocationChanged }: Props) {
-	const { t } = useLocaleContext()
 	const { readerMeta, controls } = useEpubReaderContext()
 	const { toc } = readerMeta.bookMeta || {}
 
@@ -44,8 +42,8 @@ export default function TableOfContents({ onLocationChanged }: Props) {
 
 	return (
 		<div
-			className="px-2 pt-4 scrollbar-hide flex max-h-full flex-col divide-y divide-edge overflow-y-auto"
-			aria-label={t('components.readers.epub.locations.TableOfContents.ariaLabel')}
+			className="px-2 pt-4 scrollbar-hide flex max-h-full flex-col divide-y divide-border overflow-y-auto"
+			aria-label="Table of Contents"
 		>
 			{toc?.map((item) => (
 				<TableOfContentsItem key={item.label} item={item} handleSelect={handleSelect} />

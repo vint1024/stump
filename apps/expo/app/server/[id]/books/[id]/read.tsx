@@ -13,7 +13,7 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite'
 import { useKeepAwake } from 'expo-keep-awake'
 import * as NavigationBar from 'expo-navigation-bar'
 import { useLocalSearchParams } from 'expo-router'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { useActiveServer } from '~/components/activeServer'
 import {
@@ -275,7 +275,6 @@ export default function Screen() {
 	const queryClient = useQueryClient()
 
 	const preferNativePdfReader = usePreferencesStore((store) => Boolean(store.preferNativePdf))
-	const showControls = useReaderStore((state) => state.showControls)
 
 	if (!book) {
 		throw new Error('Book not found')
@@ -306,8 +305,12 @@ export default function Screen() {
 	} = useBookPreferences({ book })
 	const timer = useBookTimer(book?.id || '', {
 		initial: book?.readProgress?.elapsedSeconds,
-		enabled: trackElapsedTime && !showControls,
+		enabled: trackElapsedTime,
 	})
+
+	// tracks the elapsed total at the time of the last successful sync so we can
+	// send a delta
+	const lastSyncedElapsedRef = useRef(book?.readProgress?.elapsedSeconds ?? 0)
 
 	const { syncProgress } = useSyncOnlineToOfflineProgress({ bookId: book.id, serverId })
 
@@ -317,19 +320,23 @@ export default function Screen() {
 		onError: (error) => {
 			console.error('Failed to update read progress:', error)
 		},
-		// TODO: Consider a preference to disable online-to-offline sync?
-		onSuccess: (_, { input: onlineProgress }) => syncProgress(onlineProgress),
+		onSuccess: (_, { input: onlineProgress }) => {
+			lastSyncedElapsedRef.current = timer.getCurrentTime()
+			// TODO: Consider a preference to disable online-to-offline sync?
+			syncProgress(onlineProgress)
+		},
 	})
 
 	const onPageChanged = useCallback(
 		(page: number) => {
 			const totalSeconds = timer.getCurrentTime()
+			const delta = Math.max(0, totalSeconds - lastSyncedElapsedRef.current)
 			updateProgress({
 				id: book.id,
 				input: {
 					paged: {
 						page,
-						elapsedSeconds: totalSeconds,
+						elapsedSecondsDelta: delta > 0 ? delta : undefined,
 					},
 				},
 			})
@@ -340,6 +347,7 @@ export default function Screen() {
 	const onLocationChanged = useCallback(
 		(locator: ReadiumLocator, percentage: number) => {
 			const totalSeconds = timer.getCurrentTime()
+			const delta = Math.max(0, totalSeconds - lastSyncedElapsedRef.current)
 			updateProgress({
 				id: book.id,
 				input: {
@@ -354,7 +362,7 @@ export default function Screen() {
 								type: locator.type || 'application/xhtml+xml',
 							},
 						},
-						elapsedSeconds: totalSeconds,
+						elapsedSecondsDelta: delta > 0 ? delta : undefined,
 						percentage,
 						isComplete: false,
 					},
@@ -367,6 +375,7 @@ export default function Screen() {
 	const onReachedEnd = useCallback(
 		(locator: ReadiumLocator) => {
 			const totalSeconds = timer.getCurrentTime()
+			const delta = Math.max(0, totalSeconds - lastSyncedElapsedRef.current)
 			updateProgress({
 				id: book.id,
 				input: {
@@ -381,7 +390,7 @@ export default function Screen() {
 								type: locator.type || 'application/xhtml+xml',
 							},
 						},
-						elapsedSeconds: totalSeconds,
+						elapsedSecondsDelta: delta > 0 ? delta : undefined,
 						isComplete: true,
 					},
 				},
@@ -589,6 +598,7 @@ export default function Screen() {
 		return (
 			<ReadiumReader
 				book={book}
+				timer={timer}
 				initialLocator={initialLocator ? intoReadiumLocator(initialLocator) : undefined}
 				onLocationChanged={onLocationChanged}
 				onReachedEnd={onReachedEnd}

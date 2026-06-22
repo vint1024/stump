@@ -1,5 +1,4 @@
 import { Link, Text } from '@stump/components'
-import { useLocaleContext } from '@stump/i18n'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Fullscreen, Shrink } from 'lucide-react'
 import { useFullscreen } from 'rooks'
@@ -13,7 +12,6 @@ import SettingsDialog from './SettingsDialog'
 import TimerMenu from './TimerMenu'
 
 export default function ReaderHeader() {
-	const { t } = useLocaleContext()
 	const { book } = useImageBaseReaderContext()
 	const {
 		settings: { showToolBar },
@@ -38,17 +36,17 @@ export default function ReaderHeader() {
 			<div className="flex w-full items-center justify-between">
 				<div className="space-x-4 flex items-center">
 					<Link
-						className="flex items-center text-foreground-on-black hover:text-foreground-on-black/80"
-						title={t('components.readers.imageBased.container.ReaderHeader.goToBookOverview')}
+						className="flex items-center text-foreground hover:text-foreground/80"
+						title="Go to media overview"
 						to={paths.bookOverview(id)}
 					>
 						<ArrowLeft size={'1.25rem'} />
 					</Link>
 				</div>
 
-				<Text className="text-foreground-on-black">{resolvedName}</Text>
+				<Text className="text-foreground">{resolvedName}</Text>
 
-				<div className="space-x-2 flex items-center">
+				<div className="space-x-1.5 flex items-center">
 					{isFullscreenAvailable && (
 						<ControlButton onClick={toggleFullscreen}>
 							<FullScreenIcon className="h-4 w-4" />

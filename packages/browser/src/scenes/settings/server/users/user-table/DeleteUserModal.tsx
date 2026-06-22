@@ -1,7 +1,6 @@
 import { useGraphQLMutation, useSDK } from '@stump/client'
 import { Button, CheckBox, Dialog } from '@stump/components'
 import { graphql } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 
@@ -20,11 +19,8 @@ type Props = {
 	onClose: () => void
 }
 
-const LOCALE_NS = 'scenes.settings.server.users.user-table.DeleteUserModal'
-
 export default function DeleteUserModal({ deletingUser, onClose }: Props) {
 	const { sdk } = useSDK()
-	const { t } = useLocaleContext()
 
 	const [hardDelete, setHardDelete] = useState(false)
 
@@ -48,32 +44,29 @@ export default function DeleteUserModal({ deletingUser, onClose }: Props) {
 		<Dialog open={!!deletingUser}>
 			<Dialog.Content size="sm">
 				<Dialog.Header>
-					<Dialog.Title>{t(`${LOCALE_NS}.title`)}</Dialog.Title>
-					<Dialog.Description>{t(`${LOCALE_NS}.description`)}</Dialog.Description>
+					<Dialog.Title>Delete User Account</Dialog.Title>
+					<Dialog.Description>
+						Are you sure you want to delete this user? If you select the hard delete option, this
+						user and all of their data will be permanently deleted.
+					</Dialog.Description>
 					<Dialog.Close onClick={onClose} disabled={isPending} />
 				</Dialog.Header>
 
 				<Dialog.Footer className="gap-3 sm:justify-between sm:gap-0 w-full items-center">
 					<div className="shrink-0">
 						<CheckBox
-							variant="primary"
-							label={t(`${LOCALE_NS}.hardDeleteLabel`)}
+							label="Hard Delete User"
 							checked={hardDelete}
 							onClick={() => setHardDelete((prev) => !prev)}
 						/>
 					</div>
 
 					<div className="space-y-2 sm:flex-row sm:justify-end sm:space-x-2 sm:space-y-0 flex w-full flex-col-reverse space-y-reverse">
-						<Button onClick={onClose} disabled={isPending}>
-							{t(`${LOCALE_NS}.cancel`)}
+						<Button variant="outline" onClick={onClose} disabled={isPending}>
+							Cancel
 						</Button>
-						<Button
-							variant="primary"
-							isLoading={isPending}
-							disabled={isPending}
-							onClick={handleDelete}
-						>
-							{t(`${LOCALE_NS}.deleteUser`)}
+						<Button isLoading={isPending} disabled={isPending} onClick={handleDelete}>
+							Delete User
 						</Button>
 					</div>
 				</Dialog.Footer>

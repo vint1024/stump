@@ -3,11 +3,13 @@ use async_graphql::{ComplexObject, Context, Result, SimpleObject};
 use chrono::{DateTime, FixedOffset, Utc};
 use models::{
 	entity::{
-		age_restriction, content_access_rule, finished_reading_session, session, user,
+		age_restriction, content_access_rule, reading_session, session, user,
 		user_login_activity, user_preferences,
 	},
-	shared::enums::{ContentRuleDimension, ContentRuleMode},
-	shared::{enums::UserPermission, permission_set::PermissionSet},
+	shared::{
+		enums::{ContentRuleDimension, ContentRuleMode, ReadingStatus, UserPermission},
+		permission_set::PermissionSet,
+	},
 };
 use sea_orm::{prelude::*, ActiveValue, QueryOrder};
 
@@ -172,8 +174,9 @@ impl User {
 	async fn finished_reading_sessions_count(&self, ctx: &Context<'_>) -> Result<i64> {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
-		let count = finished_reading_session::Entity::find()
-			.filter(finished_reading_session::Column::UserId.eq(&self.model.id))
+		let count = reading_session::Entity::find()
+			.filter(reading_session::Column::Status.eq(ReadingStatus::Finished))
+			.filter(reading_session::Column::UserId.eq(&self.model.id))
 			.count(conn)
 			.await?;
 

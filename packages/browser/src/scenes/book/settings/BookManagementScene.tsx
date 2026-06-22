@@ -1,11 +1,9 @@
 import { useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Alert, AlertDescription, Breadcrumbs, Button, Heading, Text } from '@stump/components'
 import { graphql, UserPermission } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { Construction } from 'lucide-react'
 import { Suspense, useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { toast } from 'sonner'
 
 import { SceneContainer } from '@/components/container'
 import { useAppContext } from '@/context'
@@ -42,14 +40,7 @@ const analyzeMutation = graphql(`
 	}
 `)
 
-const writeMetadataMutation = graphql(`
-	mutation BookManagementSceneWriteMetadata($id: ID!, $backup: Boolean!) {
-		writeMediaMetadataToFile(id: $id, backup: $backup)
-	}
-`)
-
 export default function BookManagementScene() {
-	const { t } = useLocaleContext()
 	const navigate = useNavigate()
 
 	const { checkPermission } = useAppContext()
@@ -64,27 +55,6 @@ export default function BookManagementScene() {
 	})
 
 	const { data, mutate: analyze, isPending } = useGraphQLMutation(analyzeMutation)
-	const { mutate: writeMetadata, isPending: isWritingMetadata } = useGraphQLMutation(
-		writeMetadataMutation,
-		{
-			onSuccess: (result) => {
-				if (result.writeMediaMetadataToFile) {
-					toast.success(t('bookManagementScene.writeback.toasts.written'))
-				} else {
-					toast.info(t('bookManagementScene.writeback.toasts.nothingToWrite'))
-				}
-			},
-			onError: (error) => {
-				console.error('Failed to write metadata to file', error)
-				toast.error(t('bookManagementScene.writeback.toasts.failed'))
-			},
-		},
-	)
-	const handleWriteMetadata = useCallback(() => {
-		if (id) {
-			writeMetadata({ id, backup: false })
-		}
-	}, [writeMetadata, id])
 
 	const breadcrumbs = useMemo(() => {
 		if (!book) return []
@@ -126,63 +96,38 @@ export default function BookManagementScene() {
 				<div className="gap-y-1.5 flex flex-col">
 					<Breadcrumbs segments={breadcrumbs} trailingSlash />
 					<Heading size="lg" className="font-bold">
-						{t('bookManagementScene.heading')}
+						Manage
 					</Heading>
 
 					<Text size="sm" variant="muted">
-						{t('bookManagementScene.subtitle')}
+						Make changes to this book
 					</Text>
 				</div>
 
 				<Alert variant="warning">
 					<Construction />
-					<AlertDescription>{t('bookManagementScene.developmentAlert')}</AlertDescription>
+					<AlertDescription>
+						Book management is currently under development and has very limited functionality
+					</AlertDescription>
 				</Alert>
 
 				{checkPermission(UserPermission.ManageLibrary) && (
 					<div className="gap-y-2 flex flex-col">
 						<div>
-							<Heading size="sm">{t('bookManagementScene.analysis.heading')}</Heading>
+							<Heading size="sm">Analysis</Heading>
 							<Text size="sm" variant="muted">
-								{t('bookManagementScene.analysis.description')}
+								Re-analyze this book to update metadata from its file
 							</Text>
 						</div>
 
 						<div>
 							<Button
-								title={
-									data
-										? t('bookManagementScene.analysis.inProgress')
-										: t('bookManagementScene.analysis.buttonTitle')
-								}
-								size="md"
-								variant="primary"
+								title={data ? 'Analysis already in progress' : 'Analyze this book'}
+								size="default"
 								onClick={handleAnalyze}
 								disabled={!!data || isPending}
 							>
-								{t('bookManagementScene.analysis.button')}
-							</Button>
-						</div>
-					</div>
-				)}
-
-				{checkPermission(UserPermission.WriteBackMetadata) && (
-					<div className="gap-y-2 flex flex-col">
-						<div>
-							<Heading size="sm">{t('bookManagementScene.writeback.heading')}</Heading>
-							<Text size="sm" variant="muted">
-								{t('bookManagementScene.writeback.description')}
-							</Text>
-						</div>
-
-						<div>
-							<Button
-								size="md"
-								variant="outline"
-								onClick={handleWriteMetadata}
-								disabled={isWritingMetadata}
-							>
-								{t('bookManagementScene.writeback.button')}
+								Analyze Media
 							</Button>
 						</div>
 					</div>
@@ -197,9 +142,9 @@ export default function BookManagementScene() {
 				{checkPermission(UserPermission.EditThumbnails) && (
 					<div className="gap-y-2 flex flex-col">
 						<div>
-							<Heading size="sm">{t('bookManagementScene.thumbnail.heading')}</Heading>
+							<Heading size="sm">Thumbnail</Heading>
 							<Text size="sm" variant="muted">
-								{t('bookManagementScene.thumbnail.description')}
+								Change the cover image for this book
 							</Text>
 						</div>
 

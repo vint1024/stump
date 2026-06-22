@@ -6,7 +6,6 @@ import {
 	graphql,
 	useFragment,
 } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -59,7 +58,6 @@ type Props = {
 }
 
 export default function BookThumbnailSelector({ fragment }: Props) {
-	const { t } = useLocaleContext()
 	const book = useFragment(BookThumbnailSelectorFragment, fragment)
 
 	const [isOpen, setIsOpen] = useState(false)
@@ -111,10 +109,10 @@ export default function BookThumbnailSelector({ fragment }: Props) {
 				setIsOpen(false)
 			} catch (error) {
 				console.error(error)
-				toast.error(t('scenes.book.settings.BookThumbnailSelector.uploadError'))
+				toast.error('Failed to upload image')
 			}
 		},
-		[book.id, uploadThumbnail, t],
+		[book.id, uploadThumbnail],
 	)
 
 	const handleConfirm = useCallback(async () => {
@@ -125,9 +123,9 @@ export default function BookThumbnailSelector({ fragment }: Props) {
 			setIsOpen(false)
 		} catch (error) {
 			console.error(error)
-			toast.error(t('scenes.book.settings.BookThumbnailSelector.updateError'))
+			toast.error('Failed to update thumbnail')
 		}
-	}, [patchThumbnail, page, book.id, t])
+	}, [patchThumbnail, page, book.id])
 
 	return (
 		<div className="relative">
@@ -149,11 +147,9 @@ export default function BookThumbnailSelector({ fragment }: Props) {
 				</Dialog.Trigger>
 				<Dialog.Content size="xl">
 					<Dialog.Header>
-						<Dialog.Title>
-							{t('scenes.book.settings.BookThumbnailSelector.dialogTitle')}
-						</Dialog.Title>
+						<Dialog.Title>Select a thumbnail</Dialog.Title>
 						<Dialog.Description>
-							{t('scenes.book.settings.BookThumbnailSelector.dialogDescription')}
+							Choose a page from this book to use as the new thumbnail
 						</Dialog.Description>
 						<Dialog.Close onClick={() => setIsOpen(false)} />
 					</Dialog.Header>
@@ -166,16 +162,15 @@ export default function BookThumbnailSelector({ fragment }: Props) {
 					/>
 
 					<Dialog.Footer>
-						<Button variant="default" onClick={handleCancel}>
-							{t('scenes.book.settings.BookThumbnailSelector.cancel')}
+						<Button variant="outline" onClick={handleCancel}>
+							Cancel
 						</Button>
 						<Button
-							variant="primary"
 							onClick={handleConfirm}
 							disabled={!page}
 							isLoading={isPatchingThumbnail || isUploadingThumbnail}
 						>
-							{t('scenes.book.settings.BookThumbnailSelector.confirm')}
+							Confirm selection
 						</Button>
 					</Dialog.Footer>
 				</Dialog.Content>

@@ -18,7 +18,7 @@ export default function DeleteHistoryConfirmation({ isOpen, onCancel, onConfirm 
 			isOpen={isOpen}
 			onClose={onCancel}
 			onConfirm={onConfirm}
-			confirmVariant="danger"
+			confirmVariant="destructive"
 		>
 			<Alert>
 				<AlertTriangle />

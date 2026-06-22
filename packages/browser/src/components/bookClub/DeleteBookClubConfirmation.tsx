@@ -1,7 +1,6 @@
 import { useGraphQLMutation } from '@stump/client'
 import { ConfirmationModal } from '@stump/components'
 import { graphql } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -23,7 +22,6 @@ type Props = {
 }
 
 export default function DeleteBookClubConfirmation({ isOpen, id, onClose, trigger }: Props) {
-	const { t } = useLocaleContext()
 	const navigate = useNavigate()
 
 	const { mutate: deleteClub, isPending } = useGraphQLMutation(mutation, {
@@ -33,16 +31,16 @@ export default function DeleteBookClubConfirmation({ isOpen, id, onClose, trigge
 		},
 		onError: (error) => {
 			console.error('Error deleting book club:', error)
-			toast.error(t('components.bookClub.DeleteBookClubConfirmation.deleteError'))
+			toast.error('Failed to delete book club')
 		},
 	})
 
 	return (
 		<ConfirmationModal
-			title={t('components.bookClub.DeleteBookClubConfirmation.title')}
-			description={t('components.bookClub.DeleteBookClubConfirmation.description')}
-			confirmText={t('components.bookClub.DeleteBookClubConfirmation.confirmText')}
-			confirmVariant="danger"
+			title="Delete book club"
+			description="Are you sure you want to delete this club? This action cannot be undone."
+			confirmText="Delete club"
+			confirmVariant="destructive"
 			isOpen={isOpen}
 			onClose={onClose}
 			onConfirm={() => deleteClub({ id })}

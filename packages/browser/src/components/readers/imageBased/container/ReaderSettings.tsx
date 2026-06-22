@@ -1,7 +1,6 @@
 import { BookPreferences, DEFAULT_BOOK_PREFERENCES } from '@stump/client'
 import { Label, RawSwitch } from '@stump/components'
 import { ReadingMode } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import omit from 'lodash/omit'
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -19,7 +18,6 @@ type Props = {
 }
 
 export default function ReaderSettings({ forBook, currentPage }: Props) {
-	const { t } = useLocaleContext()
 	const [search, setSearch] = useSearchParams()
 
 	const store = useReaderStore((state) => state)
@@ -107,9 +105,7 @@ export default function ReaderSettings({ forBook, currentPage }: Props) {
 	return (
 		<div className="gap-4 flex flex-col" key={forBook}>
 			<div>
-				<Label className="text-xs font-medium text-foreground-muted uppercase">
-					{t('components.readers.imageBased.container.ReaderSettings.mode')}
-				</Label>
+				<Label className="text-xs font-medium text-muted-foreground uppercase">Mode</Label>
 
 				<ReadingModeSelect
 					value={activeSettings.readingMode || DEFAULT_BOOK_PREFERENCES.readingMode}
@@ -123,9 +119,7 @@ export default function ReaderSettings({ forBook, currentPage }: Props) {
 			</div>
 
 			<div>
-				<Label className="text-xs font-medium text-foreground-muted uppercase">
-					{t('components.readers.imageBased.container.ReaderSettings.imageOptions')}
-				</Label>
+				<Label className="text-xs font-medium text-muted-foreground uppercase">Image Options</Label>
 
 				<DoubleSpreadBehavior
 					behavior={
@@ -147,51 +141,35 @@ export default function ReaderSettings({ forBook, currentPage }: Props) {
 			</div>
 
 			<div>
-				<Label className="text-xs font-medium text-foreground-muted uppercase">
-					{t('components.readers.imageBased.container.ReaderSettings.preferences')}
-				</Label>
+				<Label className="text-xs font-medium text-muted-foreground uppercase">Preferences</Label>
 				<div className="gap-3 pt-2 flex flex-col">
 					<Label className="px-1 flex items-center justify-between">
-						<span>
-							{t('components.readers.imageBased.container.ReaderSettings.separateSecondPage')}
-						</span>
+						<span>Separate second page</span>
 						<RawSwitch
-							primaryRing
-							variant="primary"
 							checked={activeSettings.secondPageSeparate}
 							onCheckedChange={(checked) => onPreferenceChange({ secondPageSeparate: checked })}
 						/>
 					</Label>
 
 					<Label className="px-1 flex items-center justify-between">
-						<span>
-							{t('components.readers.imageBased.container.ReaderSettings.panZoomWithoutCtrl')}
-						</span>
+						<span>Pan and zoom without Ctrl / Cmd</span>
 						<RawSwitch
-							primaryRing
-							variant="primary"
 							checked={activeSettings.panzoomWithoutCtrl}
 							onCheckedChange={(checked) => onPreferenceChange({ panzoomWithoutCtrl: checked })}
 						/>
 					</Label>
 
 					<Label className="px-1 flex items-center justify-between">
-						<span>
-							{t('components.readers.imageBased.container.ReaderSettings.tapSidesToNavigate')}
-						</span>
+						<span>Tap sides to navigate</span>
 						<RawSwitch
-							primaryRing
-							variant="primary"
 							checked={activeSettings.tapSidesToNavigate}
 							onCheckedChange={(checked) => onPreferenceChange({ tapSidesToNavigate: checked })}
 						/>
 					</Label>
 
 					<Label className="px-1 flex items-center justify-between">
-						<span>{t('components.readers.imageBased.container.ReaderSettings.readingTimer')}</span>
+						<span>Reading timer</span>
 						<RawSwitch
-							primaryRing
-							variant="primary"
 							checked={activeSettings.trackElapsedTime}
 							onCheckedChange={(checked) => onPreferenceChange({ trackElapsedTime: checked })}
 						/>
@@ -200,15 +178,9 @@ export default function ReaderSettings({ forBook, currentPage }: Props) {
 					{/* TODO: Once UX for settings is settled remove this */}
 					{!forBook && (
 						<div>
-							<Label className="rounded-lg p-3 flex items-center justify-between border border-dashed border-fill-brand/40 bg-fill-brand-secondary">
-								<span>
-									{t(
-										'components.readers.imageBased.container.ReaderSettings.experimentalAnimatedReader',
-									)}
-								</span>
+							<Label className="p-3 flex items-center justify-between rounded-lg border border-dashed border-primary/40 bg-primary/15">
+								<span>Experimental animated reader</span>
 								<RawSwitch
-									primaryRing
-									variant="primary"
 									checked={store.settings.animatedReader || false}
 									onCheckedChange={(checked) => onChangeExperimentalReader(checked)}
 								/>

@@ -8,7 +8,6 @@ import {
 	RadioGroup,
 } from '@stump/components'
 import { MetadataResetImpact } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
 import { AlertTriangle } from 'lucide-react'
 import { useState } from 'react'
 
@@ -18,7 +17,6 @@ type Props = {
 }
 
 export default function ResetMetadata({ onConfirmReset, isDisabled }: Props) {
-	const { t } = useLocaleContext()
 	const [showConfirmation, setShowConfirmation] = useState(false)
 
 	const [impact, setImpact] = useState<MetadataResetImpact>(MetadataResetImpact.Series)
@@ -31,16 +29,16 @@ export default function ResetMetadata({ onConfirmReset, isDisabled }: Props) {
 
 	return (
 		<div>
-			<Button variant="danger" disabled={isDisabled} onClick={() => setShowConfirmation(true)}>
-				{t('components.metadata.metadataEditor.ResetMetadata.deleteMetadata')}
+			<Button variant="destructive" disabled={isDisabled} onClick={() => setShowConfirmation(true)}>
+				Delete metadata
 			</Button>
 
 			<ConfirmationModal
-				title={t('components.metadata.metadataEditor.ResetMetadata.deleteMetadata')}
-				description={t('components.metadata.metadataEditor.ResetMetadata.selectImpact')}
+				title="Delete metadata"
+				description="Select the impact for the deletion"
 				isOpen={showConfirmation}
-				confirmVariant="danger"
-				confirmText={t('components.metadata.metadataEditor.ResetMetadata.confirmDelete')}
+				confirmVariant="destructive"
+				confirmText="Delete"
 				onConfirm={() => {
 					onConfirmReset(impact)
 					setShowConfirmation(false)
@@ -51,48 +49,42 @@ export default function ResetMetadata({ onConfirmReset, isDisabled }: Props) {
 				<RadioGroup
 					value={impact}
 					onValueChange={handleChange}
-					className="divide gap-0 space-y-0 rounded-xl divide-y divide-edge overflow-hidden border border-edge"
+					className="divide gap-0 space-y-0 divide-y divide-border overflow-hidden rounded-xl border border-border"
 				>
 					<RadioGroup.CardItem
-						label={t('components.metadata.metadataEditor.ResetMetadata.seriesLabel')}
+						label="Series"
 						value="SERIES"
-						description={t('components.metadata.metadataEditor.ResetMetadata.seriesDescription')}
-						className={cn('rounded-b-none border-0 bg-background hover:bg-background-surface/50', {
-							'bg-background-surface/70 hover:bg-background-surface/70':
-								impact === MetadataResetImpact.Series,
+						description="Remove only this series' metadata"
+						className={cn('rounded-b-none border-0 bg-background hover:bg-muted/50', {
+							'bg-muted/70 hover:bg-muted/70': impact === MetadataResetImpact.Series,
 						})}
 					/>
 
 					<RadioGroup.CardItem
-						label={t('components.metadata.metadataEditor.ResetMetadata.booksLabel')}
+						label="Books"
 						value="BOOKS"
-						description={t('components.metadata.metadataEditor.ResetMetadata.booksDescription')}
-						className={cn('rounded-t-none border-0 bg-background hover:bg-background-surface/50', {
-							'bg-background-surface/70 hover:bg-background-surface/70':
-								impact === MetadataResetImpact.Books,
+						description="Remove all the metadata for books in this series "
+						className={cn('rounded-t-none border-0 bg-background hover:bg-muted/50', {
+							'bg-muted/70 hover:bg-muted/70': impact === MetadataResetImpact.Books,
 						})}
 					/>
 
 					<RadioGroup.CardItem
-						label={t('components.metadata.metadataEditor.ResetMetadata.everythingLabel')}
+						label="Everything"
 						value="EVERYTHING"
-						description={t(
-							'components.metadata.metadataEditor.ResetMetadata.everythingDescription',
-						)}
-						className={cn('rounded-t-none border-0 bg-background hover:bg-background-surface/50', {
-							'bg-background-surface/70 hover:bg-background-surface/70':
-								impact === MetadataResetImpact.Everything,
+						description="Remove all the metadata for everything related to this series"
+						className={cn('rounded-t-none border-0 bg-background hover:bg-muted/50', {
+							'bg-muted/70 hover:bg-muted/70': impact === MetadataResetImpact.Everything,
 						})}
 					/>
 				</RadioGroup>
 
 				<Alert variant="warning">
 					<AlertTriangle />
-					<AlertTitle>
-						{t('components.metadata.metadataEditor.ResetMetadata.cannotBeUndone')}
-					</AlertTitle>
+					<AlertTitle>This action cannot be undone</AlertTitle>
 					<AlertDescription>
-						{t('components.metadata.metadataEditor.ResetMetadata.permanentWarning')}
+						This will permanently delete all metadata for the selected items. You will need to
+						trigger a custom scan to regenerate the metadata
 					</AlertDescription>
 				</Alert>
 			</ConfirmationModal>
