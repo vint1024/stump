@@ -28,7 +28,7 @@ const headingVariants = cva(HEADING_BASE_CLASSES, {
 		variant: {
 			default: 'text-foreground',
 			gradient:
-				'bg-linear-to-r from-fill-brand to-fill-brand-hover bg-clip-text text-transparent',
+				'bg-linear-to-r from-primary to-ring bg-clip-text text-transparent',
 		},
 	},
 })
