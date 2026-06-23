@@ -1,5 +1,6 @@
 import { AspectRatio, Button, Card, DatePicker, Heading, Input, Text } from '@stump/components'
 import { BookCardFragment } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 
@@ -15,6 +16,7 @@ type Props = {
 // FIXME(clubs): this component is a MESS and desperately needs a rewrite
 
 export default function AddBookCard({ index }: Props) {
+	const { t } = useLocaleContext()
 	const [selectedBook, setSelectedBook] = useState<BookCardFragment | null>(null)
 
 	const form = useFormContext<Schema>()
@@ -75,13 +77,13 @@ export default function AddBookCard({ index }: Props) {
 							onClick={() => setSelectedBook(null)}
 							className="shrink-0"
 						>
-							Remove selection
+							{t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.removeSelection')}
 						</Button>
 					</div>
 				</div>
 			</div>
 		)
-	}, [selectedBook])
+	}, [selectedBook, t])
 
 	const renderSelectedBookOptions = useCallback(() => {
 		if (selectedBook) {
@@ -97,9 +99,11 @@ export default function AddBookCard({ index }: Props) {
 		return (
 			<>
 				<div>
-					<Heading size="xs">Pick a book</Heading>
+					<Heading size="xs">
+						{t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.pickBookHeading')}
+					</Heading>
 					<Text variant="muted" size="sm" className="mt-1">
-						You can add a book from your library
+						{t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.pickBookDescription')}
 					</Text>
 				</div>
 
@@ -109,7 +113,7 @@ export default function AddBookCard({ index }: Props) {
 				</div>
 			</>
 		)
-	}, [isDefiningExternalBook, renderBookInfo, renderSelectedBookOptions])
+	}, [isDefiningExternalBook, renderBookInfo, renderSelectedBookOptions, t])
 
 	const renderExternalBookOption = () => {
 		if (isEntityBook) return null
@@ -117,29 +121,30 @@ export default function AddBookCard({ index }: Props) {
 		return (
 			<>
 				<div>
-					<Heading size="xs">Add an external book</Heading>
+					<Heading size="xs">
+						{t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.externalBookHeading')}
+					</Heading>
 					<Text variant="muted" size="sm" className="mt-1">
-						If you want to add a book that isn&apos;t in your library, you can add information about
-						it here
+						{t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.externalBookDescription')}
 					</Text>
 				</div>
 
 				<div className="gap-x-4 gap-y-4 md:flex-row md:gap-y-0 flex w-full flex-col items-start">
 					<Input
 						fullWidth
-						label="Title"
+						label={t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.titleLabel')}
 						disabled={isEntityBook}
 						{...form.register(`books.${index}.book.title`)}
 					/>
 					<Input
-						label="Author"
+						label={t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.authorLabel')}
 						disabled={isEntityBook}
 						{...form.register(`books.${index}.book.author`)}
 					/>
 				</div>
 
 				<Input
-					label="Book URL"
+					label={t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.bookUrlLabel')}
 					disabled={isEntityBook}
 					{...form.register(`books.${index}.book.url`)}
 				/>
@@ -150,28 +155,35 @@ export default function AddBookCard({ index }: Props) {
 	return (
 		<Card className="gap-4 p-4 flex w-full flex-col">
 			{renderBookPickerOption()}
-			{!isEntityBook && !isDefiningExternalBook && <LeftAlignedDivider text="OR" />}
+			{!isEntityBook && !isDefiningExternalBook && (
+				<LeftAlignedDivider
+					text={t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.dividerOr')}
+				/>
+			)}
 			{renderExternalBookOption()}
 
-			<LeftAlignedDivider text="AND THEN" />
+			<LeftAlignedDivider
+				text={t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.dividerAndThen')}
+			/>
 
 			<div>
-				<Heading size="xs">Configure the dates</Heading>
+				<Heading size="xs">
+					{t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.configureDatesHeading')}
+				</Heading>
 				<Text variant="muted" size="sm" className="mt-1">
-					If not provided, the start and end dates will be set to a reasonable default based on the
-					last book&apos;s end date
+					{t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.configureDatesDescription')}
 				</Text>
 			</div>
 
 			<div className="gap-x-4 gap-y-4 md:flex-row md:gap-y-0 flex w-full flex-col items-start">
 				<DatePicker
-					label="Start date"
+					label={t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.startDateLabel')}
 					minDate={new Date()}
 					onChange={(date) => form.setValue(`books.${index}.startAt`, date?.toISOString())}
 				/>
 
 				<DatePicker
-					label="End date"
+					label={t('scenes.bookClub.tabs.settings.scheduler.AddBookCard.endDateLabel')}
 					minDate={new Date()}
 					onChange={(date) => form.setValue(`books.${index}.endAt`, date?.toISOString())}
 				/>

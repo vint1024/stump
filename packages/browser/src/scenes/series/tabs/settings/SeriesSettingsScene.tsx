@@ -1,6 +1,7 @@
 import { useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Alert, AlertDescription, Button, Heading, Text } from '@stump/components'
 import { graphql, MetadataResetImpact, UserPermission } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { Construction } from 'lucide-react'
 import { Suspense, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router'
@@ -46,6 +47,7 @@ const resetMetadataMutation = graphql(`
 `)
 
 export default function SeriesSettingsScene() {
+	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 	const { series } = useSeriesContext()
 	const { checkPermission } = useAppContext()
@@ -82,26 +84,28 @@ export default function SeriesSettingsScene() {
 			<div className="gap-y-6 flex flex-col items-start text-left">
 				<Alert variant="warning">
 					<Construction />
-					<AlertDescription>
-						Series management is currently under development and has very limited functionality
-					</AlertDescription>
+					<AlertDescription>{t('seriesSettingsScene.developmentAlert')}</AlertDescription>
 				</Alert>
 
 				<div className="gap-y-2 flex flex-col">
 					<div>
-						<Heading size="sm">Analysis</Heading>
+						<Heading size="sm">{t('seriesSettingsScene.analysis.heading')}</Heading>
 						<Text size="sm" variant="muted">
-							Re-analyze this series to update metadata from its files
+							{t('seriesSettingsScene.analysis.description')}
 						</Text>
 					</div>
 
 					<div>
 						<Button
-							title={data ? 'Analysis already in progress' : 'Analyze this series'}
+							title={
+								data
+									? t('seriesSettingsScene.analysis.inProgress')
+									: t('seriesSettingsScene.analysis.buttonTitle')
+							}
 							onClick={handleAnalyze}
 							disabled={!!data || isPending}
 						>
-							Analyze series
+							{t('seriesSettingsScene.analysis.button')}
 						</Button>
 					</div>
 				</div>
@@ -114,9 +118,9 @@ export default function SeriesSettingsScene() {
 
 				<div className="gap-y-2 flex flex-col">
 					<div>
-						<Heading size="sm">Thumbnail</Heading>
+						<Heading size="sm">{t('seriesSettingsScene.thumbnail.heading')}</Heading>
 						<Text size="sm" variant="muted">
-							Change the cover image for this series
+							{t('seriesSettingsScene.thumbnail.description')}
 						</Text>
 					</div>
 
@@ -126,8 +130,8 @@ export default function SeriesSettingsScene() {
 				<div className="gap-y-2 flex w-full flex-col">
 					<div className="flex items-end justify-between">
 						<div>
-							<Heading size="sm">Metadata</Heading>
-							<Text variant="muted">Extra information about your series</Text>
+							<Heading size="sm">{t('seriesSettingsScene.metadata.heading')}</Heading>
+							<Text variant="muted">{t('seriesSettingsScene.metadata.description')}</Text>
 						</div>
 						{checkPermission(UserPermission.EditMetadata) && (
 							<ResetMetadata onConfirmReset={handleResetMetadata} />

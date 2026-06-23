@@ -1,5 +1,6 @@
 import { Button, Sheet, Text } from '@stump/components'
 import { LibraryFilterInput, MediaFilterInput, SeriesFilterInput } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { Filter } from 'lucide-react'
 import { useState } from 'react'
 import { useMediaMatch } from 'rooks'
@@ -24,6 +25,7 @@ type Props = {
  * A component that renders a slide over with filter options.
  */
 export default function FilterSlideOver({ prompt, formVariant }: Props) {
+	const { t } = useLocaleContext()
 	const { filters, setFilters } = useFilterContext()
 
 	const [isOpen, setIsOpen] = useState(false)
@@ -50,7 +52,7 @@ export default function FilterSlideOver({ prompt, formVariant }: Props) {
 		} else if (formVariant === 'series') {
 			return <SeriesFilterForm />
 		} else {
-			return <Text>Not implemented yet</Text>
+			return <Text>{t('components.filters.FilterSlideOver.notImplemented')}</Text>
 		}
 	}
 
@@ -59,12 +61,12 @@ export default function FilterSlideOver({ prompt, formVariant }: Props) {
 			open={isOpen}
 			onClose={onClose}
 			onOpen={onOpen}
-			title="Filter options"
-			description={prompt || 'Use the options below to narrow your search'}
+			title={t('components.filters.FilterSlideOver.title')}
+			description={prompt || t('components.filters.FilterSlideOver.description')}
 			trigger={
 				<Button variant="ghost" className="gap-1.5 flex h-full items-center">
 					<Filter className="h-4 w-4" />
-					<span>Filter</span>
+					<span>{t('components.filters.FilterSlideOver.filter')}</span>
 					<span className="text-brand">({nonSearchFilterCount})</span>
 				</Button>
 			}
@@ -72,11 +74,11 @@ export default function FilterSlideOver({ prompt, formVariant }: Props) {
 			footer={
 				<div className="gap-4 py-2 flex items-center">
 					<Button type="button" variant="destructive" onClick={handleClearFilters}>
-						Clear filters
+						{t('components.filters.FilterSlideOver.clearFilters')}
 					</Button>
 
 					<Button type="submit" form="filter-form">
-						Apply filters
+						{t('components.filters.FilterSlideOver.applyFilters')}
 					</Button>
 				</div>
 			}

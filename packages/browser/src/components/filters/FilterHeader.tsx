@@ -79,7 +79,12 @@ export default function FilterHeader({
 		<header
 			ref={ref}
 			className={cn(
-				'h-12 gap-2 px-4 md:top-0 sticky z-50 flex w-full shrink-0 items-center justify-between border-b border-border',
+				'gap-2 px-4 md:top-0 sticky z-50 flex w-full shrink-0 border-b border-border',
+				// PWA / mobile: stack into two rows — search on top, the order/filter/
+				// layout controls below — so the bar doesn't shift left-right as the
+				// control widths change between the Series and Books tabs (and as the
+				// search input expands). Desktop keeps the single 48px-tall row.
+				'py-2 md:h-12 md:flex-row md:items-center md:justify-between md:py-0 flex-col items-stretch',
 				{
 					'bg-background': isSticky || !isMobile,
 				},
@@ -94,7 +99,7 @@ export default function FilterHeader({
 				isDisabled={isSearchDisabled}
 			/>
 
-			<div className="gap-x-4 flex items-center">
+			<div className="gap-x-4 md:justify-normal flex items-center justify-between">
 				{sizeControls}
 
 				<div className="gap-x-1 flex items-center">

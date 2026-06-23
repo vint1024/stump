@@ -1,6 +1,7 @@
 import { useGraphQLMutation } from '@stump/client'
 import { Button, DropdownMenu, Label, Text } from '@stump/components'
 import { graphql } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { AlertTriangle, ChevronDown, ImagePlus } from 'lucide-react'
 import { useCallback } from 'react'
 
@@ -13,6 +14,7 @@ const mutation = graphql(`
 `)
 
 export default function ProcessLibraryThumbnails() {
+	const { t } = useLocaleContext()
 	const { library } = useLibraryContext()
 
 	const { mutate } = useGraphQLMutation(mutation)
@@ -27,10 +29,13 @@ export default function ProcessLibraryThumbnails() {
 	return (
 		<div className="gap-4 flex flex-col">
 			<div>
-				<Label>Process thumbnail colors</Label>
+				<Label>
+					{t('scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.label')}
+				</Label>
 				<Text size="sm" variant="muted">
-					Extract missing thumbnail color metadata or force the regeneration of it for all
-					thumbnails
+					{t(
+						'scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.description',
+					)}
 				</Text>
 			</div>
 
@@ -38,7 +43,7 @@ export default function ProcessLibraryThumbnails() {
 				<DropdownMenu
 					trigger={
 						<Button variant="outline">
-							Extract colors
+							{t('scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.button')}
 							<ChevronDown className="ml-2 h-4 w-4" />
 						</Button>
 					}
@@ -46,12 +51,16 @@ export default function ProcessLibraryThumbnails() {
 						{
 							items: [
 								{
-									label: 'Missing only',
+									label: t(
+										'scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.missingOnly',
+									),
 									leftIcon: <ImagePlus className={iconStyle} />,
 									onClick: () => process(false),
 								},
 								{
-									label: 'Reprocess all',
+									label: t(
+										'scenes.library.tabs.settings.options.thumbnails.ProcessLibraryThumbnails.reprocessAll',
+									),
 									isDestructive: true,
 									leftIcon: <AlertTriangle className={iconStyle} />,
 									onClick: () => process(true),

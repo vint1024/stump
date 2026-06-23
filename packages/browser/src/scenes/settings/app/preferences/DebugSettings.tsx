@@ -1,4 +1,5 @@
 import { NewCard, RawSwitch } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 
 import { useDebugStore } from '@/stores'
 
@@ -10,19 +11,19 @@ export default function Container() {
 	return <DebugSettings />
 }
 
-// TODO(localization): do it
 function DebugSettings() {
+	const { t } = useLocaleContext()
 	const store = useDebugStore()
 
 	return (
 		<NewCard
 			tone="debug"
-			label="Debug settings"
-			description="These won't exist in production, but are useful for debugging"
+			label={t('scenes.settings.app.preferences.DebugSettings.heading')}
+			description={t('scenes.settings.app.preferences.DebugSettings.description')}
 		>
 			<NewCard.Row
-				label="Query Tools"
-				description="Enable debugging tools for queries"
+				label={t('scenes.settings.app.preferences.DebugSettings.queryToolsLabel')}
+				description={t('scenes.settings.app.preferences.DebugSettings.queryToolsDescription')}
 				onClick={() => store.patch({ showQueryTools: !store.showQueryTools })}
 			>
 				<RawSwitch

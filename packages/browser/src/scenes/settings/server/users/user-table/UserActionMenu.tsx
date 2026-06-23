@@ -1,6 +1,7 @@
 import { useGraphQLMutation, useSDK } from '@stump/client'
 import { DropdownMenu, IconButton } from '@stump/components'
 import { graphql } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import { Database, Lock, MoreVertical, Pencil, Search, Trash, Unlock } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
@@ -34,6 +35,7 @@ type Props = {
 }
 
 export default function UserActionMenu({ user, onSelectForInspect, onSelectForDeletion }: Props) {
+	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 	const { isServerOwner, user: byUser } = useAppContext()
 
@@ -45,14 +47,14 @@ export default function UserActionMenu({ user, onSelectForInspect, onSelectForDe
 		},
 		onError: (error) => {
 			console.error(error)
-			toast.error('An error occurred while locking the user')
+			toast.error(t('scenes.settings.server.users.user-table.UserActionMenu.lockError'))
 		},
 	})
 
 	const { mutateAsync: deleteSessions } = useGraphQLMutation(deleteSessionsMutation, {
 		onError: (error) => {
 			console.error(error)
-			toast.error('An error occurred while deleting user sessions')
+			toast.error(t('scenes.settings.server.users.user-table.UserActionMenu.deleteSessionsError'))
 		},
 	})
 
@@ -78,13 +80,13 @@ export default function UserActionMenu({ user, onSelectForInspect, onSelectForDe
 			{
 				items: [
 					{
-						label: 'Inspect',
+						label: t('scenes.settings.server.users.user-table.UserActionMenu.inspect'),
 						leftIcon: <Search className="mr-2 h-4 w-4" />,
 						onClick: () => onSelectForInspect(user),
 					},
 					{
 						disabled: user.loginSessionsCount === 0,
-						label: 'Clear sessions',
+						label: t('scenes.settings.server.users.user-table.UserActionMenu.clearSessions'),
 						isDestructive: true,
 						leftIcon: <Database className="mr-2 h-4 w-4" />,
 						onClick: handleClearUserSessions,
@@ -94,21 +96,23 @@ export default function UserActionMenu({ user, onSelectForInspect, onSelectForDe
 			{
 				items: [
 					{
-						label: 'Edit',
+						label: t('scenes.settings.server.users.user-table.UserActionMenu.edit'),
 						disabled: isSelf,
 						leftIcon: <Pencil className="mr-2 h-4 w-4" />,
 						onClick: () => navigate(paths.updateUser(user.id)),
 					},
 					{
 						disabled: isSelf,
-						label: 'Delete',
+						label: t('scenes.settings.server.users.user-table.UserActionMenu.delete'),
 						isDestructive: true,
 						leftIcon: <Trash className="mr-2 h-4 w-4" />,
 						onClick: () => onSelectForDeletion(user),
 					},
 					{
 						disabled: isSelf || user.isServerOwner,
-						label: `${user.isLocked ? 'Unlock' : 'Lock'} account`,
+						label: user.isLocked
+							? t('scenes.settings.server.users.user-table.UserActionMenu.unlockAccount')
+							: t('scenes.settings.server.users.user-table.UserActionMenu.lockAccount'),
 						leftIcon: user.isLocked ? (
 							<Unlock className="mr-2 h-4 w-4" />
 						) : (
@@ -121,6 +125,7 @@ export default function UserActionMenu({ user, onSelectForInspect, onSelectForDe
 		],
 
 		[
+			t,
 			user,
 			isSelf,
 			navigate,

@@ -3,6 +3,7 @@ import { EBOOK_EXTENSION, PDF_EXTENSION } from '@stump/client'
 import { Button, ButtonOrLink, DropdownMenu } from '@stump/components'
 import { DropdownItemGroup } from '@stump/components/dropdown/DropdownMenu'
 import { BookCardFragment, graphql, UserPermission } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import {
 	BookMinus,
@@ -49,6 +50,7 @@ type Props = {
 	book: BookCardFragment
 }
 export default function BookActionMenu({ book }: Props) {
+	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 	const { checkPermission } = useAppContext()
 
@@ -63,7 +65,7 @@ export default function BookActionMenu({ book }: Props) {
 		onSuccess,
 		onError: (error) => {
 			console.error(error)
-			toast.error('Failed to update book completion status')
+			toast.error(t('scenes.book.BookActionMenu.toast.completionError'))
 		},
 	})
 	const { mutate: deleteCurrentSession } = useGraphQLMutation(deleteMutation, {

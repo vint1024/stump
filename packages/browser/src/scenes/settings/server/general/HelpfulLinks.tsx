@@ -15,6 +15,32 @@ export default function HelpfulLinks() {
 			</div>
 
 			<div className="gap-12 md:gap-8 flex flex-row flex-wrap">
+				{/* NoirPanther (this fork) links first, upstream Stump links after. */}
+				<Link
+					href="https://github.com/vint1024/stump"
+					target="__blank"
+					rel="noopener noreferrer"
+					className={cn('space-x-2 text-sm flex items-center hover:underline', TEXT_VARIANTS.label)}
+					underline={false}
+				>
+					<span>NoirPanther · GitHub</span>
+					<ExternalLink className="h-3 w-3 text-muted-foreground" />
+				</Link>
+
+				<Link
+					href="https://github.com/vint1024/stump/releases"
+					target="__blank"
+					rel="noopener noreferrer"
+					className={cn('space-x-2 text-sm flex items-center hover:underline', TEXT_VARIANTS.label)}
+					underline={false}
+				>
+					<span>
+						NoirPanther ·{' '}
+						{t('settingsScene.server/general.sections.helpfulLinks.links.changelog')}
+					</span>
+					<ExternalLink className="h-3 w-3 text-muted-foreground" />
+				</Link>
+
 				<Link
 					href="https://www.stumpapp.dev/guides"
 					target="__blank"
@@ -22,7 +48,10 @@ export default function HelpfulLinks() {
 					className={cn('space-x-2 text-sm flex items-center hover:underline', TEXT_VARIANTS.label)}
 					underline={false}
 				>
-					<span>{t('settingsScene.server/general.sections.helpfulLinks.links.documentation')}</span>
+					<span>
+						Stump ·{' '}
+						{t('settingsScene.server/general.sections.helpfulLinks.links.documentation')}
+					</span>
 					<ExternalLink className="h-3 w-3 text-muted-foreground" />
 				</Link>
 
@@ -33,7 +62,7 @@ export default function HelpfulLinks() {
 					className={cn('space-x-2 text-sm flex items-center hover:underline', TEXT_VARIANTS.label)}
 					underline={false}
 				>
-					<span>GitHub</span>
+					<span>Stump · GitHub</span>
 					<ExternalLink className="h-3 w-3 text-muted-foreground" />
 				</Link>
 
@@ -44,7 +73,10 @@ export default function HelpfulLinks() {
 					className={cn('space-x-2 text-sm flex items-center hover:underline', TEXT_VARIANTS.label)}
 					underline={false}
 				>
-					<span>{t('settingsScene.server/general.sections.helpfulLinks.links.changelog')}</span>
+					<span>
+						Stump ·{' '}
+						{t('settingsScene.server/general.sections.helpfulLinks.links.changelog')}
+					</span>
 					<ExternalLink className="h-3 w-3 text-muted-foreground" />
 				</Link>
 			</div>

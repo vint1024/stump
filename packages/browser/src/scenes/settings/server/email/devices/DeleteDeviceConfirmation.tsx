@@ -1,6 +1,7 @@
 import { useGraphQLMutation, useSDK } from '@stump/client'
 import { ConfirmationModal } from '@stump/components'
 import { EmailDevicesTableQuery, graphql } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
@@ -21,6 +22,7 @@ type Props = {
 }
 
 export default function DeleteDeviceConfirmation({ device, onClose }: Props) {
+	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
 
 	const client = useQueryClient()
@@ -33,7 +35,7 @@ export default function DeleteDeviceConfirmation({ device, onClose }: Props) {
 		},
 		onError: (error) => {
 			console.error(error)
-			toast.error('Failed to delete device')
+			toast.error(t('scenes.settings.server.email.devices.DeleteDeviceConfirmation.deleteError'))
 		},
 	})
 
@@ -45,9 +47,9 @@ export default function DeleteDeviceConfirmation({ device, onClose }: Props) {
 
 	return (
 		<ConfirmationModal
-			title="Delete device"
-			description="Are you sure you want to delete this device?"
-			confirmText="Delete device"
+			title={t('scenes.settings.server.email.devices.DeleteDeviceConfirmation.title')}
+			description={t('scenes.settings.server.email.devices.DeleteDeviceConfirmation.description')}
+			confirmText={t('scenes.settings.server.email.devices.DeleteDeviceConfirmation.confirmText')}
 			confirmVariant="destructive"
 			isOpen={!!device}
 			onClose={onClose}

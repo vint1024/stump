@@ -1,6 +1,7 @@
 import { useGraphQLMutation, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Alert, AlertDescription, Breadcrumbs, Button, Heading, Text } from '@stump/components'
 import { graphql, UserPermission } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { Construction } from 'lucide-react'
 import { Suspense, useCallback, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
@@ -41,6 +42,7 @@ const analyzeMutation = graphql(`
 `)
 
 export default function BookManagementScene() {
+	const { t } = useLocaleContext()
 	const navigate = useNavigate()
 
 	const { checkPermission } = useAppContext()
@@ -96,38 +98,40 @@ export default function BookManagementScene() {
 				<div className="gap-y-1.5 flex flex-col">
 					<Breadcrumbs segments={breadcrumbs} trailingSlash />
 					<Heading size="lg" className="font-bold">
-						Manage
+						{t('bookManagementScene.heading')}
 					</Heading>
 
 					<Text size="sm" variant="muted">
-						Make changes to this book
+						{t('bookManagementScene.subtitle')}
 					</Text>
 				</div>
 
 				<Alert variant="warning">
 					<Construction />
-					<AlertDescription>
-						Book management is currently under development and has very limited functionality
-					</AlertDescription>
+					<AlertDescription>{t('bookManagementScene.developmentAlert')}</AlertDescription>
 				</Alert>
 
 				{checkPermission(UserPermission.ManageLibrary) && (
 					<div className="gap-y-2 flex flex-col">
 						<div>
-							<Heading size="sm">Analysis</Heading>
+							<Heading size="sm">{t('bookManagementScene.analysis.heading')}</Heading>
 							<Text size="sm" variant="muted">
-								Re-analyze this book to update metadata from its file
+								{t('bookManagementScene.analysis.description')}
 							</Text>
 						</div>
 
 						<div>
 							<Button
-								title={data ? 'Analysis already in progress' : 'Analyze this book'}
+								title={
+									data
+										? t('bookManagementScene.analysis.inProgress')
+										: t('bookManagementScene.analysis.buttonTitle')
+								}
 								size="default"
 								onClick={handleAnalyze}
 								disabled={!!data || isPending}
 							>
-								Analyze Media
+								{t('bookManagementScene.analysis.button')}
 							</Button>
 						</div>
 					</div>
@@ -142,9 +146,9 @@ export default function BookManagementScene() {
 				{checkPermission(UserPermission.EditThumbnails) && (
 					<div className="gap-y-2 flex flex-col">
 						<div>
-							<Heading size="sm">Thumbnail</Heading>
+							<Heading size="sm">{t('bookManagementScene.thumbnail.heading')}</Heading>
 							<Text size="sm" variant="muted">
-								Change the cover image for this book
+								{t('bookManagementScene.thumbnail.description')}
 							</Text>
 						</div>
 
