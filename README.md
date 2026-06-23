@@ -4,11 +4,11 @@
 
 # NoirPanther server
 
-> **NoirPanther server is a fork of [Stump](https://github.com/stumpapp/stump)**, forked at tag **`v0.1.4`**.
+> **NoirPanther server is a fork of [Stump](https://github.com/stumpapp/stump)**, tracking upstream up to tag **`v0.1.5`**.
 >
 > - Fork repository: <https://git.vint1024.net/vint1024/stump.git> (mirror: <https://github.com/vint1024/NoirPanther>)
 > - Upstream (original): <https://github.com/stumpapp/stump>
-> - **Semantic version `v0.1.4`** — the same release as upstream Stump (everything in Stump 0.1.4 plus the additions below). The exact build is identified by its commit hash; the build channel is **`NoirPanther (stable)`**.
+> - **Semantic version `v0.1.5`** — the same release as upstream Stump (everything in Stump 0.1.5 plus the additions below). The exact build is identified by its commit hash; the build channel is **`NoirPanther (stable)`**.
 >
 > **All modifications in this fork were developed with heavy assistance from AI tooling.**
 
@@ -38,7 +38,7 @@
 
 ### Packaging
 
-- Semantic version **`v0.1.4`** (build identifier `0.1.4-vint-*` internally), build channel **`NoirPanther (stable)`**
+- Semantic version **`v0.1.5`** (build identifier `0.1.5-vint-*` internally), build channel **`NoirPanther (stable)`**
 - Docker `arm64` image
 
 > A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>
