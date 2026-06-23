@@ -6582,7 +6582,7 @@ export type SeriesSettingsSceneQueryVariables = Exact<{
 
 
 export type SeriesSettingsSceneQuery = { __typename?: 'Query', seriesById?: (
-    { __typename?: 'Series', id: string, tags: Array<{ __typename?: 'Tag', id: number, name: string }>, metadata?: (
+    { __typename?: 'Series', id: string, library: { __typename?: 'Library', id: string }, tags: Array<{ __typename?: 'Tag', id: number, name: string }>, metadata?: (
       { __typename?: 'SeriesMetadata' }
       & { ' $fragmentRefs'?: { 'SeriesMetadataEditorFragment': SeriesMetadataEditorFragment } }
     ) | null }
@@ -6603,6 +6603,13 @@ export type SeriesSettingsSceneResetMetadataMutationVariables = Exact<{
 
 
 export type SeriesSettingsSceneResetMetadataMutation = { __typename?: 'Mutation', resetSeriesMetadata: { __typename?: 'Series', id: string } };
+
+export type SeriesSettingsSceneDeleteSeriesMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type SeriesSettingsSceneDeleteSeriesMutation = { __typename?: 'Mutation', deleteSeries: boolean };
 
 export type SeriesTagEditorSetTagsMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -12665,6 +12672,9 @@ export const SeriesSettingsSceneDocument = new TypedDocumentString(`
     query SeriesSettingsScene($id: ID!) {
   seriesById(id: $id) {
     id
+    library {
+      id
+    }
     ...SeriesThumbnailSelector
     tags {
       id
@@ -12721,6 +12731,11 @@ export const SeriesSettingsSceneResetMetadataDocument = new TypedDocumentString(
   }
 }
     `) as unknown as TypedDocumentString<SeriesSettingsSceneResetMetadataMutation, SeriesSettingsSceneResetMetadataMutationVariables>;
+export const SeriesSettingsSceneDeleteSeriesDocument = new TypedDocumentString(`
+    mutation SeriesSettingsSceneDeleteSeries($id: ID!) {
+  deleteSeries(id: $id)
+}
+    `) as unknown as TypedDocumentString<SeriesSettingsSceneDeleteSeriesMutation, SeriesSettingsSceneDeleteSeriesMutationVariables>;
 export const SeriesTagEditorSetTagsDocument = new TypedDocumentString(`
     mutation SeriesTagEditorSetTags($id: ID!, $tags: [String!]!) {
   setSeriesTags(id: $id, tags: $tags) {
