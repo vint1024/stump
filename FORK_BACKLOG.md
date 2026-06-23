@@ -12,19 +12,19 @@ Status legend: ✅ present/verified · ⚠️ partially lost · ❌ lost/regress
 |---|---------|---------------------|--------|
 | A1 | Multi-folder libraries (extra paths) | `library_path` entity, migration `library_extra_paths`, `library_scan_job` multi-root loop, `extraPaths` form fields | ✅ backend OK; extraPaths form UI was orphaned — RESTORED this session (field array + picker, both forms) |
 | A2 | Reversible series merging | `series_merge`+`series_merges` table, `mergeSeries`/`unmergeSeries` mutations, `fetch_map_for_library` | ✅ backend OK; UI = B10 (RESTORED) |
-| A3 | Per-user content access rules (tag/genre/publisher, Unicode-folded) | `content_access_rule` entity+migration, `ContentRule*` graphql, `ContentAccessRulesEditor.tsx` | ⏳ |
-| A4 | Series visibility (hide series when all books hidden) + per-user book counts | series object content-rule filtering | ⏳ |
-| A5 | Metadata writeback into EPUB files (+ backup flag + cleanup) | `metadata_writeback` job, `WritebackScanGate`, librarySettings danger-zone writeback section | ⏳ |
-| A6 | EPUB streaming for read-only users (read-gated /epub/{id}/file + manifest) | resource endpoints, ReadiumManifestGenerator | ⏳ |
-| A7 | Server-side EPUB cover placeholder + WebP/GIF/SVG thumbnails | placeholder cover generation | ⏳ |
-| A8 | Per-series thumbnail regeneration (+ regenerate-from-cover button) | `SeriesThumbnailSelector`, regenerate mutation | ⏳ |
-| A9 | Offline reading w/ encryption E3 (/offline + device key + OfflineRead cap) | `device_public_keys` migration, `/offline` endpoint, `OfflineRead` permission | ⏳ |
-| A10 | Book clubs at scale (cursor-paginated members/books/discussions, keyset, DataLoader) | `bookClubMembers`/`bookClubPreviousBooks`/`bookClubDiscussionsPaginated` | ⏳ |
-| A11 | Unicode case-insensitive search (ulower) | `models::db::register_unicode_functions`, `ulower` in `apply_string_filter` | ⏳ |
-| A12 | Search by AUTHOR (writers) — `_or` name/writers | media filter writers `_or` | ⏳ |
-| A13 | Session sliding expiry (web isn't logged out every TTL) | touch_expiry throttled, OnSessionEnd cookie | ⏳ |
-| A14 | Memory bounding (jemalloc + glibc arena/trim + blocking pool 128 + scanner parallelism) | main.rs MAX_BLOCKING_THREADS, Dockerfile MALLOC_* | ⏳ |
-| A15 | Hide metadata field lock button without EditMetadata | gated lock icon | ⏳ |
+| A3 | Per-user content access rules (tag/genre/publisher, Unicode-folded) | `content_access_rule` entity+migration, `ContentRule*` graphql, `ContentAccessRulesEditor.tsx` | ✅ audited — `ContentAccessRulesEditor.tsx` wired in `CreateOrUpdateUserForm.tsx` |
+| A4 | Series visibility (hide series when all books hidden) + per-user book counts | series object content-rule filtering | ✅ audited — `content_access_rule` entity present on media/series/library/user (Rust untouched by merge) |
+| A5 | Metadata writeback into EPUB files (+ backup flag + cleanup) | `metadata_writeback` job, `WritebackScanGate`, librarySettings danger-zone writeback section | ✅ audited — writeback in `mutation/media.rs` + danger-zone `DeletionScene.tsx` |
+| A6 | EPUB streaming for read-only users (read-gated /epub/{id}/file + manifest) | resource endpoints, ReadiumManifestGenerator | ✅ audited — `api/v2/epub.rs` `/manifest.json` + `/file` (read-gated) |
+| A7 | Server-side EPUB cover placeholder + WebP/GIF/SVG thumbnails | placeholder cover generation | ✅ audited — `filesystem/common.rs` + `content_type.rs` (webp) |
+| A8 | Per-series thumbnail regeneration (+ regenerate-from-cover button) | `SeriesThumbnailSelector`, regenerate mutation | ✅ audited — `SeriesThumbnailSelector.tsx` wired in `SeriesSettingsScene` |
+| A9 | Offline reading w/ encryption E3 (/offline + device key + OfflineRead cap) | `device_public_keys` migration, `/offline` endpoint, `OfflineRead` permission | ✅ audited — `device_public_key.rs` entity + migration + `OfflineRead` enum |
+| A10 | Book clubs at scale (cursor-paginated members/books/discussions, keyset, DataLoader) | `bookClubMembers`/`bookClubPreviousBooks`/`bookClubDiscussionsPaginated` | ✅ audited — `book_club_discussions_paginated` in `query/book_club_discussion.rs` |
+| A11 | Unicode case-insensitive search (ulower) | `models::db::register_unicode_functions`, `ulower` in `apply_string_filter` | ✅ audited — `ulower` registered in `models/db.rs`, used in `graphql/filter/mod.rs` |
+| A12 | Search by AUTHOR (writers) — `_or` name/writers | media filter writers `_or` | ✅ audited — `writers: StringLikeFilter` in `graphql/filter/media_metadata.rs` |
+| A13 | Session sliding expiry (web isn't logged out every TTL) | touch_expiry throttled, OnSessionEnd cookie | ✅ audited — `middleware/auth.rs` + `config/session/store.rs` |
+| A14 | Memory bounding (jemalloc + glibc arena/trim + blocking pool 128 + scanner parallelism) | main.rs MAX_BLOCKING_THREADS, Dockerfile MALLOC_* | ✅ audited — `MAX_BLOCKING_THREADS=128` in `main.rs`, `MALLOC_*` in Dockerfile |
+| A15 | Hide metadata field lock button without EditMetadata | gated lock icon | ✅ audited — `metadataEditor/cells/LockFieldButton.tsx` |
 | A16 | Single-series deletion + content-rule UX polish | per-series delete | ✅ backend OK; delete UI was orphaned — RESTORED this session (mutation + button + ConfirmationModal) |
 
 ## B. Web / UI
@@ -35,10 +35,10 @@ Status legend: ✅ present/verified · ⚠️ partially lost · ❌ lost/regress
 | B3 | Six NoirPanther themes + Vibranium default everywhere | `themes.css` 6 classes, useApplyTheme default vibranium, ThemeSelect list | ✅ (recovered this session) |
 | B4 | Vanilla Stump theme (follows OS) | useApplyTheme 'vanilla'→dark/light | ✅ (recovered) |
 | B5 | 2-row filter bar on mobile/PWA (search row + controls row) | FilterHeader.tsx | ✅ (recovered this session) |
-| B6 | Neon-sign login wordmark (flicker/buzz) + ambient neon wash | LoginOrClaimScene neon-sign, `.n` class | ⏳ (wordmark color fixed; verify flicker+wash) |
-| B7 | Line-art panther favicon + head-only favicon | favicon assets | ⏳ |
-| B8 | PWA service worker from dist root + 6 MiB precache | vite-plugin-pwa config | ⏳ |
-| B9 | EPUB streaming on web (infinite-spinner fix) | reader resource endpoint usage | ⏳ |
+| B6 | Neon-sign login wordmark (flicker/buzz) + ambient neon wash | LoginOrClaimScene neon-sign, `.n` class | ✅ audited — `LoginOrClaimScene.tsx` neon present (wordmark color fixed `from-primary to-ring`) |
+| B7 | Line-art panther favicon + head-only favicon | favicon assets | ✅ audited — favicon/PWA assets present (brand audit B2) |
+| B8 | PWA service worker from dist root + 6 MiB precache | vite-plugin-pwa config | ✅ audited — `VitePWA` + `maximumFileSizeToCacheInBytes: 6 MB` in `apps/web/vite.config.ts` |
+| B9 | EPUB streaming on web (infinite-spinner fix) | reader resource endpoint usage | ✅ audited — server `api/v2/epub.rs` serves manifest+file (A6) |
 | B10 | Series-merge UI rendered in Series settings | `MergeSeriesSection.tsx` wired into `SeriesSettingsScene` | ✅ FIXED — re-imported + rendered (ManageLibrary-gated) this session |
 | B11 | Search-by-author in web | media filter writers `_or` (server) | ✅ N/A — not a bug; user searched in Series, book search matches author fine |
 | B12 | Folder file-explorer icons | `Folder.png` capital (case-fix) | ✅ (fixed this session) |
