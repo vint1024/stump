@@ -1,7 +1,7 @@
-import { Input, InputGroup, Label, Text, TextArea } from '@stump/components'
+import { Button, Input, InputGroup, Label, Text, TextArea } from '@stump/components'
 import { UserPermission } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
-import { Folder } from 'lucide-react'
+import { Folder, Plus, X } from 'lucide-react'
 import { Suspense } from 'react'
 import { useFormContext, useFormState, useWatch } from 'react-hook-form'
 
@@ -15,16 +15,17 @@ const LOCALE_KEY = 'createOrUpdateLibraryForm'
 const getKey = (key: string) => `${LOCALE_KEY}.fields.${key}`
 
 type Props = {
-	onSetShowDirectoryPicker: (value: boolean) => void
+	onPickDirectory: (field: 'path' | `extraPaths.${number}`) => void
 }
 
-export default function BasicLibraryInformation({ onSetShowDirectoryPicker }: Props) {
+export default function BasicLibraryInformation({ onPickDirectory }: Props) {
 	const form = useFormContext<CreateOrUpdateLibrarySchema>()
 	const ctx = useLibraryContextSafe()
 	const { checkPermission } = useAppContext()
 
 	const isCreatingLibrary = !ctx?.library
 	const tags = useWatch({ control: form.control, name: 'tags' })
+	const extraPaths = useWatch({ control: form.control, name: 'extraPaths' }) ?? []
 
 	const { t } = useLocaleContext()
 	const { errors } = useFormState({
@@ -66,7 +67,7 @@ export default function BasicLibraryInformation({ onSetShowDirectoryPicker }: Pr
 									type="button"
 									variant="ghost"
 									size="icon-xs"
-									onClick={() => onSetShowDirectoryPicker(true)}
+									onClick={() => onPickDirectory('path')}
 								>
 									<Folder className="h-4 w-4 text-muted-foreground" />
 								</InputGroup.Button>
@@ -85,6 +86,72 @@ export default function BasicLibraryInformation({ onSetShowDirectoryPicker }: Pr
 							{t(getKey('path.description'))}
 						</Text>
 					)}
+				</div>
+			</div>
+
+			<div className="gap-y-3 flex flex-col">
+				<div>
+					<Label>{t(getKey('extraPaths.label'))}</Label>
+					<Text size="sm" variant="muted">
+						{t(getKey('extraPaths.description'))}
+					</Text>
+				</div>
+
+				{extraPaths.map((_, index) => (
+					<div key={index} className="gap-2 md:max-w-sm flex max-w-full items-center">
+						<InputGroup className="flex-1">
+							<InputGroup.Input
+								placeholder={t(getKey('path.placeholder'))}
+								aria-invalid={!!errors.extraPaths?.[index]?.message}
+								{...form.register(`extraPaths.${index}`)}
+							/>
+							{checkPermission(UserPermission.FileExplorer) && (
+								<InputGroup.Addon align="inline-end">
+									<InputGroup.Button
+										type="button"
+										variant="ghost"
+										size="icon-xs"
+										onClick={() => onPickDirectory(`extraPaths.${index}`)}
+									>
+										<Folder className="h-4 w-4 text-muted-foreground" />
+									</InputGroup.Button>
+								</InputGroup.Addon>
+							)}
+						</InputGroup>
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							title={t(getKey('extraPaths.removeFolder'))}
+							onClick={() =>
+								form.setValue(
+									'extraPaths',
+									extraPaths.filter((_, i) => i !== index),
+									{ shouldDirty: true },
+								)
+							}
+						>
+							<X className="h-4 w-4 text-muted-foreground" />
+						</Button>
+					</div>
+				))}
+
+				{errors.extraPaths?.message && (
+					<Text variant="danger" size="xs">
+						{errors.extraPaths.message}
+					</Text>
+				)}
+
+				<div>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() => form.setValue('extraPaths', [...extraPaths, ''], { shouldDirty: true })}
+					>
+						<Plus className="mr-2 h-4 w-4" />
+						{t(getKey('extraPaths.addFolder'))}
+					</Button>
 				</div>
 			</div>
 

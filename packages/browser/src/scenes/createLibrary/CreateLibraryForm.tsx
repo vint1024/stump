@@ -38,7 +38,7 @@ export default function CreateLibraryForm({ existingLibraries, onSubmit, isLoadi
 	const { currentStep, setStep } = useSteppedFormContext()
 	const { checkPermission } = useAppContext()
 
-	const [showDirectoryPicker, setShowDirectoryPicker] = useState(false)
+	const [pickerTarget, setPickerTarget] = useState<'path' | `extraPaths.${number}` | null>(null)
 
 	const schema = useMemo(() => buildSchema(existingLibraries), [existingLibraries])
 	const form = useForm<CreateOrUpdateLibrarySchema>({
@@ -103,7 +103,7 @@ export default function CreateLibraryForm({ existingLibraries, onSubmit, isLoadi
 			case 1:
 				return (
 					<>
-						<BasicLibraryInformation onSetShowDirectoryPicker={setShowDirectoryPicker} />
+						<BasicLibraryInformation onPickDirectory={setPickerTarget} />
 						<div className="mt-6 md:max-w-sm flex w-full">
 							<Button
 								type="button"
@@ -170,13 +170,14 @@ export default function CreateLibraryForm({ existingLibraries, onSubmit, isLoadi
 		<>
 			{checkPermission(UserPermission.FileExplorer) && (
 				<DirectoryPickerModal
-					isOpen={showDirectoryPicker}
-					onClose={() => setShowDirectoryPicker(false)}
+					isOpen={!!pickerTarget}
+					onClose={() => setPickerTarget(null)}
 					startingPath={formPath}
 					onPathChange={(path) => {
-						if (path) {
-							form.setValue('path', path)
+						if (path && pickerTarget) {
+							form.setValue(pickerTarget, path, { shouldDirty: true })
 						}
+						setPickerTarget(null)
 					}}
 				/>
 			)}

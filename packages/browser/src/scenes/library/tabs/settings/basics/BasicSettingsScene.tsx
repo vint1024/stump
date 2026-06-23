@@ -49,7 +49,7 @@ export default function BasicSettingsScene() {
 		resolver: zodResolver(schema),
 	})
 
-	const [showDirectoryPicker, setShowDirectoryPicker] = useState(false)
+	const [pickerTarget, setPickerTarget] = useState<'path' | `extraPaths.${number}` | null>(null)
 	const [path, name, description, tags, extraPaths] = useWatch({
 		control: form.control,
 		name: ['path', 'name', 'description', 'tags', 'extraPaths'],
@@ -97,18 +97,19 @@ export default function BasicSettingsScene() {
 		<Form form={form} onSubmit={handleSubmit} fieldsetClassName="flex flex-col gap-12">
 			{checkPermission(UserPermission.FileExplorer) && (
 				<DirectoryPickerModal
-					isOpen={showDirectoryPicker}
-					onClose={() => setShowDirectoryPicker(false)}
+					isOpen={!!pickerTarget}
+					onClose={() => setPickerTarget(null)}
 					startingPath={path}
-					onPathChange={(path) => {
-						if (path) {
-							form.setValue('path', path)
+					onPathChange={(newPath) => {
+						if (newPath && pickerTarget) {
+							form.setValue(pickerTarget, newPath, { shouldDirty: true })
 						}
+						setPickerTarget(null)
 					}}
 				/>
 			)}
 
-			<BasicLibraryInformation onSetShowDirectoryPicker={setShowDirectoryPicker} />
+			<BasicLibraryInformation onPickDirectory={setPickerTarget} />
 
 			<div>
 				<Button type="submit" disabled={!hasChanges}>
