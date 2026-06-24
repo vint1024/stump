@@ -33,12 +33,16 @@
 - **Server-side EPUB cover placeholder** + WebP / GIF / SVG thumbnail support
 - **Series thumbnail regeneration** (incl. a regenerate-from-cover button)
 - **Book clubs at scale** — cursor-paginated members / past books / discussions, keyset discussion history, and DataLoader fixes for the member graph
+- **Unicode case-insensitive search** (`ulower`) — search matches regardless of letter case in any language (incl. Cyrillic); **search also matches book authors** (writers), not just titles
+- **Book & series metadata editor** in the web UI — permission-gated (`EditMetadata`), with autocomplete and field-level locks
+- **Sliding session expiry** — active web sessions are refreshed instead of logging the user out on a fixed TTL
+- **Memory-bounded server** — tuned allocator (jemalloc + glibc arena/trim), bounded blocking pool and scanner concurrency for stable memory on large libraries
 - Content rules in the user-creation form; tag / genre / publisher autocomplete; single-series deletion
 - Fixes: metadata lock hidden without `EditMetadata` permission; writeback / file-watcher race; cross-origin EPUB reader credentials; N+1 queries; owner-rule handling; `OfflineRead` permission checks
 
 ### Packaging
 
-- Semantic version **`v0.1.5`** (build identifier `0.1.5-vint-*` internally), build channel **`NoirPanther (stable)`**
+- Semantic version **`v0.1.5`** (internal build identifier `0.1.5-vint-0.4.0`), build channel **`Dev-vint`**
 - Docker `arm64` image
 
 > A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>
