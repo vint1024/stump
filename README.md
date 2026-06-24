@@ -42,7 +42,7 @@
 
 ### Packaging
 
-- Semantic version **`v0.1.5`** (internal build identifier `0.1.5-vint-0.4.0`), build channel **`Dev-vint`**
+- Semantic version **`v0.1.5`** (internal build identifier `0.1.5-vint-0.4.0`), build channel **`NoirPanther (stable)`**
 - Docker `arm64` image
 
 > A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>
