@@ -18,7 +18,7 @@
 
 - **Rebranded to "NoirPanther server"** — name, panther emblem, favicons, splash and PWA manifest
 - **Six NoirPanther themes** ported from the NoirPanther mobile client — _Vibranium_ (default), _Golden Eye_, _Emerald Gaze_, _Cinematic Noir_, and the _Vibranium · Light_ / _Golden Eye · Light_ variants (the upstream Stump themes are kept too)
-- **Full Russian localization of the web UI** — 616+ i18n keys across 165 components (multi-pass sweep to complete coverage)
+- **Full Russian localization of the web UI** — complete coverage (~2,590 i18n keys, 340+ localized components)
 - Server-info screen surfaces the fork identity, our GitHub / changelog links, and the upstream-equivalent version
 
 ### Server &amp; features
